@@ -1,0 +1,10 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-bg",
+      "description": "Abstract network connection lines",
+      "imageUrl": "https://picsum.photos/seed/net1/1200/800",
+      "imageHint": "network technology"
+    }
+  ]
+}
