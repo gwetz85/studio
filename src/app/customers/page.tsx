@@ -25,20 +25,20 @@ export default function CustomersPage() {
   const [viewingCustomer, setViewingCustomer] = React.useState<Customer | null>(null);
 
   const customers = useLiveQuery(() => {
-    if (!search) return db.customers.toArray();
+    // Hanya tampilkan 'active' dan 'passive' di sini. 
+    // 'inactive' dipindahkan ke menu 'User Nonaktif'
+    const query = db.customers.where('status').anyOf(['active', 'passive']);
+    if (!search) return query.toArray();
     const s = search.toLowerCase();
-    return db.customers
-      .filter(c => 
-        (c.name?.toLowerCase().includes(s) || false) || 
-        (c.email?.toLowerCase().includes(s) || false) ||
-        (c.phone?.includes(s) || false)
-      )
-      .toArray();
+    return query.filter(c => 
+      (c.name?.toLowerCase().includes(s) || false) || 
+      (c.email?.toLowerCase().includes(s) || false) ||
+      (c.phone?.includes(s) || false)
+    ).toArray();
   }, [search]);
 
   const packages = useLiveQuery(() => db.packages.toArray());
   
-  // Fetch payments only when viewing a specific customer
   const customerPayments = useLiveQuery(async () => {
     if (!viewingCustomer?.id) return [];
     return db.payments
@@ -120,16 +120,12 @@ export default function CustomersPage() {
     return packages?.find(p => p.id === id)?.name || "N/A";
   };
 
-  const getPackagePrice = (id: number) => {
-    return packages?.find(p => p.id === id)?.price || 0;
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Daftar Pelanggan</h1>
-          <p className="text-slate-500">Kelola data pelanggan dan status layanan mereka.</p>
+          <p className="text-slate-500">Kelola data pelanggan Aktif dan Pasif.</p>
         </div>
         <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
           <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
@@ -191,9 +187,9 @@ export default function CustomersPage() {
                 </Select>
               </div>
             </div>
-            {editingCustomer?.status === 'inactive' && editingCustomer.deactivationDate && (
-              <p className="text-[10px] text-rose-500 italic">
-                * Pelanggan ini akan dihapus otomatis pada tanggal {new Date(editingCustomer.deactivationDate + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID')}.
+            {editingCustomer?.status === 'inactive' && (
+              <p className="text-[10px] text-amber-500 italic">
+                * Pelanggan ini akan dipindahkan ke menu 'User Nonaktif' setelah Anda menyimpan perubahan.
               </p>
             )}
             <DialogFooter className="pt-4">
@@ -206,7 +202,6 @@ export default function CustomersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Preview Dialog */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-3xl p-0 overflow-hidden border-none shadow-2xl">
           <DialogHeader className="p-6 bg-primary text-white">
@@ -218,7 +213,6 @@ export default function CustomersPage() {
           <div className="p-0 max-h-[80vh] overflow-y-auto">
             {viewingCustomer && (
               <div className="p-8 space-y-8">
-                {/* Profile Section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <div>
@@ -266,12 +260,6 @@ export default function CustomersPage() {
                           <Calendar className="h-4 w-4 text-slate-400" />
                           <span>Terdaftar: {new Date(viewingCustomer.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                         </div>
-                        {viewingCustomer.status === 'inactive' && viewingCustomer.deactivationDate && (
-                          <div className="flex items-center gap-3 text-sm text-rose-600">
-                            <Clock className="h-4 w-4" />
-                            <span>Tgl Penonaktifan: {new Date(viewingCustomer.deactivationDate).toLocaleDateString('id-ID')}</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -279,7 +267,6 @@ export default function CustomersPage() {
 
                 <Separator className="bg-slate-100" />
 
-                {/* Payments Section */}
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
@@ -440,7 +427,7 @@ export default function CustomersPage() {
                     <TableCell colSpan={5} className="text-center py-20 text-slate-400">
                       <div className="flex flex-col items-center gap-2">
                         <Search className="h-8 w-8 opacity-20" />
-                        <p>{search ? "Pencarian tidak ditemukan." : "Database pelanggan masih kosong."}</p>
+                        <p>{search ? "Pencarian tidak ditemukan." : "Daftar pelanggan aktif kosong."}</p>
                       </div>
                     </TableCell>
                   </TableRow>

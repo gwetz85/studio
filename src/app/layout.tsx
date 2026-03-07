@@ -46,29 +46,7 @@ export default function RootLayout({
         localStorage.setItem("mtnet_auto_backup", JSON.stringify(backupData));
         localStorage.setItem("mtnet_last_backup_time", backupData.timestamp.toString());
         
-        // 2. AUTO CLEANUP LOGIC (Non-Aktif > 7 Days)
-        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-        const now = Date.now();
-        
-        const inactiveToDelete = customers.filter(c => 
-          c.status === 'inactive' && 
-          c.deactivationDate && 
-          (now - c.deactivationDate > sevenDaysMs)
-        );
-
-        if (inactiveToDelete.length > 0) {
-          await db.transaction('rw', db.customers, db.payments, async () => {
-            for (const customer of inactiveToDelete) {
-              if (customer.id) {
-                await db.customers.delete(customer.id);
-                await db.payments.where('customerId').equals(customer.id).delete();
-              }
-            }
-          });
-          console.log(`Auto Cleanup: ${inactiveToDelete.length} pelanggan Non-Aktif dihapus.`);
-        }
-
-        // Dispatch custom event to update sidebar UI
+        // 2. DISPATCH EVENT
         window.dispatchEvent(new Event('mtnet-backup-updated'));
         
         console.log("Maintenance performed at:", new Date().toLocaleTimeString());

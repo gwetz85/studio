@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut, Database, Clock, UserPlus } from "lucide-react"
+import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut, Database, Clock, UserPlus, UserX } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
@@ -38,6 +38,11 @@ const items = [
     icon: Users,
   },
   {
+    title: "User Nonaktif",
+    url: "/inactive",
+    icon: UserX,
+  },
+  {
     title: "Terisolir",
     url: "/isolated",
     icon: ShieldAlert,
@@ -68,16 +73,13 @@ export function AppSidebar() {
   }, [])
 
   React.useEffect(() => {
-    // Inisialisasi Backup Time
     updateBackupTime()
     window.addEventListener('mtnet-backup-updated', updateBackupTime)
     
-    // Inisialisasi Realtime Clock
     const timer = setInterval(() => {
       setCurrentTime(format(new Date(), "HH:mm:ss", { locale: localeId }))
     }, 1000)
     
-    // Set awal agar tidak menunggu 1 detik
     setCurrentTime(format(new Date(), "HH:mm:ss", { locale: localeId }))
 
     return () => {
@@ -86,7 +88,6 @@ export function AppSidebar() {
     }
   }, [updateBackupTime])
 
-  // Sembunyikan bilah sisi jika di halaman login
   if (pathname === "/login") return null
 
   return (
