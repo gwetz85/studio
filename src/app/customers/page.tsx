@@ -23,11 +23,12 @@ export default function CustomersPage() {
 
   const customers = useLiveQuery(() => {
     if (!search) return db.customers.toArray();
+    const s = search.toLowerCase();
     return db.customers
       .filter(c => 
-        c.name.toLowerCase().includes(search.toLowerCase()) || 
-        c.email.toLowerCase().includes(search.toLowerCase()) ||
-        c.phone.includes(search)
+        (c.name?.toLowerCase().includes(s) || false) || 
+        (c.email?.toLowerCase().includes(s) || false) ||
+        (c.phone?.includes(s) || false)
       )
       .toArray();
   }, [search]);
@@ -177,7 +178,7 @@ export default function CustomersPage() {
                     <TableCell className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                          {customer.name.charAt(0).toUpperCase()}
+                          {customer.name?.charAt(0).toUpperCase() || '?'}
                         </div>
                         <div className="flex flex-col">
                           <span className="font-semibold text-slate-900">{customer.name}</span>

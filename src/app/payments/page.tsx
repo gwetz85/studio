@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { generatePaymentReminder } from "@/ai/flows/generate-payment-reminder"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
-import { format } from "date-fns"
+import { format, isValid } from "date-fns"
 import { id as localeId } from "date-fns/locale"
 
 export default function PaymentsPage() {
@@ -107,7 +107,7 @@ export default function PaymentsPage() {
     document.body.innerHTML = printContents;
     window.print();
     document.body.innerHTML = originalContents;
-    window.location.reload(); // Re-initialize app state after print
+    window.location.reload(); 
   };
 
   const copyToClipboard = () => {
@@ -125,19 +125,27 @@ export default function PaymentsPage() {
     }).format(amount).replace('Rp', '').trim();
   };
 
-  // Receipt Helper Data
   const receiptData = React.useMemo(() => {
     if (!activePayment || !customers || !packages) return null;
     const customer = customers.find(c => c.id === activePayment.customerId);
     const pkg = packages.find(p => p.id === customer?.packageId);
     if (!customer || !pkg) return null;
 
-    const dateStr = activePayment.paymentDate 
-      ? format(activePayment.paymentDate, "yyyy-MM-dd HH:mm:ss")
-      : format(new Date(), "yyyy-MM-dd HH:mm:ss");
+    const paymentDate = activePayment.paymentDate ? new Date(activePayment.paymentDate) : new Date();
+    const dateStr = isValid(paymentDate) ? format(paymentDate, "yyyy-MM-dd HH:mm:ss") : "-";
 
-    const [year, month] = activePayment.billingPeriod.split('-');
-    const monthName = format(new Date(parseInt(year), parseInt(month) - 1), "MMMM yyyy", { locale: localeId });
+    const parts = activePayment.billingPeriod.split('-');
+    let monthName = activePayment.billingPeriod;
+    if (parts.length === 2) {
+      const year = parseInt(parts[0]);
+      const month = parseInt(parts[1]);
+      if (!isNaN(year) && !isNaN(month)) {
+        const billingDate = new Date(year, month - 1);
+        if (isValid(billingDate)) {
+          monthName = format(billingDate, "MMMM yyyy", { locale: localeId });
+        }
+      }
+    }
 
     return {
       customer,
@@ -312,7 +320,6 @@ export default function PaymentsPage() {
         </ScrollArea>
       </Card>
 
-      {/* Dialog Pengingat AI */}
       <Dialog open={reminderDialogOpen} onOpenChange={setReminderDialogOpen}>
         <DialogContent className="sm:max-w-md p-0 overflow-hidden border-none shadow-2xl">
           <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
@@ -349,7 +356,6 @@ export default function PaymentsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog Kwitansi (Receipt) */}
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
         <DialogContent className="max-w-[800px] p-0 border-none shadow-2xl bg-white overflow-hidden">
           <div className="p-4 bg-slate-50 border-b flex justify-between items-center no-print">
@@ -364,13 +370,11 @@ export default function PaymentsPage() {
             <div id="receipt-content" className="p-12 font-mono text-slate-800 bg-white">
               {receiptData && (
                 <div className="max-w-3xl mx-auto space-y-8">
-                  {/* Header */}
                   <div className="flex flex-col items-end">
                     <h1 className="text-4xl font-bold tracking-widest border-b-2 border-slate-900 pb-1">KWITANSI</h1>
                     <p className="text-xs mt-1">PEMBAYARAN TAGIHAN INTERNET</p>
                   </div>
 
-                  {/* Info Grid */}
                   <div className="grid grid-cols-2 gap-x-12 pt-4 pb-4 border-t border-dotted border-slate-300">
                     <div className="space-y-1">
                       <div className="flex gap-4">
@@ -408,7 +412,6 @@ export default function PaymentsPage() {
                     </div>
                   </div>
 
-                  {/* Main Item */}
                   <div className="py-4 border-y border-dotted border-slate-300 flex justify-between items-center">
                     <div className="flex-1">
                       {receiptData.custNo} - {receiptData.pkg.speed} {receiptData.pkg.name} - {receiptData.monthName}
@@ -419,7 +422,6 @@ export default function PaymentsPage() {
                     </div>
                   </div>
 
-                  {/* Summary */}
                   <div className="flex justify-end pt-4">
                     <div className="w-72 space-y-1">
                       <div className="flex justify-between">
