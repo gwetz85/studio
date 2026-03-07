@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -5,9 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { db } from "@/lib/db"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
+import { useLiveQuery } from "dexie-react-hooks"
 import { 
   Download, 
   Upload, 
@@ -19,7 +23,9 @@ import {
   Database,
   User,
   LogOut,
-  History
+  History,
+  Users,
+  Search
 } from "lucide-react"
 import {
   AlertDialog,
@@ -40,6 +46,17 @@ export default function SettingsPage() {
   const { logout, role, isLoading: authLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [lastAutoBackupTime, setLastAutoBackupTime] = React.useState<string | null>(null);
+  const [customerSearch, setCustomerSearch] = React.useState("");
+
+  // Fetch customers for individual deletion
+  const customers = useLiveQuery(() => {
+    if (!customerSearch) return db.customers.toArray();
+    const s = customerSearch.toLowerCase();
+    return db.customers.filter(c => 
+      c.name.toLowerCase().includes(s) || 
+      c.phone.includes(s)
+    ).toArray();
+  }, [customerSearch]);
 
   // Handle Theme Init and Auto Backup Info
   React.useEffect(() => {
@@ -62,7 +79,6 @@ export default function SettingsPage() {
     }
   }, []);
 
-  // Guard: Check auth status and role AFTER all hooks are defined
   if (authLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -92,14 +108,14 @@ export default function SettingsPage() {
 
   const handleBackup = async () => {
     try {
-      const customers = await db.customers.toArray();
-      const packages = await db.packages.toArray();
-      const payments = await db.payments.toArray();
+      const customersData = await db.customers.toArray();
+      const packagesData = await db.packages.toArray();
+      const paymentsData = await db.payments.toArray();
       
       const backupData = {
         version: "1.0.0",
         timestamp: Date.now(),
-        data: { customers, packages, payments }
+        data: { customers: customersData, packages: packagesData, payments: paymentsData }
       };
 
       const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
@@ -181,6 +197,17 @@ export default function SettingsPage() {
       window.location.reload();
     } catch (error) {
       toast({ variant: "destructive", title: "Gagal", description: "Tidak dapat menghapus data." });
+    }
+  };
+
+  const deleteIndividualCustomer = async (id: number) => {
+    if (confirm("Hapus pelanggan ini secara permanen dari database?")) {
+      try {
+        await db.customers.delete(id);
+        toast({ title: "Pelanggan dihapus" });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Gagal menghapus", description: "Terjadi kesalahan pada database." });
+      }
     }
   };
 
@@ -270,6 +297,56 @@ export default function SettingsPage() {
               >
                 Restore Terakhir
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* New Individual Customer Deletion Section */}
+        <Card className="border-none shadow-sm">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-rose-500" />
+              <CardTitle>Hapus User (Pelanggan)</CardTitle>
+            </div>
+            <CardDescription>Cari dan hapus data pelanggan/user secara individu dari database.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input 
+                placeholder="Cari nama atau nomor telepon..." 
+                className="pl-10 h-10"
+                value={customerSearch}
+                onChange={(e) => setCustomerSearch(e.target.value)}
+              />
+            </div>
+            <div className="border rounded-xl overflow-hidden bg-white">
+              <ScrollArea className="h-[250px]">
+                <div className="divide-y">
+                  {customers?.map((customer) => (
+                    <div key={customer.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+                      <div className="space-y-1">
+                        <p className="font-semibold text-sm text-slate-900">{customer.name}</p>
+                        <p className="text-xs text-slate-500">{customer.phone} • {customer.email}</p>
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 h-9 w-9"
+                        onClick={() => customer.id && deleteIndividualCustomer(customer.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {customers && customers.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                      <Users className="h-8 w-8 opacity-20 mb-2" />
+                      <p className="text-sm">Tidak ada pelanggan ditemukan.</p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
             </div>
           </CardContent>
         </Card>
