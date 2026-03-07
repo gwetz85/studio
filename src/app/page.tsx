@@ -2,24 +2,40 @@
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Package, CreditCard, AlertCircle, CheckCircle2 } from "lucide-react"
+import { Users, Package, CreditCard, AlertCircle, CheckCircle2, ShieldAlert } from "lucide-react"
 import { db } from "@/lib/db"
 import { useLiveQuery } from "dexie-react-hooks"
+import { Badge } from "@/components/ui/badge"
 
 export default function Dashboard() {
+  const currentPeriod = new Date().toISOString().slice(0, 7);
+  const currentDay = new Date().getDate();
+
   const stats = useLiveQuery(async () => {
     const customerCount = await db.customers.count();
     const packageCount = await db.packages.count();
     const pendingPayments = await db.payments.where('status').equals('pending').count();
-    const overduePayments = await db.payments.where('status').equals('overdue').count();
+    
+    // Hitung Terisolir (Setelah tgl 9)
+    let isolatedCount = 0;
+    if (currentDay > 9) {
+      const activeCustomers = await db.customers.where('status').equals('active').toArray();
+      const currentPaidPayments = await db.payments
+        .where('billingPeriod').equals(currentPeriod)
+        .and(p => p.status === 'paid')
+        .toArray();
+      
+      const paidCustomerIds = new Set(currentPaidPayments.map(p => p.customerId));
+      isolatedCount = activeCustomers.filter(c => !paidCustomerIds.has(c.id!)).length;
+    }
     
     return {
       customers: customerCount,
       packages: packageCount,
       pending: pendingPayments,
-      overdue: overduePayments,
+      isolated: isolatedCount,
     }
-  }, []);
+  }, [currentDay, currentPeriod]);
 
   if (!stats) return (
     <div className="flex items-center justify-center min-h-[400px]">
@@ -50,9 +66,9 @@ export default function Dashboard() {
       bg: "bg-amber-50",
     },
     {
-      title: "Peringatan Terlambat",
-      value: stats.overdue,
-      icon: AlertCircle,
+      title: "Pelanggan Terisolir",
+      value: stats.isolated,
+      icon: ShieldAlert,
       color: "text-rose-600",
       bg: "bg-rose-50",
     },
@@ -84,28 +100,23 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         <Card className="border-none shadow-sm overflow-hidden">
           <CardHeader className="bg-white/50 border-b border-slate-100">
-            <CardTitle className="text-lg">Panduan Cepat</CardTitle>
+            <CardTitle className="text-lg">Aturan Masa Aktif</CardTitle>
           </CardHeader>
           <CardContent className="p-6 space-y-4">
-            <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 transition-colors hover:bg-slate-100/50">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">1</div>
+            <div className="flex gap-4 p-4 rounded-xl bg-rose-50 border border-rose-100 transition-colors">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-rose-600 shadow-sm font-bold">9</div>
               <div>
-                <h3 className="font-semibold text-slate-900">Atur Paket Layanan</h3>
-                <p className="text-sm text-slate-500">Tentukan kecepatan dan harga bulanan untuk pelanggan Anda.</p>
+                <h3 className="font-semibold text-rose-900">Batas Tanggal Pembayaran</h3>
+                <p className="text-sm text-rose-700">Seluruh paket berakhir setiap tanggal 9. Pelanggan yang belum membayar setelah tanggal ini akan otomatis masuk daftar terisolir.</p>
               </div>
             </div>
-            <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 transition-colors hover:bg-slate-100/50">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">2</div>
+            <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">!</div>
               <div>
-                <h3 className="font-semibold text-slate-900">Daftarkan Pelanggan</h3>
-                <p className="text-sm text-slate-500">Masukkan data pelanggan dan pilih paket internet yang mereka gunakan.</p>
-              </div>
-            </div>
-            <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 transition-colors hover:bg-slate-100/50">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">3</div>
-              <div>
-                <h3 className="font-semibold text-slate-900">Kelola Tagihan</h3>
-                <p className="text-sm text-slate-500">Pantau status pembayaran dan gunakan AI untuk mengirim pengingat.</p>
+                <h3 className="font-semibold text-slate-900">Status Saat Ini</h3>
+                <p className="text-sm text-slate-500">
+                  Hari ini tanggal <strong>{currentDay}</strong>. {currentDay > 9 ? "Masa isolasi sedang berlangsung." : "Masih dalam masa tenggang pembayaran."}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -127,19 +138,13 @@ export default function Dashboard() {
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/30 text-center">
-                  <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">Teknologi</p>
-                  <p className="font-bold text-slate-900">IndexedDB</p>
+                  <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">Periode</p>
+                  <p className="font-bold text-slate-900">{currentPeriod}</p>
                 </div>
                 <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/30 text-center">
                   <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">Mode</p>
-                  <p className="font-bold text-slate-900">Offline-First</p>
+                  <p className="font-bold text-slate-900">Penyaringan 9/Blm</p>
                 </div>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100">
-                <p className="text-xs text-slate-400 text-center">
-                  Seluruh data tersimpan secara aman di dalam browser Anda. Tidak diperlukan koneksi internet untuk manajemen dasar.
-                </p>
               </div>
             </div>
           </CardContent>
@@ -148,5 +153,3 @@ export default function Dashboard() {
     </div>
   )
 }
-
-import { Badge } from "@/components/ui/badge"
