@@ -120,7 +120,9 @@ export default function CustomersPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {packages?.map(pkg => (
-                        <SelectItem key={pkg.id} value={pkg.id!.toString()}>{pkg.name} (${pkg.price})</SelectItem>
+                        <SelectItem key={pkg.id} value={pkg.id!.toString()}>
+                          {pkg.name} (Rp {pkg.price.toLocaleString('id-ID')})
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
