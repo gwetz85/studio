@@ -19,12 +19,12 @@ export default function RootLayout({
 
   const isLoginPage = pathname === "/login";
 
-  // Auto Backup Logic: Every 10 minutes
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    const performAutoBackup = async () => {
+    const performMaintenanceTasks = async () => {
       try {
+        // 1. AUTO BACKUP LOGIC
         const customers = await db.customers.toArray();
         const packages = await db.packages.toArray();
         const payments = await db.payments.toArray();
@@ -38,20 +38,42 @@ export default function RootLayout({
         localStorage.setItem("mtnet_auto_backup", JSON.stringify(backupData));
         localStorage.setItem("mtnet_last_backup_time", backupData.timestamp.toString());
         
+        // 2. AUTO CLEANUP LOGIC (Non-Aktif > 7 Days)
+        const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        
+        const inactiveToDelete = customers.filter(c => 
+          c.status === 'inactive' && 
+          c.deactivationDate && 
+          (now - c.deactivationDate > sevenDaysMs)
+        );
+
+        if (inactiveToDelete.length > 0) {
+          await db.transaction('rw', db.customers, db.payments, async () => {
+            for (const customer of inactiveToDelete) {
+              if (customer.id) {
+                await db.customers.delete(customer.id);
+                await db.payments.where('customerId').equals(customer.id).delete();
+              }
+            }
+          });
+          console.log(`Auto Cleanup: ${inactiveToDelete.length} pelanggan Non-Aktif dihapus.`);
+        }
+
         // Dispatch custom event to update sidebar UI
         window.dispatchEvent(new Event('mtnet-backup-updated'));
         
-        console.log("Auto Backup performed at:", new Date().toLocaleTimeString());
+        console.log("Maintenance performed at:", new Date().toLocaleTimeString());
       } catch (error) {
-        console.error("Auto Backup failed:", error);
+        console.error("Maintenance tasks failed:", error);
       }
     };
 
     // Run once on load
-    performAutoBackup();
+    performMaintenanceTasks();
 
     // Set interval for 10 minutes (600,000 ms)
-    const interval = setInterval(performAutoBackup, 10 * 60 * 1000);
+    const interval = setInterval(performMaintenanceTasks, 10 * 60 * 1000);
     
     return () => clearInterval(interval);
   }, [isLoggedIn]);

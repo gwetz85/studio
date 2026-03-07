@@ -15,8 +15,9 @@ export interface Customer {
   phone: string;
   email: string;
   packageId: number;
-  status: 'active' | 'inactive' | 'psb';
+  status: 'active' | 'passive' | 'inactive';
   createdAt: number;
+  deactivationDate?: number; // Tanggal saat status berubah menjadi Non-Aktif
 }
 
 export interface PSBRequest {
@@ -47,8 +48,8 @@ export class NetInvoiceDB extends Dexie {
 
   constructor() {
     super('MTNETBillingDB');
-    this.version(2).stores({
-      customers: '++id, name, email, packageId, status',
+    this.version(3).stores({
+      customers: '++id, name, email, packageId, status, deactivationDate',
       packages: '++id, name',
       payments: '++id, customerId, billingPeriod, status',
       psb: '++id, name, email, packageId, status'

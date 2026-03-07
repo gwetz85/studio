@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -49,14 +48,25 @@ export default function CustomersPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const newStatus = formData.get("status") as 'active' | 'passive' | 'inactive';
+    
+    // Logika deactivationDate: set jika status berubah menjadi Non-Aktif
+    let deactivationDate = editingCustomer?.deactivationDate;
+    if (newStatus === 'inactive' && editingCustomer?.status !== 'inactive') {
+      deactivationDate = Date.now();
+    } else if (newStatus !== 'inactive') {
+      deactivationDate = undefined;
+    }
+
     const data: Customer = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       address: formData.get("address") as string,
       packageId: Number(formData.get("packageId")),
-      status: formData.get("status") as 'active' | 'inactive',
+      status: newStatus,
       createdAt: editingCustomer?.createdAt || Date.now(),
+      deactivationDate: deactivationDate
     };
 
     try {
@@ -75,9 +85,12 @@ export default function CustomersPage() {
   };
 
   const deleteCustomer = async (id: number) => {
-    if (confirm("Hapus pelanggan ini secara permanen? Catatan pembayaran terkait mungkin tetap ada.")) {
+    if (confirm("Hapus pelanggan ini secara permanen? Seluruh riwayat tagihan akan ikut terhapus.")) {
       try {
-        await db.customers.delete(id);
+        await db.transaction('rw', db.customers, db.payments, async () => {
+          await db.customers.delete(id);
+          await db.payments.where('customerId').equals(id).delete();
+        });
         toast({ title: "Pelanggan dihapus" });
       } catch (error) {
         toast({ variant: "destructive", title: "Gagal menghapus", description: "Terjadi kesalahan pada database." });
@@ -94,7 +107,7 @@ export default function CustomersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Daftar Pelanggan</h1>
-          <p className="text-slate-500">Kelola data pelanggan dan langganan mereka.</p>
+          <p className="text-slate-500">Kelola data pelanggan dan status layanan mereka.</p>
         </div>
         <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
           <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
@@ -143,18 +156,24 @@ export default function CustomersPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status Langganan</Label>
+                <Label htmlFor="status">Status Layanan</Label>
                 <Select name="status" defaultValue={editingCustomer?.status || "active"}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">Aktif</SelectItem>
-                    <SelectItem value="inactive">Nonaktif</SelectItem>
+                    <SelectItem value="passive">Pasif</SelectItem>
+                    <SelectItem value="inactive">Non-Aktif</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+            {editingCustomer?.status === 'inactive' && editingCustomer.deactivationDate && (
+              <p className="text-[10px] text-rose-500 italic">
+                * Pelanggan ini akan dihapus otomatis pada tanggal {new Date(editingCustomer.deactivationDate + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID')}.
+              </p>
+            )}
             <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
               <Button type="submit" className="bg-primary hover:bg-primary/90">
@@ -209,9 +228,14 @@ export default function CustomersPage() {
                     </TableCell>
                     <TableCell>
                       <Badge 
-                        className={customer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600 border-slate-200'}
+                        className={
+                          customer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100' : 
+                          customer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100' :
+                          'bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100'
+                        }
                       >
-                        {customer.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                        {customer.status === 'active' ? 'Aktif' : 
+                         customer.status === 'passive' ? 'Pasif' : 'Non-Aktif'}
                       </Badge>
                     </TableCell>
                     <TableCell>
