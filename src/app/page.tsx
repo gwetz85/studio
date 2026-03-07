@@ -57,7 +57,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Dasbor</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Informasi</h1>
         <p className="text-muted-foreground">Selamat datang di NetInvoice Luring. Berikut adalah ringkasan layanan internet Anda.</p>
       </div>
 

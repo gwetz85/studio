@@ -20,7 +20,7 @@ import {
 
 const items = [
   {
-    title: "Dasbor",
+    title: "Informasi",
     url: "/",
     icon: LayoutDashboard,
   },
