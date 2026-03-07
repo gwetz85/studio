@@ -73,9 +73,9 @@
   .dark {
     --background: 222 47% 4%; /* Sangat Gelap */
     --foreground: 210 40% 98%; /* Putih Terang */
-    --card: 222 47% 4%;
+    --card: 222 47% 6%;
     --card-foreground: 210 40% 98%;
-    --popover: 222 47% 4%;
+    --popover: 222 47% 6%;
     --popover-foreground: 210 40% 98%;
     --primary: 210 72% 50%;
     --primary-foreground: 0 0% 100%;

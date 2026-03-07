@@ -124,8 +124,8 @@ export default function CustomersPage() {
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Daftar Pelanggan</h1>
-          <p className="text-slate-500">Kelola data pelanggan Aktif dan Pasif.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Daftar Pelanggan</h1>
+          <p className="text-slate-500 dark:text-slate-400">Kelola data pelanggan Aktif dan Pasif.</p>
         </div>
         <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
           <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
@@ -133,9 +133,9 @@ export default function CustomersPage() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl">
-          <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
-            <DialogTitle className="text-xl flex items-center gap-2">
+        <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900">
+          <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
+            <DialogTitle className="text-xl flex items-center gap-2 dark:text-white">
               <User className="h-5 w-5 text-primary" />
               {editingCustomer ? "Edit Profil Pelanggan" : "Registrasi Pelanggan Baru"}
             </DialogTitle>
@@ -143,29 +143,29 @@ export default function CustomersPage() {
           <form key={editingCustomer?.id || "new"} onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="name">Nama Lengkap</Label>
-                <Input id="name" name="name" defaultValue={editingCustomer?.name} placeholder="Contoh: Budi Santoso" required />
+                <Label htmlFor="name" className="dark:text-slate-200">Nama Lengkap</Label>
+                <Input id="name" name="name" defaultValue={editingCustomer?.name} placeholder="Contoh: Budi Santoso" required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Alamat Email</Label>
-                <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} placeholder="budi@email.com" required />
+                <Label htmlFor="email" className="dark:text-slate-200">Alamat Email</Label>
+                <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} placeholder="budi@email.com" required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Nomor Telepon / WA</Label>
-                <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} placeholder="0812..." required />
+                <Label htmlFor="phone" className="dark:text-slate-200">Nomor Telepon / WA</Label>
+                <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} placeholder="0812..." required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="modemSnMac">SN / MAC Modem</Label>
-                <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} placeholder="Contoh: SN123456789 / MAC: 00:AA:BB..." />
+                <Label htmlFor="modemSnMac" className="dark:text-slate-200">SN / MAC Modem</Label>
+                <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} placeholder="Contoh: SN123456789 / MAC: 00:AA:BB..." className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="address">Alamat Lengkap</Label>
-                <Input id="address" name="address" defaultValue={editingCustomer?.address} placeholder="Jl. Merdeka No. 10..." required />
+                <Label htmlFor="address" className="dark:text-slate-200">Alamat Lengkap</Label>
+                <Input id="address" name="address" defaultValue={editingCustomer?.address} placeholder="Jl. Merdeka No. 10..." required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="packageId">Pilih Paket Internet</Label>
+                <Label htmlFor="packageId" className="dark:text-slate-200">Pilih Paket Internet</Label>
                 <Select name="packageId" defaultValue={editingCustomer?.packageId?.toString()}>
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-slate-800 dark:text-white dark:border-slate-700">
                     <SelectValue placeholder="Pilih paket" />
                   </SelectTrigger>
                   <SelectContent>
@@ -178,9 +178,9 @@ export default function CustomersPage() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status Layanan</Label>
+                <Label htmlFor="status" className="dark:text-slate-200">Status Layanan</Label>
                 <Select name="status" defaultValue={editingCustomer?.status || "active"}>
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-slate-800 dark:text-white dark:border-slate-700">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -192,7 +192,7 @@ export default function CustomersPage() {
               </div>
             </div>
             <DialogFooter className="pt-4">
-              <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+              <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="dark:text-slate-400">Batal</Button>
               <Button type="submit" className="bg-primary hover:bg-primary/90">
                 {editingCustomer ? "Simpan Perubahan" : "Daftarkan Sekarang"}
               </Button>
@@ -202,7 +202,7 @@ export default function CustomersPage() {
       </Dialog>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-3xl p-0 overflow-hidden border-none shadow-2xl">
+        <DialogContent className="max-w-3xl p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900">
           <DialogHeader className="p-6 bg-primary text-white">
             <DialogTitle className="text-xl flex items-center gap-2">
               <Eye className="h-5 w-5" />
@@ -215,28 +215,28 @@ export default function CustomersPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Informasi Pribadi</h3>
+                      <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Informasi Pribadi</h3>
                       <div className="space-y-4">
                         <div className="flex items-start gap-3">
                           <User className="h-4 w-4 text-primary mt-1" />
                           <div>
-                            <p className="text-sm font-semibold text-slate-900">{viewingCustomer.name}</p>
-                            <p className="text-xs text-slate-500">{viewingCustomer.email}</p>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{viewingCustomer.name}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{viewingCustomer.email}</p>
                           </div>
                         </div>
                         <div className="flex items-start gap-3">
                           <Phone className="h-4 w-4 text-primary mt-1" />
-                          <p className="text-sm text-slate-600">{viewingCustomer.phone}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300">{viewingCustomer.phone}</p>
                         </div>
                         <div className="flex items-start gap-3">
                           <MapPin className="h-4 w-4 text-primary mt-1" />
-                          <p className="text-sm text-slate-600 leading-relaxed">{viewingCustomer.address}</p>
+                          <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{viewingCustomer.address}</p>
                         </div>
                         <div className="flex items-start gap-3">
                           <Cpu className="h-4 w-4 text-primary mt-1" />
                           <div>
-                            <p className="text-xs text-slate-400 font-bold uppercase tracking-tighter">SN / MAC Modem</p>
-                            <p className="text-sm text-slate-600">{viewingCustomer.modemSnMac || "Tidak ada data"}</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">SN / MAC Modem</p>
+                            <p className="text-sm text-slate-600 dark:text-slate-300">{viewingCustomer.modemSnMac || "Tidak ada data"}</p>
                           </div>
                         </div>
                       </div>
@@ -245,14 +245,14 @@ export default function CustomersPage() {
 
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Status Layanan</h3>
+                      <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Status Layanan</h3>
                       <div className="space-y-4">
                         <div className="flex items-center gap-3">
                           <Badge 
                             className={
-                              viewingCustomer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
-                              viewingCustomer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                              'bg-rose-50 text-rose-700 border-rose-100'
+                              viewingCustomer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800' : 
+                              viewingCustomer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' :
+                              'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
                             }
                           >
                             {viewingCustomer.status === 'active' ? 'Aktif' : 
@@ -262,8 +262,8 @@ export default function CustomersPage() {
                             {getPackageName(viewingCustomer.packageId)}
                           </Badge>
                         </div>
-                        <div className="flex items-center gap-3 text-sm text-slate-600">
-                          <Calendar className="h-4 w-4 text-sidebar-foreground/40" />
+                        <div className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-400">
+                          <Calendar className="h-4 w-4" />
                           <span>Terdaftar: {new Date(viewingCustomer.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                         </div>
                       </div>
@@ -271,43 +271,43 @@ export default function CustomersPage() {
                   </div>
                 </div>
 
-                <Separator className="bg-slate-100" />
+                <Separator className="bg-slate-100 dark:bg-slate-800" />
 
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-2">
                       <Receipt className="h-4 w-4" /> Riwayat Pembayaran Lunas
                     </h3>
-                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
+                    <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
                       {customerPayments?.length || 0} Transaksi
                     </Badge>
                   </div>
                   
-                  <div className="rounded-xl border border-slate-100 overflow-hidden">
+                  <div className="rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
                     <Table>
-                      <TableHeader className="bg-slate-50/50">
+                      <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
                         <TableRow>
-                          <TableHead className="text-xs">Periode</TableHead>
-                          <TableHead className="text-xs">Tanggal Bayar</TableHead>
-                          <TableHead className="text-xs text-right">Jumlah</TableHead>
+                          <TableHead className="text-xs dark:text-slate-400">Periode</TableHead>
+                          <TableHead className="text-xs dark:text-slate-400">Tanggal Bayar</TableHead>
+                          <TableHead className="text-xs text-right dark:text-slate-400">Jumlah</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {customerPayments && customerPayments.length > 0 ? (
                           customerPayments.map((p) => (
-                            <TableRow key={p.id}>
-                              <TableCell className="text-sm font-medium">{p.billingPeriod}</TableCell>
-                              <TableCell className="text-sm text-slate-500">
+                            <TableRow key={p.id} className="dark:border-slate-800">
+                              <TableCell className="text-sm font-medium dark:text-white">{p.billingPeriod}</TableCell>
+                              <TableCell className="text-sm text-slate-500 dark:text-slate-400">
                                 {p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('id-ID') : '-'}
                               </TableCell>
-                              <TableCell className="text-sm font-mono text-right font-semibold text-emerald-600">
+                              <TableCell className="text-sm font-mono text-right font-semibold text-emerald-600 dark:text-emerald-400">
                                 Rp {p.amount.toLocaleString('id-ID')}
                               </TableCell>
                             </TableRow>
                           ))
                         ) : (
                           <TableRow>
-                            <TableCell colSpan={3} className="text-center py-8 text-slate-400 text-xs italic">
+                            <TableCell colSpan={3} className="text-center py-8 text-slate-400 dark:text-slate-600 text-xs italic">
                               Belum ada catatan pembayaran lunas.
                             </TableCell>
                           </TableRow>
@@ -319,60 +319,60 @@ export default function CustomersPage() {
               </div>
             )}
           </div>
-          <DialogFooter className="p-6 bg-slate-50 border-t border-slate-100">
-            <Button variant="outline" onClick={() => setIsPreviewOpen(false)}>Tutup</Button>
+          <DialogFooter className="p-6 bg-slate-50 dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
+            <Button variant="outline" onClick={() => setIsPreviewOpen(false)} className="dark:border-slate-700 dark:text-slate-300">Tutup</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <div className="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+      <div className="flex items-center gap-4 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
         <Search className="h-4 w-4 text-slate-400 ml-3" />
         <Input 
           placeholder="Cari berdasarkan nama, email, SN Modem, atau telepon..." 
-          className="border-none shadow-none focus-visible:ring-0 text-slate-600 bg-transparent" 
+          className="border-none shadow-none focus-visible:ring-0 text-slate-600 dark:text-slate-300 bg-transparent" 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      <Card className="border-none shadow-sm overflow-hidden">
+      <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
         <ScrollArea className="w-full">
           <CardContent className="p-0">
             <Table>
-              <TableHeader className="bg-slate-50/50">
+              <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
                 <TableRow>
-                  <TableHead className="py-4 px-6">Identitas Pelanggan</TableHead>
-                  <TableHead>Paket</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Kontak & Modem</TableHead>
-                  <TableHead className="text-right px-6">Aksi</TableHead>
+                  <TableHead className="py-4 px-6 dark:text-slate-400">Identitas Pelanggan</TableHead>
+                  <TableHead className="dark:text-slate-400">Paket</TableHead>
+                  <TableHead className="dark:text-slate-400">Status</TableHead>
+                  <TableHead className="dark:text-slate-400">Kontak & Modem</TableHead>
+                  <TableHead className="text-right px-6 dark:text-slate-400">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {customers?.map((customer) => (
-                  <TableRow key={customer.id} className="hover:bg-slate-50/50 transition-colors">
+                  <TableRow key={customer.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors dark:border-slate-800">
                     <TableCell className="py-4 px-6">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                           {customer.name?.charAt(0).toUpperCase() || '?'}
                         </div>
                         <div className="flex flex-col">
-                          <span className="font-semibold text-slate-900">{customer.name}</span>
-                          <span className="text-xs text-slate-500">{customer.email}</span>
+                          <span className="font-semibold text-slate-900 dark:text-white">{customer.name}</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">{customer.email}</span>
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600">
+                      <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                         {getPackageName(customer.packageId)}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge 
                         className={
-                          customer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
-                          customer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                          'bg-rose-50 text-rose-700 border-rose-100'
+                          customer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400' : 
+                          customer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400' :
+                          'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400'
                         }
                       >
                         {customer.status === 'active' ? 'Aktif' : 
@@ -380,7 +380,7 @@ export default function CustomersPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1 text-sm text-slate-600">
+                      <div className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
                         <div className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {customer.phone}</div>
                         <div className="flex items-center gap-1.5 text-xs text-primary font-mono"><Cpu className="h-3 w-3" /> {customer.modemSnMac || "-"}</div>
                       </div>
@@ -391,7 +391,7 @@ export default function CustomersPage() {
                           type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-slate-600 hover:text-primary" 
+                          className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-primary" 
                           title="Pratinjau Data"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -404,7 +404,7 @@ export default function CustomersPage() {
                           type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-slate-600 hover:text-primary" 
+                          className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-primary" 
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenEditDialog(customer);
@@ -416,7 +416,7 @@ export default function CustomersPage() {
                           type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-slate-600 hover:text-rose-600" 
+                          className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-rose-600" 
                           onClick={(e) => {
                             e.stopPropagation();
                             if (customer.id) deleteCustomer(customer.id);

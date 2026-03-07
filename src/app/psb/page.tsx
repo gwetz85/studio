@@ -103,8 +103,8 @@ export default function PSBPage() {
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Pasang Sambungan Baru (PSB)</h1>
-          <p className="text-slate-500">Kelola permintaan pemasangan internet baru.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Pasang Sambungan Baru (PSB)</h1>
+          <p className="text-slate-500 dark:text-slate-400">Kelola permintaan pemasangan internet baru.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -112,9 +112,9 @@ export default function PSBPage() {
               <Plus className="mr-2 h-4 w-4" /> Input PSB Baru
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl">
-            <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
-              <DialogTitle className="text-xl flex items-center gap-2">
+          <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900">
+            <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
+              <DialogTitle className="text-xl flex items-center gap-2 dark:text-white">
                 <UserPlus className="h-5 w-5 text-primary" />
                 {editingPSB ? "Edit Permintaan PSB" : "Input Permintaan PSB"}
               </DialogTitle>
@@ -122,29 +122,29 @@ export default function PSBPage() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="name">Nama Calon Pelanggan</Label>
-                  <Input id="name" name="name" defaultValue={editingPSB?.name} placeholder="Nama Lengkap" required />
+                  <Label htmlFor="name" className="dark:text-slate-200">Nama Calon Pelanggan</Label>
+                  <Input id="name" name="name" defaultValue={editingPSB?.name} placeholder="Nama Lengkap" required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input id="email" name="email" type="email" defaultValue={editingPSB?.email} placeholder="email@contoh.com" required />
+                  <Label htmlFor="email" className="dark:text-slate-200">Email</Label>
+                  <Input id="email" name="email" type="email" defaultValue={editingPSB?.email} placeholder="email@contoh.com" required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Nomor Telepon</Label>
-                  <Input id="phone" name="phone" defaultValue={editingPSB?.phone} placeholder="0812..." required />
+                  <Label htmlFor="phone" className="dark:text-slate-200">Nomor Telepon</Label>
+                  <Input id="phone" name="phone" defaultValue={editingPSB?.phone} placeholder="0812..." required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="modemSnMac">SN / MAC Modem</Label>
-                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingPSB?.modemSnMac} placeholder="SN Modem / Alamat MAC" />
+                  <Label htmlFor="modemSnMac" className="dark:text-slate-200">SN / MAC Modem</Label>
+                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingPSB?.modemSnMac} placeholder="SN Modem / Alamat MAC" className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">Alamat Pemasangan</Label>
-                  <Input id="address" name="address" defaultValue={editingPSB?.address} placeholder="Alamat lengkap..." required />
+                  <Label htmlFor="address" className="dark:text-slate-200">Alamat Pemasangan</Label>
+                  <Input id="address" name="address" defaultValue={editingPSB?.address} placeholder="Alamat lengkap..." required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="packageId">Paket Yang Diminta</Label>
+                  <Label htmlFor="packageId" className="dark:text-slate-200">Paket Yang Diminta</Label>
                   <Select name="packageId" defaultValue={editingPSB?.packageId?.toString()}>
-                    <SelectTrigger>
+                    <SelectTrigger className="dark:bg-slate-800 dark:text-white dark:border-slate-700">
                       <SelectValue placeholder="Pilih paket" />
                     </SelectTrigger>
                     <SelectContent>
@@ -157,9 +157,9 @@ export default function PSBPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status PSB</Label>
+                  <Label htmlFor="status" className="dark:text-slate-200">Status PSB</Label>
                   <Select name="status" defaultValue={editingPSB?.status || "pasif"}>
-                    <SelectTrigger>
+                    <SelectTrigger className="dark:bg-slate-800 dark:text-white dark:border-slate-700">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -170,7 +170,7 @@ export default function PSBPage() {
                 </div>
               </div>
               <DialogFooter className="pt-4">
-                <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+                <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="dark:text-slate-400">Batal</Button>
                 <Button type="submit" className="bg-primary hover:bg-primary/90">
                   {editingPSB ? "Simpan Perubahan" : "Daftarkan PSB"}
                 </Button>
@@ -180,46 +180,46 @@ export default function PSBPage() {
         </Dialog>
       </div>
 
-      <div className="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
+      <div className="flex items-center gap-4 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
         <Search className="h-4 w-4 text-slate-400 ml-3" />
         <Input 
           placeholder="Cari berdasarkan nama, telepon, atau modem..." 
-          className="border-none shadow-none focus-visible:ring-0 text-slate-600 bg-transparent" 
+          className="border-none shadow-none focus-visible:ring-0 text-slate-600 dark:text-slate-300 bg-transparent" 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      <Card className="border-none shadow-sm overflow-hidden">
+      <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
         <ScrollArea className="w-full">
           <CardContent className="p-0">
             <Table>
-              <TableHeader className="bg-slate-50/50">
+              <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
                 <TableRow>
-                  <TableHead className="py-4 px-6">Calon Pelanggan</TableHead>
-                  <TableHead>Paket Diminta</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Modem & Alamat</TableHead>
-                  <TableHead className="text-right px-6">Aksi</TableHead>
+                  <TableHead className="py-4 px-6 dark:text-slate-400">Calon Pelanggan</TableHead>
+                  <TableHead className="dark:text-slate-400">Paket Diminta</TableHead>
+                  <TableHead className="dark:text-slate-400">Status</TableHead>
+                  <TableHead className="dark:text-slate-400">Modem & Alamat</TableHead>
+                  <TableHead className="text-right px-6 dark:text-slate-400">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {psbRequests?.map((request) => (
-                  <TableRow key={request.id} className="hover:bg-slate-50/50 transition-colors">
+                  <TableRow key={request.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors dark:border-slate-800">
                     <TableCell className="py-4 px-6">
-                      <div className="font-semibold text-slate-900">{request.name}</div>
-                      <div className="text-xs text-slate-500">{request.email}</div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{request.name}</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">{request.email}</div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600">
+                      <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                         {getPackageName(request.packageId)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className="bg-amber-50 text-amber-700 border-amber-100">PASIF</Badge>
+                      <Badge className="bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">PASIF</Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col gap-1 text-sm text-slate-600">
+                      <div className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
                         <div className="flex items-center gap-1.5 text-xs text-primary font-mono"><Cpu className="h-3 w-3" /> {request.modemSnMac || "-"}</div>
                         <div className="flex items-center gap-1.5 max-w-[200px] truncate"><MapPin className="h-3 w-3" /> {request.address}</div>
                       </div>
@@ -230,7 +230,7 @@ export default function PSBPage() {
                           type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-primary hover:bg-primary/10" 
+                          className="h-8 w-8 text-primary hover:bg-primary/10 dark:text-primary dark:hover:bg-primary/20" 
                           title="Edit & Aktivasi" 
                           onClick={(e) => {
                             e.stopPropagation();
@@ -244,7 +244,7 @@ export default function PSBPage() {
                           type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-rose-600" 
+                          className="h-8 w-8 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20" 
                           title="Hapus" 
                           onClick={(e) => {
                             e.stopPropagation();

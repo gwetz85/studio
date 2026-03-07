@@ -39,64 +39,64 @@ export default function IsolatedPage() {
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-rose-100 rounded-lg">
-            <ShieldAlert className="h-6 w-6 text-rose-600" />
+          <div className="p-2 bg-rose-100 dark:bg-rose-900/20 rounded-lg">
+            <ShieldAlert className="h-6 w-6 text-rose-600 dark:text-rose-400" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">User Terisolir</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">User Terisolir</h1>
         </div>
-        <p className="text-slate-500">
+        <p className="text-slate-500 dark:text-slate-400">
           Daftar pelanggan aktif yang belum melunasi tagihan periode <strong>{currentPeriod}</strong> setelah melewati batas tanggal 9.
         </p>
       </div>
 
       {!isAfterCutoff ? (
-        <Card className="border-amber-100 bg-amber-50/50">
+        <Card className="border-amber-100 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-900/30">
           <CardContent className="pt-6 text-center space-y-2">
             <Clock className="h-8 w-8 text-amber-500 mx-auto" />
-            <h3 className="font-semibold text-amber-900">Belum Memasuki Masa Isolasi</h3>
-            <p className="text-sm text-amber-700">
+            <h3 className="font-semibold text-amber-900 dark:text-amber-100">Belum Memasuki Masa Isolasi</h3>
+            <p className="text-sm text-amber-700 dark:text-amber-300">
               Isolasi otomatis akan aktif setelah tanggal 9 setiap bulannya. Saat ini tanggal {currentDay}.
             </p>
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-none shadow-sm overflow-hidden">
+        <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
           <ScrollArea className="w-full">
             <CardContent className="p-0">
               <Table>
-                <TableHeader className="bg-slate-50/50">
+                <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
                   <TableRow>
-                    <TableHead className="py-4 px-6">Pelanggan</TableHead>
-                    <TableHead>Paket</TableHead>
-                    <TableHead>Kontak</TableHead>
-                    <TableHead>Alamat</TableHead>
-                    <TableHead className="text-right px-6">Status Akses</TableHead>
+                    <TableHead className="py-4 px-6 dark:text-slate-400">Pelanggan</TableHead>
+                    <TableHead className="dark:text-slate-400">Paket</TableHead>
+                    <TableHead className="dark:text-slate-400">Kontak</TableHead>
+                    <TableHead className="dark:text-slate-400">Alamat</TableHead>
+                    <TableHead className="text-right px-6 dark:text-slate-400">Status Akses</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isolatedCustomers?.map((customer) => (
-                    <TableRow key={customer.id} className="hover:bg-rose-50/30 transition-colors">
+                    <TableRow key={customer.id} className="hover:bg-rose-50/30 dark:hover:bg-rose-900/10 transition-colors dark:border-slate-800">
                       <TableCell className="py-4 px-6">
-                        <div className="font-semibold text-slate-900">{customer.name}</div>
-                        <div className="text-xs text-slate-500">{customer.email}</div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{customer.name}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{customer.email}</div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className="bg-slate-100 text-slate-600">
+                        <Badge variant="secondary" className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                           {getPackageName(customer.packageId)}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1.5 text-sm text-slate-600">
+                        <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
                           <Phone className="h-3 w-3" /> {customer.phone}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1.5 text-sm text-slate-600 max-w-[200px] truncate">
+                        <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400 max-w-[200px] truncate">
                           <MapPin className="h-3 w-3" /> {customer.address}
                         </div>
                       </TableCell>
                       <TableCell className="text-right px-6">
-                        <Badge className="bg-rose-600 hover:bg-rose-700">TERISOLIR</Badge>
+                        <Badge className="bg-rose-600 hover:bg-rose-700 dark:bg-rose-700 dark:hover:bg-rose-600">TERISOLIR</Badge>
                       </TableCell>
                     </TableRow>
                   ))}

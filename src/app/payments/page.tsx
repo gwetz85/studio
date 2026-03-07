@@ -161,8 +161,8 @@ export default function PaymentsPage() {
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Tagihan & Pembayaran</h1>
-          <p className="text-slate-500">Monitor arus kas dan cetak kwitansi resmi untuk pelanggan.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Tagihan & Pembayaran</h1>
+          <p className="text-slate-500 dark:text-slate-400">Monitor arus kas dan cetak kwitansi resmi untuk pelanggan.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -170,17 +170,17 @@ export default function PaymentsPage() {
               <Plus className="mr-2 h-4 w-4" /> Buat Tagihan Baru
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
-            <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
-              <DialogTitle className="flex items-center gap-2">
+          <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900">
+            <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
+              <DialogTitle className="flex items-center gap-2 dark:text-white">
                 <Wallet className="h-5 w-5 text-primary" /> Terbitkan Invoice
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="customerId">Pilih Pelanggan</Label>
+                <Label htmlFor="customerId" className="dark:text-slate-200">Pilih Pelanggan</Label>
                 <Select name="customerId" required>
-                  <SelectTrigger>
+                  <SelectTrigger className="dark:bg-slate-800 dark:text-white dark:border-slate-700">
                     <SelectValue placeholder="Siapa yang ditagih?" />
                   </SelectTrigger>
                   <SelectContent>
@@ -192,13 +192,13 @@ export default function PaymentsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="billingPeriod">Periode Tagihan</Label>
-                  <Input id="billingPeriod" name="billingPeriod" placeholder="2024-01" required />
+                  <Label htmlFor="billingPeriod" className="dark:text-slate-200">Periode Tagihan</Label>
+                  <Input id="billingPeriod" name="billingPeriod" placeholder="2024-01" required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="status">Status Awal</Label>
+                  <Label htmlFor="status" className="dark:text-slate-200">Status Awal</Label>
                   <Select name="status" defaultValue="pending">
-                    <SelectTrigger>
+                    <SelectTrigger className="dark:bg-slate-800 dark:text-white dark:border-slate-700">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -217,39 +217,39 @@ export default function PaymentsPage() {
         </Dialog>
       </div>
 
-      <Card className="border-none shadow-sm overflow-hidden">
+      <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
         <ScrollArea className="w-full">
           <CardContent className="p-0">
             <Table>
-              <TableHeader className="bg-slate-50/50">
+              <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
                 <TableRow>
-                  <TableHead className="py-4 px-6">Pelanggan</TableHead>
-                  <TableHead>Periode</TableHead>
-                  <TableHead>Jumlah Tagihan</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right px-6">Tindakan</TableHead>
+                  <TableHead className="py-4 px-6 dark:text-slate-400">Pelanggan</TableHead>
+                  <TableHead className="dark:text-slate-400">Periode</TableHead>
+                  <TableHead className="dark:text-slate-400">Jumlah Tagihan</TableHead>
+                  <TableHead className="dark:text-slate-400">Status</TableHead>
+                  <TableHead className="text-right px-6 dark:text-slate-400">Tindakan</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {payments?.map((payment) => (
-                  <TableRow key={payment.id} className="hover:bg-slate-50/50 transition-colors">
-                    <TableCell className="py-4 px-6 font-semibold text-slate-900">
+                  <TableRow key={payment.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors dark:border-slate-800">
+                    <TableCell className="py-4 px-6 font-semibold text-slate-900 dark:text-white">
                       {getCustomerName(payment.customerId)}
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1.5 text-slate-600">
+                      <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                         <CalendarIcon className="h-3 w-3" /> {payment.billingPeriod}
                       </div>
                     </TableCell>
-                    <TableCell className="font-mono text-slate-700">
+                    <TableCell className="font-mono text-slate-700 dark:text-slate-300">
                       Rp {payment.amount.toLocaleString('id-ID')}
                     </TableCell>
                     <TableCell>
                       <Badge 
                         className={
-                          payment.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
-                          payment.status === 'overdue' ? 'bg-rose-50 text-rose-700 border-rose-100' : 
-                          'bg-amber-50 text-amber-700 border-amber-100'
+                          payment.status === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400' : 
+                          payment.status === 'overdue' ? 'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400' : 
+                          'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400'
                         }
                       >
                         {payment.status === 'paid' ? 'LUNAS' : payment.status === 'overdue' ? 'TERLAMBAT' : 'MENUNGGU'}
@@ -261,7 +261,7 @@ export default function PaymentsPage() {
                           <Button 
                             variant="outline" 
                             size="sm" 
-                            className="h-8 text-xs bg-slate-50 text-slate-600 hover:text-primary" 
+                            className="h-8 text-xs bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:text-primary" 
                             onClick={() => handlePrintReceipt(payment)}
                           >
                             <Printer className="mr-1 h-3 w-3" /> Kwitansi
@@ -272,7 +272,7 @@ export default function PaymentsPage() {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="h-8 text-xs border-emerald-200 text-emerald-600 hover:bg-emerald-50" 
+                              className="h-8 text-xs border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-400 dark:hover:bg-emerald-900/20" 
                               onClick={() => updateStatus(payment.id!, 'paid')}
                             >
                               <CheckCircle2 className="mr-1 h-3 w-3" /> Lunas
@@ -280,7 +280,7 @@ export default function PaymentsPage() {
                             <Button 
                               variant="ghost" 
                               size="icon" 
-                              className="h-8 w-8 text-primary hover:bg-primary/10" 
+                              className="h-8 w-8 text-primary hover:bg-primary/10 dark:text-primary dark:hover:bg-primary/20" 
                               title="Kirim Pengingat AI"
                               onClick={() => handleGenerateReminder(payment)}
                             >
@@ -292,7 +292,7 @@ export default function PaymentsPage() {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-rose-500 hover:bg-rose-50" 
+                            className="h-8 w-8 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20" 
                             title="Tandai Terlambat"
                             onClick={() => updateStatus(payment.id!, 'overdue')}
                           >
@@ -321,9 +321,9 @@ export default function PaymentsPage() {
       </Card>
 
       <Dialog open={reminderDialogOpen} onOpenChange={setReminderDialogOpen}>
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-none shadow-2xl">
-          <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
-            <DialogTitle className="flex items-center gap-2">
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900">
+          <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b border-slate-100 dark:border-slate-700">
+            <DialogTitle className="flex items-center gap-2 dark:text-white">
               <Sparkles className="h-5 w-5 text-primary" />
               Asisten Pengingat AI
             </DialogTitle>
@@ -332,23 +332,23 @@ export default function PaymentsPage() {
             {isGenerating ? (
               <div className="flex flex-col items-center justify-center py-10 space-y-4">
                 <Loader2 className="h-10 w-10 animate-spin text-primary opacity-60" />
-                <p className="text-sm text-slate-500 text-center max-w-[200px]">Sedang menyusun pesan yang ramah dan profesional...</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 text-center max-w-[200px]">Sedang menyusun pesan yang ramah dan profesional...</p>
               </div>
             ) : (
               <>
-                <div className="rounded-xl bg-slate-50 p-5 border border-slate-200 text-sm leading-relaxed text-slate-700 shadow-inner min-h-[100px]">
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700 text-sm leading-relaxed text-slate-700 dark:text-slate-300 shadow-inner min-h-[100px]">
                   {reminderMessage || "Ups, terjadi masalah saat memproses permintaan AI."}
                 </div>
                 <div className="flex justify-end">
-                  <Button variant="outline" size="sm" className="shadow-sm" onClick={copyToClipboard} disabled={!reminderMessage}>
+                  <Button variant="outline" size="sm" className="shadow-sm dark:border-slate-700 dark:text-slate-300" onClick={copyToClipboard} disabled={!reminderMessage}>
                     <Copy className="mr-2 h-3.5 w-3.5" /> Salin Teks
                   </Button>
                 </div>
               </>
             )}
           </div>
-          <DialogFooter className="p-6 bg-slate-50 border-t border-slate-100">
-            <Button variant="ghost" onClick={() => setReminderDialogOpen(false)}>Tutup</Button>
+          <DialogFooter className="p-6 bg-slate-50 dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
+            <Button variant="ghost" onClick={() => setReminderDialogOpen(false)} className="dark:text-slate-400">Tutup</Button>
             <Button className="bg-primary hover:bg-primary/90 shadow-sm" onClick={() => handleGenerateReminder(activePayment!)} disabled={isGenerating}>
               Buat Ulang Pesan
             </Button>
