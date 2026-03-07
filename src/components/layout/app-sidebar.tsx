@@ -1,7 +1,8 @@
+
 "use client"
 
 import * as React from "react"
-import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut, Database } from "lucide-react"
+import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut, Database, Clock } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
@@ -53,6 +54,7 @@ export function AppSidebar() {
   const pathname = usePathname()
   const { role, username, logout } = useAuth()
   const [lastBackup, setLastBackup] = React.useState<string | null>(null)
+  const [currentTime, setCurrentTime] = React.useState<string | null>(null)
 
   const updateBackupTime = React.useCallback(() => {
     const time = localStorage.getItem("mtnet_last_backup_time")
@@ -62,12 +64,25 @@ export function AppSidebar() {
   }, [])
 
   React.useEffect(() => {
+    // Inisialisasi Backup Time
     updateBackupTime()
     window.addEventListener('mtnet-backup-updated', updateBackupTime)
-    return () => window.removeEventListener('mtnet-backup-updated', updateBackupTime)
+    
+    // Inisialisasi Realtime Clock
+    const timer = setInterval(() => {
+      setCurrentTime(format(new Date(), "HH:mm:ss", { locale: localeId }))
+    }, 1000)
+    
+    // Set awal agar tidak menunggu 1 detik
+    setCurrentTime(format(new Date(), "HH:mm:ss", { locale: localeId }))
+
+    return () => {
+      window.removeEventListener('mtnet-backup-updated', updateBackupTime)
+      clearInterval(timer)
+    }
   }, [updateBackupTime])
 
-  // Hide sidebar if on login page
+  // Sembunyikan bilah sisi jika di halaman login
   if (pathname === "/login") return null
 
   return (
@@ -77,14 +92,22 @@ export function AppSidebar() {
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <Wifi className="size-5" />
           </div>
-          <div className="flex flex-col gap-0.5 leading-none">
-            <span className="font-semibold text-lg">MTNET Billing</span>
-            {lastBackup && (
-              <div className="flex items-center gap-1 text-[9px] text-sidebar-foreground/60">
-                <Database className="size-2" />
-                <span>Backup: {lastBackup}</span>
-              </div>
-            )}
+          <div className="flex flex-col gap-0.5 leading-none overflow-hidden">
+            <span className="font-semibold text-lg truncate">MTNET Billing</span>
+            <div className="flex flex-col gap-0.5">
+              {lastBackup && (
+                <div className="flex items-center gap-1 text-[9px] text-sidebar-foreground/60">
+                  <Database className="size-2 shrink-0" />
+                  <span className="truncate">Backup: {lastBackup}</span>
+                </div>
+              )}
+              {currentTime && (
+                <div className="flex items-center gap-1 text-[9px] text-sidebar-foreground/70 font-mono">
+                  <Clock className="size-2 shrink-0" />
+                  <span className="truncate">Jam: {currentTime}</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </SidebarHeader>
