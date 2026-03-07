@@ -15,7 +15,8 @@ import {
   Moon, 
   Sun, 
   ShieldAlert,
-  Database
+  Database,
+  User
 } from "lucide-react"
 import {
   AlertDialog,
@@ -241,7 +242,7 @@ export default function SettingsPage() {
         {/* Info Version Section */}
         <Card className="border-none shadow-sm bg-slate-900 text-white">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-slate-800 rounded-lg">
                   <Info className="h-5 w-5 text-primary" />
@@ -251,9 +252,13 @@ export default function SettingsPage() {
                   <p className="text-xs text-slate-400">MTNET Billing - Sistem Manajemen Luring</p>
                 </div>
               </div>
-              <div className="text-right">
-                <span className="text-xs font-mono bg-slate-800 px-2 py-1 rounded text-primary">v1.2.0-stable</span>
-                <p className="text-[10px] text-slate-500 mt-1">Dibuat dengan ❤️ untuk UMKM</p>
+              <div className="flex flex-col sm:items-end gap-1">
+                <span className="text-xs font-mono bg-slate-800 px-2 py-1 rounded text-primary inline-block w-fit">v1.2.0-stable</span>
+                <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                  <User className="h-3 w-3" />
+                  <span>Dibuat oleh <span className="text-slate-200 font-semibold">AGUS SURIYADI</span></span>
+                </div>
+                <p className="text-[10px] text-slate-500">Dibuat dengan ❤️ untuk UMKM</p>
               </div>
             </div>
           </CardContent>
