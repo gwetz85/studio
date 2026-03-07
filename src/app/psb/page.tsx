@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -50,7 +51,6 @@ export default function PSBPage() {
 
     try {
       if (status === 'aktif') {
-        // Otomatis pindah ke data pelanggan
         const customerData: Customer = {
           name: data.name,
           email: data.email,
@@ -84,8 +84,12 @@ export default function PSBPage() {
 
   const deletePSB = async (id: number) => {
     if (confirm("Hapus permintaan PSB ini?")) {
-      await db.psb.delete(id);
-      toast({ title: "Data dihapus" });
+      try {
+        await db.psb.delete(id);
+        toast({ title: "Data dihapus" });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Gagal menghapus" });
+      }
     }
   };
 
@@ -102,7 +106,7 @@ export default function PSBPage() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full sm:w-auto shadow-sm" onClick={() => setEditingPSB(null)}>
+            <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={() => setEditingPSB(null)}>
               <Plus className="mr-2 h-4 w-4" /> Input PSB Baru
             </Button>
           </DialogTrigger>
@@ -217,10 +221,31 @@ export default function PSBPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10" title="Edit & Aktivasi" onClick={() => { setEditingPSB(request); setIsDialogOpen(true); }}>
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-primary hover:bg-primary/10" 
+                          title="Edit & Aktivasi" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingPSB(request);
+                            setIsDialogOpen(true);
+                          }}
+                        >
                           <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-rose-600" title="Hapus" onClick={() => deletePSB(request.id!)}>
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-rose-600" 
+                          title="Hapus" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (request.id) deletePSB(request.id);
+                          }}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>

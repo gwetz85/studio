@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -74,9 +75,13 @@ export default function CustomersPage() {
   };
 
   const deleteCustomer = async (id: number) => {
-    if (confirm("Hapus pelanggan ini secara permanen?")) {
-      await db.customers.delete(id);
-      toast({ title: "Pelanggan dihapus" });
+    if (confirm("Hapus pelanggan ini secara permanen? Catatan pembayaran terkait mungkin tetap ada.")) {
+      try {
+        await db.customers.delete(id);
+        toast({ title: "Pelanggan dihapus" });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Gagal menghapus", description: "Terjadi kesalahan pada database." });
+      }
     }
   };
 
@@ -91,7 +96,7 @@ export default function CustomersPage() {
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Daftar Pelanggan</h1>
           <p className="text-slate-500">Kelola data pelanggan dan langganan mereka.</p>
         </div>
-        <Button className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
+        <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
           <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
         </Button>
       </div>
@@ -222,7 +227,10 @@ export default function CustomersPage() {
                           variant="ghost" 
                           size="icon" 
                           className="h-8 w-8 text-slate-600 hover:text-primary" 
-                          onClick={() => handleOpenEditDialog(customer)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEditDialog(customer);
+                          }}
                         >
                           <Edit2 className="h-4 w-4" />
                         </Button>
@@ -231,7 +239,10 @@ export default function CustomersPage() {
                           variant="ghost" 
                           size="icon" 
                           className="h-8 w-8 text-slate-600 hover:text-rose-600" 
-                          onClick={() => deleteCustomer(customer.id!)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (customer.id) deleteCustomer(customer.id);
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -47,8 +48,12 @@ export default function PackagesPage() {
 
   const deletePackage = async (id: number) => {
     if (confirm("Hapus paket layanan ini? Pelanggan yang menggunakan paket ini mungkin terdampak.")) {
-      await db.packages.delete(id);
-      toast({ title: "Paket telah dihapus" });
+      try {
+        await db.packages.delete(id);
+        toast({ title: "Paket telah dihapus" });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Gagal menghapus" });
+      }
     }
   };
 
@@ -61,7 +66,7 @@ export default function PackagesPage() {
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="w-full sm:w-auto shadow-sm" onClick={() => setEditingPackage(null)}>
+            <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={() => setEditingPackage(null)}>
               <Plus className="mr-2 h-4 w-4" /> Buat Paket Baru
             </Button>
           </DialogTrigger>
@@ -133,10 +138,29 @@ export default function PackagesPage() {
                     <TableCell className="text-slate-500 max-w-xs truncate">{pkg.description || "-"}</TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-primary" onClick={() => { setEditingPackage(pkg); setIsDialogOpen(true); }}>
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-slate-600 hover:text-primary" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingPackage(pkg);
+                            setIsDialogOpen(true);
+                          }}
+                        >
                           <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-rose-600" onClick={() => deletePackage(pkg.id!)}>
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-slate-600 hover:text-rose-600" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (pkg.id) deletePackage(pkg.id);
+                          }}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
