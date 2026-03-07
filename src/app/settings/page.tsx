@@ -19,7 +19,9 @@ import {
   Database,
   User,
   LogOut,
-  History
+  History,
+  Palette,
+  Check
 } from "lucide-react"
 import {
   AlertDialog,
@@ -34,24 +36,38 @@ import {
 } from "@/components/ui/alert-dialog"
 import { format } from "date-fns"
 import { id as localeId } from "date-fns/locale"
+import { cn } from "@/lib/utils"
+
+const sidebarColors = [
+  { name: "Biru (Bawaan)", value: "blue", class: "bg-blue-500" },
+  { name: "Merah", value: "red", class: "bg-red-500" },
+  { name: "Kuning", value: "yellow", class: "bg-yellow-400" },
+  { name: "Oren", value: "orange", class: "bg-orange-500" },
+  { name: "Ungu", value: "purple", class: "bg-purple-600" },
+  { name: "Abu-Abu", value: "gray", class: "bg-slate-500" },
+];
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const { logout, role, isLoading: authLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [activeSidebarColor, setActiveSidebarColor] = React.useState("blue");
   const [lastAutoBackupTime, setLastAutoBackupTime] = React.useState<string | null>(null);
 
   // Handle Theme Init and Auto Backup Info
   React.useEffect(() => {
     const theme = localStorage.getItem("theme");
+    const color = localStorage.getItem("sidebar_color") || "blue";
     const darkModeActive = theme === "dark";
     setIsDarkMode(darkModeActive);
+    setActiveSidebarColor(color);
     
     if (darkModeActive) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
+    document.documentElement.setAttribute("data-sidebar-color", color);
 
     const backupTime = localStorage.getItem("mtnet_last_backup_time");
     if (backupTime) {
@@ -78,6 +94,16 @@ export default function SettingsPage() {
     toast({
       title: `Tema ${checked ? "Gelap" : "Terang"} Aktif`,
       description: `Aplikasi sekarang menggunakan Mode ${checked ? "Gelap" : "Terang"}.`,
+    });
+  };
+
+  const changeSidebarColor = (color: string) => {
+    setActiveSidebarColor(color);
+    localStorage.setItem("sidebar_color", color);
+    document.documentElement.setAttribute("data-sidebar-color", color);
+    toast({
+      title: "Warna Sidebar Diperbarui",
+      description: `Template warna kini menggunakan ${color.charAt(0).toUpperCase() + color.slice(1)}.`,
     });
   };
 
@@ -205,17 +231,47 @@ export default function SettingsPage() {
             <div className="flex items-center gap-2">
               <Sun className="h-5 w-5 text-amber-500 dark:hidden" />
               <Moon className="h-5 w-5 text-indigo-400 hidden dark:block" />
-              <CardTitle>Tampilan</CardTitle>
+              <CardTitle>Tampilan & Tema</CardTitle>
             </div>
-            <CardDescription>Pilih antara Mode Terang atau Mode Gelap.</CardDescription>
+            <CardDescription>Pilih antara Mode Terang/Gelap dan kustomisasi warna sidebar.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between py-2">
+          <CardContent className="space-y-8">
+            <div className="flex items-center justify-between py-2 border-b dark:border-slate-800">
               <div className="space-y-0.5">
-                <Label className="text-base">Mode Gelap</Label>
+                <Label className="text-base font-semibold">Mode Gelap</Label>
                 <p className="text-sm text-slate-500">Ubah tampilan aplikasi menjadi tema gelap.</p>
               </div>
               <Switch checked={isDarkMode} onCheckedChange={toggleTheme} />
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-0.5">
+                <Label className="text-base font-semibold flex items-center gap-2">
+                  <Palette className="h-4 w-4 text-primary" /> Template Warna Aplikasi
+                </Label>
+                <p className="text-sm text-slate-500">Pilih skema warna untuk Menu Kiri (Sidebar).</p>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 pt-2">
+                {sidebarColors.map((color) => (
+                  <button
+                    key={color.value}
+                    onClick={() => changeSidebarColor(color.value)}
+                    className={cn(
+                      "group flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-200",
+                      activeSidebarColor === color.value 
+                        ? "border-primary bg-primary/5 ring-1 ring-primary" 
+                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300"
+                    )}
+                  >
+                    <div className={cn("h-10 w-10 rounded-full shadow-sm flex items-center justify-center", color.class)}>
+                      {activeSidebarColor === color.value && <Check className="h-5 w-5 text-white drop-shadow" />}
+                    </div>
+                    <span className="text-[10px] font-bold uppercase tracking-tighter text-slate-600 dark:text-slate-400">
+                      {color.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>

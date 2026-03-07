@@ -20,13 +20,17 @@ export default function RootLayout({
   const isLoginPage = pathname === "/login";
 
   useEffect(() => {
-    // 1. THEME INITIALIZATION
+    // 1. THEME & COLOR INITIALIZATION
     const savedTheme = localStorage.getItem("theme");
+    const savedSidebarColor = localStorage.getItem("sidebar_color") || "blue";
+
     if (savedTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
+
+    document.documentElement.setAttribute("data-sidebar-color", savedSidebarColor);
 
     if (!isLoggedIn) return;
 
