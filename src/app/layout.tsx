@@ -71,7 +71,7 @@ export default function RootLayout({
   if (isLoading) {
     return (
       <html lang="id">
-        <body className="font-body bg-slate-50 flex items-center justify-center min-h-screen">
+        <body className="bg-slate-50 flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </body>
       </html>
@@ -83,10 +83,10 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         <title>MTNET SYSTEM</title>
       </head>
-      <body className="font-body antialiased transition-colors duration-300">
+      <body className="antialiased transition-colors duration-300">
         {isLoginPage ? (
           children
         ) : (
