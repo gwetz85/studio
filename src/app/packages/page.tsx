@@ -12,6 +12,7 @@ import { Plus, Trash2, Edit2, Wifi, DollarSign, Zap } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Badge } from "@/components/ui/badge"
 
 export default function PackagesPage() {
   const { toast } = useToast();
@@ -128,7 +129,7 @@ export default function PackagesPage() {
                         <Zap className="h-3 w-3 mr-1" /> {pkg.speed}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-slate-700">${pkg.price.toLocaleString()}</TableCell>
+                    <TableCell className="font-mono text-slate-700">Rp {pkg.price.toLocaleString('id-ID')}</TableCell>
                     <TableCell className="text-slate-500 max-w-xs truncate">{pkg.description || "-"}</TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
