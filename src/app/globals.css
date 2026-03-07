@@ -71,43 +71,43 @@
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 214 32% 91%;
-    --card: 222 47% 11%;
-    --card-foreground: 214 32% 91%;
-    --popover: 222 47% 11%;
-    --popover-foreground: 214 32% 91%;
+    --background: 222 47% 4%; /* Sangat Gelap */
+    --foreground: 210 40% 98%; /* Putih Terang */
+    --card: 222 47% 4%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 4%;
+    --popover-foreground: 210 40% 98%;
     --primary: 210 72% 50%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 222 47% 20%;
+    --secondary: 222 47% 12%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 222 47% 20%;
+    --muted: 222 47% 12%;
     --muted-foreground: 215 20% 65%;
     --accent: 180 74% 56%;
-    --accent-foreground: 222 47% 11%;
+    --accent-foreground: 222 47% 4%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 210 40% 98%;
-    --border: 222 47% 20%;
-    --input: 222 47% 20%;
+    --border: 222 47% 15%;
+    --input: 222 47% 15%;
     --ring: 210 72% 50%;
 
     /* Sidebar Dark Mode Base */
-    --sidebar-background: 222 47% 8%;
+    --sidebar-background: 222 47% 4%;
     --sidebar-foreground: 214 32% 91%;
     --sidebar-primary: 210 72% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 47% 15%;
+    --sidebar-accent: 222 47% 10%;
     --sidebar-accent-foreground: 214 32% 91%;
-    --sidebar-border: 222 47% 15%;
+    --sidebar-border: 222 47% 10%;
     --sidebar-ring: 210 72% 50%;
   }
   
   /* Sidebar Color Themes in Dark Mode */
-  .dark[data-sidebar-color="red"] { --sidebar-background: 0 72% 20%; --sidebar-accent: 0 72% 25%; }
-  .dark[data-sidebar-color="yellow"] { --sidebar-background: 45 93% 20%; --sidebar-accent: 45 93% 25%; }
-  .dark[data-sidebar-color="orange"] { --sidebar-background: 25 95% 20%; --sidebar-accent: 25 95% 25%; }
-  .dark[data-sidebar-color="purple"] { --sidebar-background: 270 70% 20%; --sidebar-accent: 270 70% 25%; }
-  .dark[data-sidebar-color="gray"] { --sidebar-background: 210 10% 20%; --sidebar-accent: 210 10% 25%; }
+  .dark[data-sidebar-color="red"] { --sidebar-background: 0 72% 15%; --sidebar-accent: 0 72% 20%; }
+  .dark[data-sidebar-color="yellow"] { --sidebar-background: 45 93% 15%; --sidebar-accent: 45 93% 20%; }
+  .dark[data-sidebar-color="orange"] { --sidebar-background: 25 95% 15%; --sidebar-accent: 25 95% 20%; }
+  .dark[data-sidebar-color="purple"] { --sidebar-background: 270 70% 15%; --sidebar-accent: 270 70% 20%; }
+  .dark[data-sidebar-color="gray"] { --sidebar-background: 210 10% 15%; --sidebar-accent: 210 10% 20%; }
 }
 
 @layer base {
