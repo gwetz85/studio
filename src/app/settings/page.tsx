@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { db } from "@/lib/db"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth"
 import { 
   Download, 
   Upload, 
@@ -16,7 +17,8 @@ import {
   Sun, 
   ShieldAlert,
   Database,
-  User
+  User,
+  LogOut
 } from "lucide-react"
 import {
   AlertDialog,
@@ -32,7 +34,13 @@ import {
 
 export default function SettingsPage() {
   const { toast } = useToast();
+  const { logout, role } = useAuth();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
+
+  // Guard: Only admin can access this page via URL
+  if (role !== 'admin') {
+    return null;
+  }
 
   // Handle Theme Init
   React.useEffect(() => {
@@ -110,7 +118,6 @@ export default function SettingsPage() {
           });
 
           toast({ title: "Restore Berhasil", description: "Seluruh data telah dipulihkan." });
-          // Optional: Refresh or redirect
           window.location.reload();
         }
       } catch (error) {
@@ -118,7 +125,6 @@ export default function SettingsPage() {
       }
     };
     reader.readAsText(file);
-    // Clear the input so same file can be selected again
     event.target.value = "";
   };
 
@@ -138,9 +144,14 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Pengaturan</h1>
-        <p className="text-slate-500">Kelola data aplikasi dan preferensi sistem Anda.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Pengaturan</h1>
+          <p className="text-slate-500">Kelola data aplikasi dan preferensi sistem Anda.</p>
+        </div>
+        <Button variant="outline" className="text-rose-600 border-rose-100 hover:bg-rose-50" onClick={logout}>
+          <LogOut className="mr-2 h-4 w-4" /> Keluar Sesi
+        </Button>
       </div>
 
       <div className="grid gap-6">

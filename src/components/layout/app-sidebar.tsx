@@ -1,9 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert } from "lucide-react"
+import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
 
 import {
   Sidebar,
@@ -48,6 +49,10 @@ const items = [
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { role, username, logout } = useAuth()
+
+  // Hide sidebar if on login page
+  if (pathname === "/login") return null
 
   return (
     <Sidebar collapsible="icon">
@@ -85,18 +90,37 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border/30">
+      <SidebarFooter className="border-t border-sidebar-border/30 p-2 space-y-2">
+        <div className="px-2 py-2 mb-2">
+          <div className="text-xs font-semibold opacity-60 uppercase tracking-wider mb-1">Pengguna</div>
+          <div className="text-sm font-medium truncate">{username}</div>
+          <div className="text-[10px] opacity-70 uppercase">{role === 'admin' ? 'Administrator' : 'Staff'}</div>
+        </div>
+        
         <SidebarMenu>
+          {role === 'admin' && (
+            <SidebarMenuItem>
+              <SidebarMenuButton 
+                asChild 
+                isActive={pathname === "/settings"} 
+                tooltip="Pengaturan"
+              >
+                <Link href="/settings">
+                  <Settings />
+                  <span>Pengaturan</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
+          
           <SidebarMenuItem>
             <SidebarMenuButton 
-              asChild 
-              isActive={pathname === "/settings"} 
-              tooltip="Pengaturan"
+              onClick={logout}
+              tooltip="Keluar"
+              className="text-rose-200 hover:text-white hover:bg-rose-600/20"
             >
-              <Link href="/settings">
-                <Settings />
-                <span>Pengaturan</span>
-              </Link>
+              <LogOut />
+              <span>Keluar</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
