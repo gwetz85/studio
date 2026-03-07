@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -7,11 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { db } from "@/lib/db"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
-import { useLiveQuery } from "dexie-react-hooks"
 import { 
   Download, 
   Upload, 
@@ -23,9 +20,7 @@ import {
   Database,
   User,
   LogOut,
-  History,
-  Users,
-  Search
+  History
 } from "lucide-react"
 import {
   AlertDialog,
@@ -46,17 +41,6 @@ export default function SettingsPage() {
   const { logout, role, isLoading: authLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [lastAutoBackupTime, setLastAutoBackupTime] = React.useState<string | null>(null);
-  const [customerSearch, setCustomerSearch] = React.useState("");
-
-  // Fetch customers for individual deletion
-  const customers = useLiveQuery(() => {
-    if (!customerSearch) return db.customers.toArray();
-    const s = customerSearch.toLowerCase();
-    return db.customers.filter(c => 
-      c.name.toLowerCase().includes(s) || 
-      c.phone.includes(s)
-    ).toArray();
-  }, [customerSearch]);
 
   // Handle Theme Init and Auto Backup Info
   React.useEffect(() => {
@@ -200,17 +184,6 @@ export default function SettingsPage() {
     }
   };
 
-  const deleteIndividualCustomer = async (id: number) => {
-    if (confirm("Hapus pelanggan ini secara permanen dari database?")) {
-      try {
-        await db.customers.delete(id);
-        toast({ title: "Pelanggan dihapus" });
-      } catch (error) {
-        toast({ variant: "destructive", title: "Gagal menghapus", description: "Terjadi kesalahan pada database." });
-      }
-    }
-  };
-
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
@@ -301,56 +274,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* New Individual Customer Deletion Section */}
-        <Card className="border-none shadow-sm">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-rose-500" />
-              <CardTitle>Hapus User (Pelanggan)</CardTitle>
-            </div>
-            <CardDescription>Cari dan hapus data pelanggan/user secara individu dari database.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input 
-                placeholder="Cari nama atau nomor telepon..." 
-                className="pl-10 h-10"
-                value={customerSearch}
-                onChange={(e) => setCustomerSearch(e.target.value)}
-              />
-            </div>
-            <div className="border rounded-xl overflow-hidden bg-white">
-              <ScrollArea className="h-[250px]">
-                <div className="divide-y">
-                  {customers?.map((customer) => (
-                    <div key={customer.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
-                      <div className="space-y-1">
-                        <p className="font-semibold text-sm text-slate-900">{customer.name}</p>
-                        <p className="text-xs text-slate-500">{customer.phone} • {customer.email}</p>
-                      </div>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 h-9 w-9"
-                        onClick={() => customer.id && deleteIndividualCustomer(customer.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                  {customers && customers.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-                      <Users className="h-8 w-8 opacity-20 mb-2" />
-                      <p className="text-sm">Tidak ada pelanggan ditemukan.</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
-          </CardContent>
-        </Card>
-
         <Card className="border-2 border-rose-100 shadow-sm bg-rose-50/20">
           <CardHeader>
             <div className="flex items-center gap-2 text-rose-600">
@@ -398,7 +321,7 @@ export default function SettingsPage() {
               </div>
               <div className="flex flex-col sm:items-end gap-1">
                 <span className="text-xs font-mono bg-slate-800 px-2 py-1 rounded text-primary inline-block w-fit">v1.2.0-stable</span>
-                <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                <div className="flex items-center gap-1.5 text-[10px] text-sidebar-foreground/60">
                   <User className="h-3 w-3" />
                   <span>Dibuat oleh <span className="text-slate-200 font-semibold">AGUS SURIYADI</span></span>
                 </div>
