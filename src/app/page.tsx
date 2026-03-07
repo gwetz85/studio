@@ -2,17 +2,39 @@
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Package, CreditCard, CheckCircle2, ShieldAlert } from "lucide-react"
+import { Users, Package, CreditCard, CheckCircle2, ShieldAlert, Wifi, Sparkles } from "lucide-react"
 import { db } from "@/lib/db"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 export default function Dashboard() {
   const { toast } = useToast();
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const currentDay = new Date().getDate();
   const [isProcessingAutoBill, setIsProcessingAutoBill] = React.useState(false);
+  const [showWelcome, setShowWelcome] = React.useState(false);
+
+  // Welcome Pop-up Logic
+  React.useEffect(() => {
+    const welcomeShown = sessionStorage.getItem("mtnet_welcome_shown");
+    if (!welcomeShown) {
+      const timer = setTimeout(() => {
+        setShowWelcome(true);
+        sessionStorage.setItem("mtnet_welcome_shown", "true");
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Auto Generate Bills Logic
   React.useEffect(() => {
@@ -123,6 +145,29 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900">
+          <div className="bg-primary p-8 text-white text-center space-y-4">
+            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-md mb-2">
+              <Sparkles className="h-8 w-8 text-white animate-pulse" />
+            </div>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-center text-white">SELAMAT DATANG DI APLIKASI MTNET SYSTEM</DialogTitle>
+              <DialogDescription className="text-primary-foreground/90 text-center">
+                Sistem manajemen internet Anda telah siap digunakan. Mulai kelola pelanggan dan tagihan dengan mudah hari ini.
+              </DialogDescription>
+            </DialogHeader>
+          </div>
+          <div className="p-6 bg-white dark:bg-slate-900">
+            <DialogFooter>
+              <Button onClick={() => setShowWelcome(false)} className="w-full h-11 font-bold tracking-tight">
+                Mulai Bekerja
+              </Button>
+            </DialogFooter>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="flex flex-col gap-1">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
         <p className="text-slate-500 dark:text-slate-400">Ringkasan operasional layanan internet Anda hari ini.</p>
