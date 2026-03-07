@@ -8,8 +8,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Mail, Phone, MapPin } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
+import { Plus, Trash2, Edit2, Search, User, Phone, MapPin } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
@@ -34,6 +34,16 @@ export default function CustomersPage() {
   }, [search]);
 
   const packages = useLiveQuery(() => db.packages.toArray());
+
+  const handleOpenAddDialog = () => {
+    setEditingCustomer(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleOpenEditDialog = (customer: Customer) => {
+    setEditingCustomer(customer);
+    setIsDialogOpen(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -81,75 +91,74 @@ export default function CustomersPage() {
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Daftar Pelanggan</h1>
           <p className="text-slate-500">Kelola data pelanggan dan langganan mereka.</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full sm:w-auto shadow-sm" onClick={() => setEditingCustomer(null)}>
-              <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl">
-            <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
-              <DialogTitle className="text-xl flex items-center gap-2">
-                <User className="h-5 w-5 text-primary" />
-                {editingCustomer ? "Edit Profil Pelanggan" : "Registrasi Pelanggan Baru"}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="name">Nama Lengkap</Label>
-                  <Input id="name" name="name" defaultValue={editingCustomer?.name} placeholder="Contoh: Budi Santoso" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Alamat Email</Label>
-                  <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} placeholder="budi@email.com" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Nomor Telepon / WA</Label>
-                  <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} placeholder="0812..." required />
-                </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">Alamat Lengkap</Label>
-                  <Input id="address" name="address" defaultValue={editingCustomer?.address} placeholder="Jl. Merdeka No. 10..." required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="packageId">Pilih Paket Internet</Label>
-                  <Select name="packageId" defaultValue={editingCustomer?.packageId?.toString()}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Pilih paket" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {packages?.map(pkg => (
-                        <SelectItem key={pkg.id} value={pkg.id!.toString()}>
-                          {pkg.name} (Rp {pkg.price.toLocaleString('id-ID')})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status Langganan</Label>
-                  <Select name="status" defaultValue={editingCustomer?.status || "active"}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Aktif</SelectItem>
-                      <SelectItem value="inactive">Nonaktif</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter className="pt-4">
-                <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-                <Button type="submit" className="bg-primary hover:bg-primary/90">
-                  {editingCustomer ? "Simpan Perubahan" : "Daftarkan Sekarang"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+        <Button className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
+          <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
+        </Button>
       </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <User className="h-5 w-5 text-primary" />
+              {editingCustomer ? "Edit Profil Pelanggan" : "Registrasi Pelanggan Baru"}
+            </DialogTitle>
+          </DialogHeader>
+          <form key={editingCustomer?.id || "new"} onSubmit={handleSubmit} className="p-6 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="name">Nama Lengkap</Label>
+                <Input id="name" name="name" defaultValue={editingCustomer?.name} placeholder="Contoh: Budi Santoso" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Alamat Email</Label>
+                <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} placeholder="budi@email.com" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="phone">Nomor Telepon / WA</Label>
+                <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} placeholder="0812..." required />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="address">Alamat Lengkap</Label>
+                <Input id="address" name="address" defaultValue={editingCustomer?.address} placeholder="Jl. Merdeka No. 10..." required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="packageId">Pilih Paket Internet</Label>
+                <Select name="packageId" defaultValue={editingCustomer?.packageId?.toString()}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih paket" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {packages?.map(pkg => (
+                      <SelectItem key={pkg.id} value={pkg.id!.toString()}>
+                        {pkg.name} (Rp {pkg.price.toLocaleString('id-ID')})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status">Status Langganan</Label>
+                <Select name="status" defaultValue={editingCustomer?.status || "active"}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Aktif</SelectItem>
+                    <SelectItem value="inactive">Nonaktif</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
+              <Button type="submit" className="bg-primary hover:bg-primary/90">
+                {editingCustomer ? "Simpan Perubahan" : "Daftarkan Sekarang"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <div className="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
         <Search className="h-4 w-4 text-slate-400 ml-3" />
@@ -208,10 +217,22 @@ export default function CustomersPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-primary" onClick={() => { setEditingCustomer(customer); setIsDialogOpen(true); }}>
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-slate-600 hover:text-primary" 
+                          onClick={() => handleOpenEditDialog(customer)}
+                        >
                           <Edit2 className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-rose-600" onClick={() => deleteCustomer(customer.id!)}>
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-slate-600 hover:text-rose-600" 
+                          onClick={() => deleteCustomer(customer.id!)}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
