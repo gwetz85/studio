@@ -1,10 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut } from "lucide-react"
+import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut, Database } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
+import { format } from "date-fns"
+import { id as localeId } from "date-fns/locale"
 
 import {
   Sidebar,
@@ -50,6 +52,20 @@ const items = [
 export function AppSidebar() {
   const pathname = usePathname()
   const { role, username, logout } = useAuth()
+  const [lastBackup, setLastBackup] = React.useState<string | null>(null)
+
+  const updateBackupTime = React.useCallback(() => {
+    const time = localStorage.getItem("mtnet_last_backup_time")
+    if (time) {
+      setLastBackup(format(new Date(parseInt(time)), "HH:mm", { locale: localeId }))
+    }
+  }, [])
+
+  React.useEffect(() => {
+    updateBackupTime()
+    window.addEventListener('mtnet-backup-updated', updateBackupTime)
+    return () => window.removeEventListener('mtnet-backup-updated', updateBackupTime)
+  }, [updateBackupTime])
 
   // Hide sidebar if on login page
   if (pathname === "/login") return null
@@ -63,7 +79,12 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col gap-0.5 leading-none">
             <span className="font-semibold text-lg">MTNET Billing</span>
-            <span className="text-xs opacity-80">Manajer Luring</span>
+            {lastBackup && (
+              <div className="flex items-center gap-1 text-[9px] text-sidebar-foreground/60">
+                <Database className="size-2" />
+                <span>Backup: {lastBackup}</span>
+              </div>
+            )}
           </div>
         </div>
       </SidebarHeader>

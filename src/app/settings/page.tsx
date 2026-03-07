@@ -18,7 +18,8 @@ import {
   ShieldAlert,
   Database,
   User,
-  LogOut
+  LogOut,
+  History
 } from "lucide-react"
 import {
   AlertDialog,
@@ -31,23 +32,31 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { format } from "date-fns"
+import { id as localeId } from "date-fns/locale"
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const { logout, role } = useAuth();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
+  const [lastAutoBackupTime, setLastAutoBackupTime] = React.useState<string | null>(null);
 
   // Guard: Only admin can access this page via URL
   if (role !== 'admin') {
     return null;
   }
 
-  // Handle Theme Init
+  // Handle Theme Init and Auto Backup Info
   React.useEffect(() => {
     const theme = localStorage.getItem("theme") || "light";
     setIsDarkMode(theme === "dark");
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
+    }
+
+    const backupTime = localStorage.getItem("mtnet_last_backup_time");
+    if (backupTime) {
+      setLastAutoBackupTime(format(new Date(parseInt(backupTime)), "dd MMM yyyy, HH:mm", { locale: localeId }));
     }
   }, []);
 
@@ -94,6 +103,20 @@ export default function SettingsPage() {
     }
   };
 
+  const restoreData = async (backup: any) => {
+    await db.transaction('rw', db.customers, db.packages, db.payments, async () => {
+      await db.customers.clear();
+      await db.packages.clear();
+      await db.payments.clear();
+
+      if (backup.data.customers) await db.customers.bulkAdd(backup.data.customers);
+      if (backup.data.packages) await db.packages.bulkAdd(backup.data.packages);
+      if (backup.data.payments) await db.payments.bulkAdd(backup.data.payments);
+    });
+    toast({ title: "Restore Berhasil", description: "Seluruh data telah dipulihkan." });
+    window.location.reload();
+  };
+
   const handleRestore = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -103,22 +126,9 @@ export default function SettingsPage() {
       try {
         const content = e.target?.result as string;
         const backup = JSON.parse(content);
-
         if (!backup.data) throw new Error("Format tidak valid");
-
         if (confirm("Restore akan menimpa data saat ini. Lanjutkan?")) {
-          await db.transaction('rw', db.customers, db.packages, db.payments, async () => {
-            await db.customers.clear();
-            await db.packages.clear();
-            await db.payments.clear();
-
-            if (backup.data.customers) await db.customers.bulkAdd(backup.data.customers);
-            if (backup.data.packages) await db.packages.bulkAdd(backup.data.packages);
-            if (backup.data.payments) await db.payments.bulkAdd(backup.data.payments);
-          });
-
-          toast({ title: "Restore Berhasil", description: "Seluruh data telah dipulihkan." });
-          window.location.reload();
+          await restoreData(backup);
         }
       } catch (error) {
         toast({ variant: "destructive", title: "Restore Gagal", description: "File cadangan rusak atau tidak kompatibel." });
@@ -126,6 +136,23 @@ export default function SettingsPage() {
     };
     reader.readAsText(file);
     event.target.value = "";
+  };
+
+  const handleRestoreAutoBackup = () => {
+    const backupStr = localStorage.getItem("mtnet_auto_backup");
+    if (!backupStr) {
+      toast({ variant: "destructive", title: "Gagal", description: "Tidak ada data pencadangan otomatis yang ditemukan." });
+      return;
+    }
+
+    try {
+      const backup = JSON.parse(backupStr);
+      if (confirm(`Pulihkan data dari pencadangan otomatis terakhir (${lastAutoBackupTime})? Data saat ini akan ditimpa.`)) {
+        restoreData(backup);
+      }
+    } catch (e) {
+      toast({ variant: "destructive", title: "Kesalahan", description: "Data pencadangan otomatis rusak." });
+    }
   };
 
   const handleClearAllData = async () => {
@@ -185,24 +212,24 @@ export default function SettingsPage() {
             </div>
             <CardDescription>Cadangkan atau pulihkan data lokal Anda secara aman.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-6 sm:grid-cols-2">
+          <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
               <h3 className="font-semibold text-sm flex items-center gap-2">
-                <Download className="h-4 w-4" /> Ekspor Data
+                <Download className="h-4 w-4 text-emerald-600" /> Ekspor Data
               </h3>
-              <p className="text-xs text-slate-500">Unduh seluruh database dalam format JSON untuk cadangan.</p>
-              <Button variant="outline" size="sm" className="w-full bg-white" onClick={handleBackup}>
+              <p className="text-[10px] text-slate-500">Unduh seluruh database dalam format JSON ke perangkat.</p>
+              <Button variant="outline" size="sm" className="w-full bg-white text-xs" onClick={handleBackup}>
                 Mulai Backup
               </Button>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
               <h3 className="font-semibold text-sm flex items-center gap-2">
-                <Upload className="h-4 w-4" /> Impor Data
+                <Upload className="h-4 w-4 text-blue-600" /> Impor Data
               </h3>
-              <p className="text-xs text-slate-500">Pulihkan data dari file backup yang telah dibuat sebelumnya.</p>
+              <p className="text-[10px] text-slate-500">Pulihkan data dari file backup (.json) yang ada.</p>
               <div className="relative">
-                <Button variant="outline" size="sm" className="w-full bg-white">
+                <Button variant="outline" size="sm" className="w-full bg-white text-xs">
                   Pilih File
                 </Button>
                 <input 
@@ -212,6 +239,24 @@ export default function SettingsPage() {
                   onChange={handleRestore}
                 />
               </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
+              <h3 className="font-semibold text-sm flex items-center gap-2">
+                <History className="h-4 w-4 text-amber-600" /> Auto Restore
+              </h3>
+              <p className="text-[10px] text-slate-500">
+                {lastAutoBackupTime ? `Terakhir: ${lastAutoBackupTime}` : "Belum ada auto backup."}
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full bg-white text-xs border-amber-200 text-amber-700 hover:bg-amber-50" 
+                onClick={handleRestoreAutoBackup}
+                disabled={!lastAutoBackupTime}
+              >
+                Restore Terakhir
+              </Button>
             </div>
           </CardContent>
         </Card>

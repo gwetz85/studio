@@ -6,6 +6,8 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/use-auth";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
+import { db } from "@/lib/db";
 
 export default function RootLayout({
   children,
@@ -16,6 +18,43 @@ export default function RootLayout({
   const pathname = usePathname();
 
   const isLoginPage = pathname === "/login";
+
+  // Auto Backup Logic: Every 10 minutes
+  useEffect(() => {
+    if (!isLoggedIn) return;
+
+    const performAutoBackup = async () => {
+      try {
+        const customers = await db.customers.toArray();
+        const packages = await db.packages.toArray();
+        const payments = await db.payments.toArray();
+        
+        const backupData = {
+          version: "1.0.0",
+          timestamp: Date.now(),
+          data: { customers, packages, payments }
+        };
+
+        localStorage.setItem("mtnet_auto_backup", JSON.stringify(backupData));
+        localStorage.setItem("mtnet_last_backup_time", backupData.timestamp.toString());
+        
+        // Dispatch custom event to update sidebar UI
+        window.dispatchEvent(new Event('mtnet-backup-updated'));
+        
+        console.log("Auto Backup performed at:", new Date().toLocaleTimeString());
+      } catch (error) {
+        console.error("Auto Backup failed:", error);
+      }
+    };
+
+    // Run once on load
+    performAutoBackup();
+
+    // Set interval for 10 minutes (600,000 ms)
+    const interval = setInterval(performAutoBackup, 10 * 60 * 1000);
+    
+    return () => clearInterval(interval);
+  }, [isLoggedIn]);
 
   if (isLoading) {
     return (
