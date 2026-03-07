@@ -1,8 +1,7 @@
-
 "use client"
 
 import * as React from "react"
-import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut, Database, Clock } from "lucide-react"
+import { LayoutDashboard, Users, Package, CreditCard, Settings, Wifi, ShieldAlert, LogOut, Database, Clock, UserPlus } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
@@ -27,6 +26,11 @@ const items = [
     title: "Informasi",
     url: "/",
     icon: LayoutDashboard,
+  },
+  {
+    title: "PSB",
+    url: "/psb",
+    icon: UserPlus,
   },
   {
     title: "Pelanggan",

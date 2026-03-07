@@ -15,7 +15,18 @@ export interface Customer {
   phone: string;
   email: string;
   packageId: number;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'psb';
+  createdAt: number;
+}
+
+export interface PSBRequest {
+  id?: number;
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+  packageId: number;
+  status: 'pasif' | 'aktif';
   createdAt: number;
 }
 
@@ -32,13 +43,15 @@ export class NetInvoiceDB extends Dexie {
   customers!: Table<Customer>;
   packages!: Table<ServicePackage>;
   payments!: Table<Payment>;
+  psb!: Table<PSBRequest>;
 
   constructor() {
     super('MTNETBillingDB');
-    this.version(1).stores({
+    this.version(2).stores({
       customers: '++id, name, email, packageId, status',
       packages: '++id, name',
-      payments: '++id, customerId, billingPeriod, status'
+      payments: '++id, customerId, billingPeriod, status',
+      psb: '++id, name, email, packageId, status'
     });
   }
 }
