@@ -37,14 +37,9 @@ import { id as localeId } from "date-fns/locale"
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { logout, role } = useAuth();
+  const { logout, role, isLoading: authLoading } = useAuth();
   const [isDarkMode, setIsDarkMode] = React.useState(false);
   const [lastAutoBackupTime, setLastAutoBackupTime] = React.useState<string | null>(null);
-
-  // Guard: Only admin can access this page via URL
-  if (role !== 'admin') {
-    return null;
-  }
 
   // Handle Theme Init and Auto Backup Info
   React.useEffect(() => {
@@ -56,9 +51,29 @@ export default function SettingsPage() {
 
     const backupTime = localStorage.getItem("mtnet_last_backup_time");
     if (backupTime) {
-      setLastAutoBackupTime(format(new Date(parseInt(backupTime)), "dd MMM yyyy, HH:mm", { locale: localeId }));
+      try {
+        const timeValue = parseInt(backupTime);
+        if (!isNaN(timeValue)) {
+          setLastAutoBackupTime(format(new Date(timeValue), "dd MMM yyyy, HH:mm", { locale: localeId }));
+        }
+      } catch (e) {
+        console.error("Invalid backup time format", e);
+      }
     }
   }, []);
+
+  // Guard: Check auth status and role AFTER all hooks are defined
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (role !== 'admin') {
+    return null;
+  }
 
   const toggleTheme = (checked: boolean) => {
     setIsDarkMode(checked);
@@ -182,7 +197,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="grid gap-6">
-        {/* Tampilan Section */}
         <Card className="border-none shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -203,7 +217,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Database Section */}
         <Card className="border-none shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -261,7 +274,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Danger Zone Section */}
         <Card className="border-2 border-rose-100 shadow-sm bg-rose-50/20">
           <CardHeader>
             <div className="flex items-center gap-2 text-rose-600">
@@ -295,7 +307,6 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Info Version Section */}
         <Card className="border-none shadow-sm bg-slate-900 text-white">
           <CardContent className="p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
