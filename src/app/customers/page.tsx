@@ -45,49 +45,49 @@ export default function CustomersPage() {
     try {
       if (editingCustomer?.id) {
         await db.customers.update(editingCustomer.id, data);
-        toast({ title: "Customer updated" });
+        toast({ title: "Pelanggan diperbarui" });
       } else {
         await db.customers.add(data);
-        toast({ title: "Customer added" });
+        toast({ title: "Pelanggan ditambahkan" });
       }
       setIsDialogOpen(false);
       setEditingCustomer(null);
     } catch (error) {
-      toast({ variant: "destructive", title: "Failed to save customer" });
+      toast({ variant: "destructive", title: "Gagal menyimpan pelanggan" });
     }
   };
 
   const deleteCustomer = async (id: number) => {
-    if (confirm("Delete this customer? This will not delete their payment history.")) {
+    if (confirm("Hapus pelanggan ini? Riwayat pembayaran mereka tidak akan dihapus.")) {
       await db.customers.delete(id);
-      toast({ title: "Customer removed" });
+      toast({ title: "Pelanggan dihapus" });
     }
   };
 
   const getPackageName = (id: number) => {
-    return packages?.find(p => p.id === id)?.name || "Unknown";
+    return packages?.find(p => p.id === id)?.name || "Tidak Diketahui";
   };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Customers</h1>
-          <p className="text-muted-foreground">Manage your subscriber base.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Pelanggan</h1>
+          <p className="text-muted-foreground">Kelola basis pelanggan Anda.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90" onClick={() => setEditingCustomer(null)}>
-              <Plus className="mr-2 h-4 w-4" /> Add Customer
+              <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{editingCustomer ? "Edit Customer" : "Add New Customer"}</DialogTitle>
+              <DialogTitle>{editingCustomer ? "Edit Pelanggan" : "Tambah Pelanggan Baru"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
               <div className="space-y-2 col-span-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Nama Lengkap</Label>
                 <Input id="name" name="name" defaultValue={editingCustomer?.name} required />
               </div>
               <div className="space-y-2">
@@ -95,18 +95,18 @@ export default function CustomersPage() {
                 <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">Nomor Telepon</Label>
                 <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} required />
               </div>
               <div className="space-y-2 col-span-2">
-                <Label htmlFor="address">Service Address</Label>
+                <Label htmlFor="address">Alamat Layanan</Label>
                 <Input id="address" name="address" defaultValue={editingCustomer?.address} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="packageId">Internet Package</Label>
+                <Label htmlFor="packageId">Paket Internet</Label>
                 <Select name="packageId" defaultValue={editingCustomer?.packageId?.toString()}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a package" />
+                    <SelectValue placeholder="Pilih paket" />
                   </SelectTrigger>
                   <SelectContent>
                     {packages?.map(pkg => (
@@ -122,14 +122,14 @@ export default function CustomersPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="active">Aktif</SelectItem>
+                    <SelectItem value="inactive">Nonaktif</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <DialogFooter className="col-span-2 mt-4">
                 <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/80">
-                  {editingCustomer ? "Update Profile" : "Create Profile"}
+                  {editingCustomer ? "Perbarui Profil" : "Buat Profil"}
                 </Button>
               </DialogFooter>
             </form>
@@ -140,7 +140,7 @@ export default function CustomersPage() {
       <div className="flex items-center gap-4 bg-white p-3 rounded-lg shadow-sm">
         <Search className="h-4 w-4 text-muted-foreground ml-2" />
         <Input 
-          placeholder="Search by name or email..." 
+          placeholder="Cari berdasarkan nama atau email..." 
           className="border-none shadow-none focus-visible:ring-0" 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -152,11 +152,11 @@ export default function CustomersPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Package</TableHead>
+                <TableHead>Pelanggan</TableHead>
+                <TableHead>Paket</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Telepon</TableHead>
+                <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -175,7 +175,7 @@ export default function CustomersPage() {
                   </TableCell>
                   <TableCell>
                     <Badge variant={customer.status === 'active' ? 'default' : 'secondary'} className={customer.status === 'active' ? 'bg-green-500 hover:bg-green-600' : ''}>
-                      {customer.status}
+                      {customer.status === 'active' ? 'Aktif' : 'Nonaktif'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm">{customer.phone}</TableCell>
@@ -194,7 +194,7 @@ export default function CustomersPage() {
               {!customers?.length && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                    {search ? "No customers match your search." : "No customers registered yet."}
+                    {search ? "Tidak ada pelanggan yang cocok dengan pencarian." : "Belum ada pelanggan terdaftar."}
                   </TableCell>
                 </TableRow>
               )}

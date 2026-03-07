@@ -31,22 +31,22 @@ export default function PackagesPage() {
     try {
       if (editingPackage?.id) {
         await db.packages.update(editingPackage.id, data);
-        toast({ title: "Package updated successfully" });
+        toast({ title: "Paket berhasil diperbarui" });
       } else {
         await db.packages.add(data);
-        toast({ title: "Package added successfully" });
+        toast({ title: "Paket berhasil ditambahkan" });
       }
       setIsDialogOpen(false);
       setEditingPackage(null);
     } catch (error) {
-      toast({ variant: "destructive", title: "Failed to save package" });
+      toast({ variant: "destructive", title: "Gagal menyimpan paket" });
     }
   };
 
   const deletePackage = async (id: number) => {
-    if (confirm("Are you sure you want to delete this package?")) {
+    if (confirm("Apakah Anda yakin ingin menghapus paket ini?")) {
       await db.packages.delete(id);
-      toast({ title: "Package deleted" });
+      toast({ title: "Paket dihapus" });
     }
   };
 
@@ -54,41 +54,41 @@ export default function PackagesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Service Packages</h1>
-          <p className="text-muted-foreground">Manage your internet plan offerings.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Paket Layanan</h1>
+          <p className="text-muted-foreground">Kelola penawaran rencana internet Anda.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90" onClick={() => setEditingPackage(null)}>
-              <Plus className="mr-2 h-4 w-4" /> Add Package
+              <Plus className="mr-2 h-4 w-4" /> Tambah Paket
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{editingPackage ? "Edit Package" : "Add New Package"}</DialogTitle>
+              <DialogTitle>{editingPackage ? "Edit Paket" : "Tambah Paket Baru"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Package Name</Label>
-                <Input id="name" name="name" defaultValue={editingPackage?.name} required placeholder="e.g. Basic Home" />
+                <Label htmlFor="name">Nama Paket</Label>
+                <Input id="name" name="name" defaultValue={editingPackage?.name} required placeholder="misal: Home Basic" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price (Monthly)</Label>
+                  <Label htmlFor="price">Harga (Bulanan)</Label>
                   <Input id="price" name="price" type="number" defaultValue={editingPackage?.price} required placeholder="0" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="speed">Speed</Label>
-                  <Input id="speed" name="speed" defaultValue={editingPackage?.speed} required placeholder="e.g. 20 Mbps" />
+                  <Label htmlFor="speed">Kecepatan</Label>
+                  <Input id="speed" name="speed" defaultValue={editingPackage?.speed} required placeholder="misal: 20 Mbps" />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Input id="description" name="description" defaultValue={editingPackage?.description} placeholder="Short plan details" />
+                <Label htmlFor="description">Deskripsi</Label>
+                <Input id="description" name="description" defaultValue={editingPackage?.description} placeholder="Detail singkat paket" />
               </div>
               <DialogFooter>
                 <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/80">
-                  {editingPackage ? "Update Package" : "Save Package"}
+                  {editingPackage ? "Perbarui Paket" : "Simpan Paket"}
                 </Button>
               </DialogFooter>
             </form>
@@ -101,11 +101,11 @@ export default function PackagesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Speed</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead>Nama</TableHead>
+                <TableHead>Kecepatan</TableHead>
+                <TableHead>Harga</TableHead>
+                <TableHead>Deskripsi</TableHead>
+                <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -130,7 +130,7 @@ export default function PackagesPage() {
               {!packages?.length && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                    No packages defined yet. Add your first service package to get started.
+                    Belum ada paket yang ditentukan. Tambahkan paket layanan pertama Anda untuk memulai.
                   </TableCell>
                 </TableRow>
               )}

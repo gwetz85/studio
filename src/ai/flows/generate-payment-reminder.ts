@@ -1,25 +1,25 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for generating personalized payment reminder messages.
+ * @fileOverview Alur Genkit untuk menghasilkan pesan pengingat pembayaran yang dipersonalisasi.
  *
- * - generatePaymentReminder - A function that generates a payment reminder message.
- * - GeneratePaymentReminderInput - The input type for the generatePaymentReminder function.
- * - GeneratePaymentReminderOutput - The return type for the generatePaymentReminder function.
+ * - generatePaymentReminder - Fungsi yang menghasilkan pesan pengingat pembayaran.
+ * - GeneratePaymentReminderInput - Tipe input untuk fungsi generatePaymentReminder.
+ * - GeneratePaymentReminderOutput - Tipe keluaran untuk fungsi generatePaymentReminder.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GeneratePaymentReminderInputSchema = z.object({
-  customerName: z.string().describe('The name of the customer.'),
-  outstandingAmount: z.number().describe('The outstanding amount due.'),
+  customerName: z.string().describe('Nama pelanggan.'),
+  outstandingAmount: z.number().describe('Jumlah tunggakan yang harus dibayar.'),
 });
 export type GeneratePaymentReminderInput = z.infer<
   typeof GeneratePaymentReminderInputSchema
 >;
 
 const GeneratePaymentReminderOutputSchema = z.object({
-  message: z.string().describe('The personalized payment reminder message.'),
+  message: z.string().describe('Pesan pengingat pembayaran yang dipersonalisasi.'),
 });
 export type GeneratePaymentReminderOutput = z.infer<
   typeof GeneratePaymentReminderOutputSchema
@@ -35,16 +35,16 @@ const paymentReminderPrompt = ai.definePrompt({
   name: 'paymentReminderPrompt',
   input: {schema: GeneratePaymentReminderInputSchema},
   output: {schema: GeneratePaymentReminderOutputSchema},
-  prompt: `You are a helpful assistant for a billing department. Your task is to generate a polite but firm payment reminder message for a customer whose internet bill is overdue. The message should include the customer's name and the outstanding amount. The message should be concise and professional. Do not include salutations or closings, just the body of the message.
+  prompt: `Anda adalah asisten yang membantu untuk departemen penagihan. Tugas Anda adalah menghasilkan pesan pengingat pembayaran yang sopan namun tegas untuk pelanggan yang tagihan internetnya sudah jatuh tempo. Pesan harus menyertakan nama pelanggan dan jumlah tunggakan. Pesan harus ringkas dan profesional dalam Bahasa Indonesia. Jangan sertakan salam pembuka atau penutup, cukup isi pesannya saja.
 
-Customer Name: {{{customerName}}}
-Outstanding Amount: {{{outstandingAmount}}}
+Nama Pelanggan: {{{customerName}}}
+Jumlah Tunggakan: {{{outstandingAmount}}}
 
-Please generate the reminder message in a JSON format with a single field 'message'.
+Harap hasilkan pesan pengingat dalam format JSON dengan satu bidang 'message'.
 
-Example Output:
+Contoh Keluaran:
 {
-  "message": "Dear [Customer Name], this is a friendly reminder that your internet bill of [Amount] is overdue. Please settle it as soon as possible. Thank you."
+  "message": "Halo [Nama Pelanggan], ini adalah pengingat ramah bahwa tagihan internet Anda sebesar [Jumlah] telah melewati jatuh tempo. Mohon segera melakukan pembayaran. Terima kasih."
 }`,
 });
 

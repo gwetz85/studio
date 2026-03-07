@@ -35,7 +35,7 @@ export default function PaymentsPage() {
     const pkg = packages?.find(p => p.id === customer?.packageId);
     
     if (!pkg) {
-      toast({ variant: "destructive", title: "Customer has no assigned package" });
+      toast({ variant: "destructive", title: "Pelanggan tidak memiliki paket yang ditetapkan" });
       return;
     }
 
@@ -49,10 +49,10 @@ export default function PaymentsPage() {
 
     try {
       await db.payments.add(data);
-      toast({ title: "Invoice recorded" });
+      toast({ title: "Invoice tercatat" });
       setIsDialogOpen(false);
     } catch (error) {
-      toast({ variant: "destructive", title: "Failed to save payment" });
+      toast({ variant: "destructive", title: "Gagal menyimpan pembayaran" });
     }
   };
 
@@ -61,7 +61,7 @@ export default function PaymentsPage() {
       status, 
       paymentDate: status === 'paid' ? Date.now() : undefined 
     });
-    toast({ title: `Payment marked as ${status}` });
+    toast({ title: `Pembayaran ditandai sebagai ${status === 'paid' ? 'Lunas' : status === 'pending' ? 'Menunggu' : 'Terlambat'}` });
   };
 
   const handleGenerateReminder = async (payment: Payment) => {
@@ -80,8 +80,8 @@ export default function PaymentsPage() {
       });
       setReminderMessage(result.message);
     } catch (error) {
-      toast({ variant: "destructive", title: "AI Generation failed. Check your connection." });
-      setReminderMessage("Connection needed for AI features.");
+      toast({ variant: "destructive", title: "Generasi AI gagal. Periksa koneksi Anda." });
+      setReminderMessage("Koneksi diperlukan untuk fitur AI.");
     } finally {
       setIsGenerating(false);
     }
@@ -89,34 +89,34 @@ export default function PaymentsPage() {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(reminderMessage);
-    toast({ title: "Reminder copied to clipboard" });
+    toast({ title: "Pengingat disalin ke papan klip" });
   };
 
-  const getCustomerName = (id: number) => customers?.find(c => c.id === id)?.name || "Unknown";
+  const getCustomerName = (id: number) => customers?.find(c => c.id === id)?.name || "Tidak Diketahui";
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Payments & Billing</h1>
-          <p className="text-muted-foreground">Track dues and generate AI-powered reminders.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Pembayaran & Penagihan</h1>
+          <p className="text-muted-foreground">Pantau tunggakan dan buat pengingat berbasis AI.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="mr-2 h-4 w-4" /> Create Invoice
+              <Plus className="mr-2 h-4 w-4" /> Buat Invoice
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>New Billing Entry</DialogTitle>
+              <DialogTitle>Entri Penagihan Baru</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="customerId">Customer</Label>
+                <Label htmlFor="customerId">Pelanggan</Label>
                 <Select name="customerId" required>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select customer" />
+                    <SelectValue placeholder="Pilih pelanggan" />
                   </SelectTrigger>
                   <SelectContent>
                     {customers?.map(c => (
@@ -127,7 +127,7 @@ export default function PaymentsPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="billingPeriod">Period (YYYY-MM)</Label>
+                  <Label htmlFor="billingPeriod">Periode (TTTT-BB)</Label>
                   <Input id="billingPeriod" name="billingPeriod" placeholder="2023-10" required />
                 </div>
                 <div className="space-y-2">
@@ -137,15 +137,15 @@ export default function PaymentsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="overdue">Overdue</SelectItem>
-                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="pending">Menunggu</SelectItem>
+                      <SelectItem value="overdue">Terlambat</SelectItem>
+                      <SelectItem value="paid">Lunas</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <DialogFooter>
-                <Button type="submit" className="w-full bg-accent text-accent-foreground">Generate Invoice</Button>
+                <Button type="submit" className="w-full bg-accent text-accent-foreground">Buat Invoice</Button>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -157,11 +157,11 @@ export default function PaymentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Customer</TableHead>
-                <TableHead>Period</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>Pelanggan</TableHead>
+                <TableHead>Periode</TableHead>
+                <TableHead>Jumlah</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -175,7 +175,7 @@ export default function PaymentsPage() {
                       variant={payment.status === 'paid' ? 'default' : payment.status === 'overdue' ? 'destructive' : 'secondary'}
                       className={payment.status === 'paid' ? 'bg-green-500 hover:bg-green-600' : ''}
                     >
-                      {payment.status.toUpperCase()}
+                      {payment.status === 'paid' ? 'LUNAS' : payment.status === 'overdue' ? 'TERLAMBAT' : 'MENUNGGU'}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -183,7 +183,7 @@ export default function PaymentsPage() {
                       {payment.status !== 'paid' && (
                         <>
                           <Button variant="outline" size="sm" className="h-8 text-xs bg-primary/5 border-primary/20 text-primary hover:bg-primary/10" onClick={() => updateStatus(payment.id!, 'paid')}>
-                            <CheckCircle2 className="mr-1 h-3 w-3" /> Mark Paid
+                            <CheckCircle2 className="mr-1 h-3 w-3" /> Tandai Lunas
                           </Button>
                           <Button variant="ghost" size="icon" className="h-8 w-8 text-accent" onClick={() => handleGenerateReminder(payment)}>
                             <Bell className="h-4 w-4" />
@@ -202,7 +202,7 @@ export default function PaymentsPage() {
               {!payments?.length && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                    No payment records yet.
+                    Belum ada catatan pembayaran.
                   </TableCell>
                 </TableRow>
               )}
@@ -216,32 +216,32 @@ export default function PaymentsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-accent" />
-              AI Payment Reminder
+              Pengingat Pembayaran AI
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {isGenerating ? (
               <div className="flex flex-col items-center justify-center py-8 space-y-4">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground text-center">AI is drafting a polite reminder based on customer details...</p>
+                <p className="text-sm text-muted-foreground text-center">AI sedang menyusun pengingat sopan berdasarkan detail pelanggan...</p>
               </div>
             ) : (
               <>
                 <div className="rounded-lg bg-secondary/30 p-4 border border-secondary text-sm leading-relaxed whitespace-pre-wrap">
-                  {reminderMessage || "Failed to generate reminder."}
+                  {reminderMessage || "Gagal membuat pengingat."}
                 </div>
                 <div className="flex justify-end">
                   <Button variant="outline" size="sm" onClick={copyToClipboard} disabled={!reminderMessage}>
-                    <Copy className="mr-2 h-4 w-4" /> Copy Message
+                    <Copy className="mr-2 h-4 w-4" /> Salin Pesan
                   </Button>
                 </div>
               </>
             )}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setReminderDialogOpen(false)}>Close</Button>
+            <Button variant="ghost" onClick={() => setReminderDialogOpen(false)}>Tutup</Button>
             <Button className="bg-accent text-accent-foreground" onClick={() => handleGenerateReminder(activePayment!)}>
-              Regenerate
+              Buat Ulang
             </Button>
           </DialogFooter>
         </DialogContent>

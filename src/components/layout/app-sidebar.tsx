@@ -20,22 +20,22 @@ import {
 
 const items = [
   {
-    title: "Dashboard",
+    title: "Dasbor",
     url: "/",
     icon: LayoutDashboard,
   },
   {
-    title: "Customers",
+    title: "Pelanggan",
     url: "/customers",
     icon: Users,
   },
   {
-    title: "Service Packages",
+    title: "Paket Layanan",
     url: "/packages",
     icon: Package,
   },
   {
-    title: "Payments",
+    title: "Pembayaran",
     url: "/payments",
     icon: CreditCard,
   },
@@ -53,13 +53,13 @@ export function AppSidebar() {
           </div>
           <div className="flex flex-col gap-0.5 leading-none">
             <span className="font-semibold text-lg">NetInvoice</span>
-            <span className="text-xs opacity-80">Offline Manager</span>
+            <span className="text-xs opacity-80">Manajer Luring</span>
           </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/60">Management</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-sidebar-foreground/60">Manajemen</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -83,9 +83,9 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border/30">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Settings">
+            <SidebarMenuButton tooltip="Pengaturan">
               <Settings />
-              <span>Settings</span>
+              <span>Pengaturan</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

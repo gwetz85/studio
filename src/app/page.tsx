@@ -25,28 +25,28 @@ export default function Dashboard() {
 
   const dashboardItems = [
     {
-      title: "Total Customers",
+      title: "Total Pelanggan",
       value: stats.customers,
       icon: Users,
       color: "text-primary",
       bg: "bg-primary/10",
     },
     {
-      title: "Active Packages",
+      title: "Paket Aktif",
       value: stats.packages,
       icon: Package,
       color: "text-accent",
       bg: "bg-accent/10",
     },
     {
-      title: "Pending Payments",
+      title: "Pembayaran Menunggu",
       value: stats.pending,
       icon: CreditCard,
       color: "text-blue-500",
       bg: "bg-blue-500/10",
     },
     {
-      title: "Overdue Alerts",
+      title: "Peringatan Terlambat",
       value: stats.overdue,
       icon: AlertCircle,
       color: "text-destructive",
@@ -57,8 +57,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome to NetInvoice Offline. Here's an overview of your internet service.</p>
+        <h1 className="text-3xl font-bold tracking-tight text-primary">Dasbor</h1>
+        <p className="text-muted-foreground">Selamat datang di NetInvoice Luring. Berikut adalah ringkasan layanan internet Anda.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -80,44 +80,44 @@ export default function Dashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4 border-none shadow-sm">
           <CardHeader>
-            <CardTitle>Quick Start Guide</CardTitle>
+            <CardTitle>Panduan Mulai Cepat</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-4 rounded-lg bg-secondary/50 border border-secondary">
-              <h3 className="font-semibold text-primary mb-1">Step 1: Define Packages</h3>
-              <p className="text-sm text-muted-foreground">Go to Service Packages to set up your internet plans and pricing.</p>
+              <h3 className="font-semibold text-primary mb-1">Langkah 1: Tentukan Paket</h3>
+              <p className="text-sm text-muted-foreground">Buka Paket Layanan untuk mengatur rencana internet dan harga Anda.</p>
             </div>
             <div className="p-4 rounded-lg bg-secondary/50 border border-secondary">
-              <h3 className="font-semibold text-primary mb-1">Step 2: Add Customers</h3>
-              <p className="text-sm text-muted-foreground">Register your customers and assign them a package in the Customers tab.</p>
+              <h3 className="font-semibold text-primary mb-1">Langkah 2: Tambah Pelanggan</h3>
+              <p className="text-sm text-muted-foreground">Daftarkan pelanggan Anda dan tetapkan paket di tab Pelanggan.</p>
             </div>
             <div className="p-4 rounded-lg bg-secondary/50 border border-secondary">
-              <h3 className="font-semibold text-primary mb-1">Step 3: Track Payments</h3>
-              <p className="text-sm text-muted-foreground">Record monthly payments and handle overdue reminders using our AI tool.</p>
+              <h3 className="font-semibold text-primary mb-1">Langkah 3: Pantau Pembayaran</h3>
+              <p className="text-sm text-muted-foreground">Catat pembayaran bulanan dan tangani pengingat tunggakan menggunakan alat AI kami.</p>
             </div>
           </CardContent>
         </Card>
         
         <Card className="col-span-3 border-none shadow-sm">
           <CardHeader>
-            <CardTitle>System Health</CardTitle>
+            <CardTitle>Kesehatan Sistem</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm">Storage Status</span>
-                <span className="text-sm font-bold text-green-600">Sync (Local)</span>
+                <span className="text-sm">Status Penyimpanan</span>
+                <span className="text-sm font-bold text-green-600">Sinkron (Lokal)</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Database</span>
+                <span className="text-sm">Basis Data</span>
                 <span className="text-sm font-bold">IndexedDB</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">Last Backup</span>
-                <span className="text-sm font-bold text-muted-foreground">Never</span>
+                <span className="text-sm">Cadangan Terakhir</span>
+                <span className="text-sm font-bold text-muted-foreground">Belum Pernah</span>
               </div>
               <p className="text-xs text-muted-foreground pt-4 border-t">
-                Your data is stored securely in this browser's database. It remains available even when you are offline.
+                Data Anda disimpan dengan aman di basis data peramban ini. Data tetap tersedia meskipun Anda sedang luring.
               </p>
             </div>
           </CardContent>

@@ -5,8 +5,8 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'NetInvoice Offline',
-  description: 'Manage internet customers and payments offline',
+  title: 'NetInvoice Luring',
+  description: 'Kelola pelanggan internet dan pembayaran secara luring',
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="id">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -29,8 +29,8 @@ export default function RootLayout({
               <SidebarTrigger className="-ml-1" />
               <div className="flex-1" />
               <div className="flex items-center gap-2">
-                <div className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Offline Ready" />
-                <span className="text-xs font-medium text-muted-foreground">Local Mode</span>
+                <div className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Siap Luring" />
+                <span className="text-xs font-medium text-muted-foreground">Mode Lokal</span>
               </div>
             </header>
             <main className="flex-1 p-6 md:p-8">
