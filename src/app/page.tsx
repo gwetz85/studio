@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -117,7 +116,7 @@ export default function Dashboard() {
       bg: "bg-amber-50",
     },
     {
-      title: "Pelanggan Terisolir",
+      title: "User Terisolir",
       value: stats.isolated,
       icon: ShieldAlert,
       color: "text-rose-600",
@@ -128,7 +127,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Informasi</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
         <p className="text-slate-500">Ringkasan operasional layanan internet Anda hari ini.</p>
       </div>
 

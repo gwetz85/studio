@@ -23,9 +23,14 @@ import {
 
 const items = [
   {
-    title: "Informasi",
+    title: "Dashboard",
     url: "/",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Paket Layanan",
+    url: "/packages",
+    icon: Package,
   },
   {
     title: "PSB",
@@ -38,29 +43,24 @@ const items = [
     icon: Users,
   },
   {
+    title: "User Terisolir",
+    url: "/isolated",
+    icon: ShieldAlert,
+  },
+  {
     title: "User Nonaktif",
     url: "/inactive",
     icon: UserX,
   },
   {
-    title: "Terisolir",
-    url: "/isolated",
-    icon: ShieldAlert,
+    title: "Pembayaran",
+    url: "/payments",
+    icon: CreditCard,
   },
   {
     title: "Menu Teknisi",
     url: "/technician",
     icon: Wrench,
-  },
-  {
-    title: "Paket Layanan",
-    url: "/packages",
-    icon: Package,
-  },
-  {
-    title: "Pembayaran",
-    url: "/payments",
-    icon: CreditCard,
   },
 ]
 

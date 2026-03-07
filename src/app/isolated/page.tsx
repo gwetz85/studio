@@ -42,7 +42,7 @@ export default function IsolatedPage() {
           <div className="p-2 bg-rose-100 rounded-lg">
             <ShieldAlert className="h-6 w-6 text-rose-600" />
           </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Pelanggan Terisolir</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">User Terisolir</h1>
         </div>
         <p className="text-slate-500">
           Daftar pelanggan aktif yang belum melunasi tagihan periode <strong>{currentPeriod}</strong> setelah melewati batas tanggal 9.
