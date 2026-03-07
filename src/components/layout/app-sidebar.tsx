@@ -102,18 +102,18 @@ export function AppSidebar() {
           <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <Wifi className="size-5" />
           </div>
-          <div className="flex flex-col gap-1 leading-none overflow-hidden">
+          <div className="flex flex-col gap-1.5 leading-none overflow-hidden">
             <span className="font-bold text-lg truncate tracking-tight">MTNET SYSTEM</span>
             <div className="flex flex-col gap-1">
               {lastBackup && (
-                <div className="flex items-center gap-1.5 text-[9px] text-sidebar-foreground/80">
-                  <Database className="size-3 shrink-0" />
+                <div className="flex items-center gap-1.5 text-[11px] text-sidebar-foreground/80">
+                  <Database className="size-3.5 shrink-0" />
                   <span className="truncate font-medium">Backup: {lastBackup}</span>
                 </div>
               )}
               {currentTime && (
-                <div className="flex items-center gap-1.5 text-[9px] text-sidebar-foreground/90 font-mono">
-                  <Clock className="size-3 shrink-0" />
+                <div className="flex items-center gap-1.5 text-[11px] text-sidebar-foreground/90 font-mono">
+                  <Clock className="size-3.5 shrink-0" />
                   <span className="truncate font-bold">Jam: {currentTime}</span>
                 </div>
               )}
