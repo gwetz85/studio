@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -6,10 +7,60 @@ import { Users, Package, CreditCard, AlertCircle, CheckCircle2, ShieldAlert } fr
 import { db } from "@/lib/db"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Badge } from "@/components/ui/badge"
+import { useToast } from "@/hooks/use-toast"
 
 export default function Dashboard() {
+  const { toast } = useToast();
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const currentDay = new Date().getDate();
+  const [isProcessingAutoBill, setIsProcessingAutoBill] = React.useState(false);
+
+  // Auto Generate Bills Logic
+  React.useEffect(() => {
+    const generateMonthlyBills = async () => {
+      // Hanya jalankan jika hari ini adalah tanggal 1 atau lebih
+      // Dan pastikan tidak sedang memproses
+      if (isProcessingAutoBill) return;
+      
+      try {
+        setIsProcessingAutoBill(true);
+        const activeCustomers = await db.customers.where('status').equals('active').toArray();
+        const allPackages = await db.packages.toArray();
+        const currentPayments = await db.payments.where('billingPeriod').equals(currentPeriod).toArray();
+        
+        const existingCustomerIds = new Set(currentPayments.map(p => p.customerId));
+        let generatedCount = 0;
+
+        for (const customer of activeCustomers) {
+          if (!existingCustomerIds.has(customer.id!)) {
+            const pkg = allPackages.find(p => p.id === customer.packageId);
+            if (pkg) {
+              await db.payments.add({
+                customerId: customer.id!,
+                amount: pkg.price,
+                billingPeriod: currentPeriod,
+                status: 'pending',
+              });
+              generatedCount++;
+            }
+          }
+        }
+
+        if (generatedCount > 0) {
+          toast({
+            title: "Tagihan Otomatis Diterbitkan",
+            description: `${generatedCount} invoice baru untuk periode ${currentPeriod} telah berhasil dibuat secara otomatis.`,
+          });
+        }
+      } catch (error) {
+        console.error("Gagal melakukan auto-billing:", error);
+      } finally {
+        setIsProcessingAutoBill(false);
+      }
+    };
+
+    generateMonthlyBills();
+  }, [currentPeriod, toast]);
 
   const stats = useLiveQuery(async () => {
     const customerCount = await db.customers.count();
@@ -111,6 +162,13 @@ export default function Dashboard() {
               </div>
             </div>
             <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">1</div>
+              <div>
+                <h3 className="font-semibold text-slate-900">Tagihan Otomatis</h3>
+                <p className="text-sm text-slate-500">Aplikasi otomatis membuat tagihan untuk pelanggan aktif setiap tanggal 1 setiap bulannya.</p>
+              </div>
+            </div>
+            <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">!</div>
               <div>
                 <h3 className="font-semibold text-slate-900">Status Saat Ini</h3>
@@ -143,7 +201,7 @@ export default function Dashboard() {
                 </div>
                 <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/30 text-center">
                   <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">Mode</p>
-                  <p className="font-bold text-slate-900">Penyaringan 9/Blm</p>
+                  <p className="font-bold text-slate-900">Otomatis 1/Blm</p>
                 </div>
               </div>
             </div>
