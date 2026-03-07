@@ -16,6 +16,7 @@ export interface Customer {
   email: string;
   packageId: number;
   status: 'active' | 'passive' | 'inactive';
+  modemSnMac?: string; // Field baru untuk SN/MAC Modem
   createdAt: number;
   deactivationDate?: number; // Tanggal saat status berubah menjadi Non-Aktif
 }
@@ -28,6 +29,7 @@ export interface PSBRequest {
   email: string;
   packageId: number;
   status: 'pasif' | 'aktif';
+  modemSnMac?: string; // Field baru untuk SN/MAC Modem
   createdAt: number;
 }
 

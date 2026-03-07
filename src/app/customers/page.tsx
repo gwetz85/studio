@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Phone, MapPin, Eye, Receipt, Calendar, CreditCard, Clock } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, User, Phone, MapPin, Eye, Receipt, Calendar, Cpu } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -22,18 +22,17 @@ export default function CustomersPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
   const [editingCustomer, setEditingCustomer] = React.useState<Customer | null>(null);
-  const [viewingCustomer, setViewingCustomer] = React.useState<Customer | null>(null);
+  const [viewingCustomer, setViewingCustomer] = React.setViewingCustomer<Customer | null>(null);
 
   const customers = useLiveQuery(() => {
-    // Hanya tampilkan 'active' dan 'passive' di sini. 
-    // 'inactive' dipindahkan ke menu 'User Nonaktif'
     const query = db.customers.where('status').anyOf(['active', 'passive']);
     if (!search) return query.toArray();
     const s = search.toLowerCase();
     return query.filter(c => 
       (c.name?.toLowerCase().includes(s) || false) || 
       (c.email?.toLowerCase().includes(s) || false) ||
-      (c.phone?.includes(s) || false)
+      (c.phone?.includes(s) || false) ||
+      (c.modemSnMac?.toLowerCase().includes(s) || false)
     ).toArray();
   }, [search]);
 
@@ -81,6 +80,7 @@ export default function CustomersPage() {
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       address: formData.get("address") as string,
+      modemSnMac: formData.get("modemSnMac") as string,
       packageId: Number(formData.get("packageId")),
       status: newStatus,
       createdAt: editingCustomer?.createdAt || Date.now(),
@@ -155,6 +155,10 @@ export default function CustomersPage() {
                 <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} placeholder="0812..." required />
               </div>
               <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="modemSnMac">SN / MAC Modem</Label>
+                <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} placeholder="Contoh: SN123456789 / MAC: 00:AA:BB..." />
+              </div>
+              <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="address">Alamat Lengkap</Label>
                 <Input id="address" name="address" defaultValue={editingCustomer?.address} placeholder="Jl. Merdeka No. 10..." required />
               </div>
@@ -187,11 +191,6 @@ export default function CustomersPage() {
                 </Select>
               </div>
             </div>
-            {editingCustomer?.status === 'inactive' && (
-              <p className="text-[10px] text-amber-500 italic">
-                * Pelanggan ini akan dipindahkan ke menu 'User Nonaktif' setelah Anda menyimpan perubahan.
-              </p>
-            )}
             <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
               <Button type="submit" className="bg-primary hover:bg-primary/90">
@@ -233,6 +232,13 @@ export default function CustomersPage() {
                           <MapPin className="h-4 w-4 text-primary mt-1" />
                           <p className="text-sm text-slate-600 leading-relaxed">{viewingCustomer.address}</p>
                         </div>
+                        <div className="flex items-start gap-3">
+                          <Cpu className="h-4 w-4 text-primary mt-1" />
+                          <div>
+                            <p className="text-xs text-slate-400 font-bold uppercase tracking-tighter">SN / MAC Modem</p>
+                            <p className="text-sm text-slate-600">{viewingCustomer.modemSnMac || "Tidak ada data"}</p>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -257,7 +263,7 @@ export default function CustomersPage() {
                           </Badge>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-slate-600">
-                          <Calendar className="h-4 w-4 text-slate-400" />
+                          <Calendar className="h-4 w-4 text-sidebar-foreground/40" />
                           <span>Terdaftar: {new Date(viewingCustomer.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                         </div>
                       </div>
@@ -322,7 +328,7 @@ export default function CustomersPage() {
       <div className="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
         <Search className="h-4 w-4 text-slate-400 ml-3" />
         <Input 
-          placeholder="Cari berdasarkan nama, email, atau nomor telepon..." 
+          placeholder="Cari berdasarkan nama, email, SN Modem, atau telepon..." 
           className="border-none shadow-none focus-visible:ring-0 text-slate-600 bg-transparent" 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -338,7 +344,7 @@ export default function CustomersPage() {
                   <TableHead className="py-4 px-6">Identitas Pelanggan</TableHead>
                   <TableHead>Paket</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Kontak & Alamat</TableHead>
+                  <TableHead>Kontak & Modem</TableHead>
                   <TableHead className="text-right px-6">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -364,9 +370,9 @@ export default function CustomersPage() {
                     <TableCell>
                       <Badge 
                         className={
-                          customer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100' : 
-                          customer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100 hover:bg-amber-100' :
-                          'bg-rose-50 text-rose-700 border-rose-100 hover:bg-rose-100'
+                          customer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100' : 
+                          customer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                          'bg-rose-50 text-rose-700 border-rose-100'
                         }
                       >
                         {customer.status === 'active' ? 'Aktif' : 
@@ -376,7 +382,7 @@ export default function CustomersPage() {
                     <TableCell>
                       <div className="flex flex-col gap-1 text-sm text-slate-600">
                         <div className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {customer.phone}</div>
-                        <div className="flex items-center gap-1.5 max-w-[200px] truncate"><MapPin className="h-3 w-3" /> {customer.address}</div>
+                        <div className="flex items-center gap-1.5 text-xs text-primary font-mono"><Cpu className="h-3 w-3" /> {customer.modemSnMac || "-"}</div>
                       </div>
                     </TableCell>
                     <TableCell className="text-right px-6">

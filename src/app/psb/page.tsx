@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -9,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, UserPlus, Phone, MapPin, CheckCircle } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, UserPlus, Phone, MapPin, Cpu } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -28,7 +27,8 @@ export default function PSBPage() {
     return db.psb
       .filter(p => 
         (p.name?.toLowerCase().includes(s) || false) || 
-        (p.phone?.includes(s) || false)
+        (p.phone?.includes(s) || false) ||
+        (p.modemSnMac?.toLowerCase().includes(s) || false)
       )
       .toArray();
   }, [search]);
@@ -44,6 +44,7 @@ export default function PSBPage() {
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       address: formData.get("address") as string,
+      modemSnMac: formData.get("modemSnMac") as string,
       packageId: Number(formData.get("packageId")),
       status: status,
       createdAt: editingPSB?.createdAt || Date.now(),
@@ -56,6 +57,7 @@ export default function PSBPage() {
           email: data.email,
           phone: data.phone,
           address: data.address,
+          modemSnMac: data.modemSnMac,
           packageId: data.packageId,
           status: 'active',
           createdAt: Date.now(),
@@ -132,6 +134,10 @@ export default function PSBPage() {
                   <Input id="phone" name="phone" defaultValue={editingPSB?.phone} placeholder="0812..." required />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="modemSnMac">SN / MAC Modem</Label>
+                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingPSB?.modemSnMac} placeholder="SN Modem / Alamat MAC" />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="address">Alamat Pemasangan</Label>
                   <Input id="address" name="address" defaultValue={editingPSB?.address} placeholder="Alamat lengkap..." required />
                 </div>
@@ -163,7 +169,6 @@ export default function PSBPage() {
                   </Select>
                 </div>
               </div>
-              <p className="text-[10px] text-slate-500 italic">* Jika status diubah ke 'Aktif', data akan otomatis dipindahkan ke menu Pelanggan.</p>
               <DialogFooter className="pt-4">
                 <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
                 <Button type="submit" className="bg-primary hover:bg-primary/90">
@@ -178,7 +183,7 @@ export default function PSBPage() {
       <div className="flex items-center gap-4 bg-white p-2 rounded-xl shadow-sm border border-slate-100">
         <Search className="h-4 w-4 text-slate-400 ml-3" />
         <Input 
-          placeholder="Cari berdasarkan nama atau nomor telepon..." 
+          placeholder="Cari berdasarkan nama, telepon, atau modem..." 
           className="border-none shadow-none focus-visible:ring-0 text-slate-600 bg-transparent" 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -194,7 +199,7 @@ export default function PSBPage() {
                   <TableHead className="py-4 px-6">Calon Pelanggan</TableHead>
                   <TableHead>Paket Diminta</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Kontak & Alamat</TableHead>
+                  <TableHead>Modem & Alamat</TableHead>
                   <TableHead className="text-right px-6">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
@@ -215,7 +220,7 @@ export default function PSBPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1 text-sm text-slate-600">
-                        <div className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {request.phone}</div>
+                        <div className="flex items-center gap-1.5 text-xs text-primary font-mono"><Cpu className="h-3 w-3" /> {request.modemSnMac || "-"}</div>
                         <div className="flex items-center gap-1.5 max-w-[200px] truncate"><MapPin className="h-3 w-3" /> {request.address}</div>
                       </div>
                     </TableCell>
