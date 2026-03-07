@@ -22,7 +22,7 @@ export default function CustomersPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
   const [editingCustomer, setEditingCustomer] = React.useState<Customer | null>(null);
-  const [viewingCustomer, setViewingCustomer] = React.setViewingCustomer<Customer | null>(null);
+  const [viewingCustomer, setViewingCustomer] = React.useState<Customer | null>(null);
 
   const customers = useLiveQuery(() => {
     const query = db.customers.where('status').anyOf(['active', 'passive']);
