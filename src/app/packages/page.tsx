@@ -4,13 +4,14 @@ import * as React from "react"
 import { useLiveQuery } from "dexie-react-hooks"
 import { db, type ServicePackage } from "@/lib/db"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Wifi } from "lucide-react"
+import { Plus, Trash2, Edit2, Wifi, DollarSign, Zap } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 
 export default function PackagesPage() {
   const { toast } = useToast();
@@ -31,63 +32,72 @@ export default function PackagesPage() {
     try {
       if (editingPackage?.id) {
         await db.packages.update(editingPackage.id, data);
-        toast({ title: "Paket berhasil diperbarui" });
+        toast({ title: "Paket diperbarui" });
       } else {
         await db.packages.add(data);
-        toast({ title: "Paket berhasil ditambahkan" });
+        toast({ title: "Paket baru ditambahkan" });
       }
       setIsDialogOpen(false);
       setEditingPackage(null);
     } catch (error) {
-      toast({ variant: "destructive", title: "Gagal menyimpan paket" });
+      toast({ variant: "destructive", title: "Terjadi kesalahan" });
     }
   };
 
   const deletePackage = async (id: number) => {
-    if (confirm("Apakah Anda yakin ingin menghapus paket ini?")) {
+    if (confirm("Hapus paket layanan ini? Pelanggan yang menggunakan paket ini mungkin terdampak.")) {
       await db.packages.delete(id);
-      toast({ title: "Paket dihapus" });
+      toast({ title: "Paket telah dihapus" });
     }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Paket Layanan</h1>
-          <p className="text-muted-foreground">Kelola penawaran rencana internet Anda.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Paket Layanan</h1>
+          <p className="text-slate-500">Atur paket internet dan skema harga untuk pelanggan Anda.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90" onClick={() => setEditingPackage(null)}>
-              <Plus className="mr-2 h-4 w-4" /> Tambah Paket
+            <Button className="w-full sm:w-auto shadow-sm" onClick={() => setEditingPackage(null)}>
+              <Plus className="mr-2 h-4 w-4" /> Buat Paket Baru
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editingPackage ? "Edit Paket" : "Tambah Paket Baru"}</DialogTitle>
+          <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
+            <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
+              <DialogTitle className="flex items-center gap-2">
+                <Wifi className="h-5 w-5 text-primary" />
+                {editingPackage ? "Konfigurasi Paket" : "Tambah Paket Baru"}
+              </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="name">Nama Paket</Label>
-                <Input id="name" name="name" defaultValue={editingPackage?.name} required placeholder="misal: Home Basic" />
+                <Input id="name" name="name" defaultValue={editingPackage?.name} required placeholder="Contoh: Home Ultra 50" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price">Harga (Bulanan)</Label>
-                  <Input id="price" name="price" type="number" defaultValue={editingPackage?.price} required placeholder="0" />
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input id="price" name="price" type="number" className="pl-9" defaultValue={editingPackage?.price} required placeholder="0" />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="speed">Kecepatan</Label>
-                  <Input id="speed" name="speed" defaultValue={editingPackage?.speed} required placeholder="misal: 20 Mbps" />
+                  <div className="relative">
+                    <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input id="speed" name="speed" className="pl-9" defaultValue={editingPackage?.speed} required placeholder="Contoh: 50 Mbps" />
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Deskripsi</Label>
-                <Input id="description" name="description" defaultValue={editingPackage?.description} placeholder="Detail singkat paket" />
+                <Label htmlFor="description">Deskripsi Singkat</Label>
+                <Input id="description" name="description" defaultValue={editingPackage?.description} placeholder="Contoh: Cocok untuk keluarga 4 orang" />
               </div>
-              <DialogFooter>
-                <Button type="submit" className="bg-accent text-accent-foreground hover:bg-accent/80">
+              <DialogFooter className="pt-4">
+                <Button type="submit" className="w-full">
                   {editingPackage ? "Perbarui Paket" : "Simpan Paket"}
                 </Button>
               </DialogFooter>
@@ -96,47 +106,57 @@ export default function PackagesPage() {
         </Dialog>
       </div>
 
-      <Card className="border-none shadow-sm">
-        <CardContent className="pt-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nama</TableHead>
-                <TableHead>Kecepatan</TableHead>
-                <TableHead>Harga</TableHead>
-                <TableHead>Deskripsi</TableHead>
-                <TableHead className="text-right">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {packages?.map((pkg) => (
-                <TableRow key={pkg.id}>
-                  <TableCell className="font-medium">{pkg.name}</TableCell>
-                  <TableCell>{pkg.speed}</TableCell>
-                  <TableCell>${pkg.price.toLocaleString()}</TableCell>
-                  <TableCell className="text-muted-foreground max-w-xs truncate">{pkg.description}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => { setEditingPackage(pkg); setIsDialogOpen(true); }}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => deletePackage(pkg.id!)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {!packages?.length && (
+      <Card className="border-none shadow-sm overflow-hidden">
+        <ScrollArea className="w-full">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader className="bg-slate-50/50">
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
-                    Belum ada paket yang ditentukan. Tambahkan paket layanan pertama Anda untuk memulai.
-                  </TableCell>
+                  <TableHead className="py-4 px-6">Nama Paket</TableHead>
+                  <TableHead>Kecepatan</TableHead>
+                  <TableHead>Harga</TableHead>
+                  <TableHead className="max-w-xs">Deskripsi</TableHead>
+                  <TableHead className="text-right px-6">Aksi</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
+              </TableHeader>
+              <TableBody>
+                {packages?.map((pkg) => (
+                  <TableRow key={pkg.id} className="hover:bg-slate-50/50 transition-colors">
+                    <TableCell className="py-4 px-6 font-semibold text-slate-900">{pkg.name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline" className="font-medium text-primary border-primary/20 bg-primary/5">
+                        <Zap className="h-3 w-3 mr-1" /> {pkg.speed}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-slate-700">${pkg.price.toLocaleString()}</TableCell>
+                    <TableCell className="text-slate-500 max-w-xs truncate">{pkg.description || "-"}</TableCell>
+                    <TableCell className="text-right px-6">
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-primary" onClick={() => { setEditingPackage(pkg); setIsDialogOpen(true); }}>
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-rose-600" onClick={() => deletePackage(pkg.id!)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {!packages?.length && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center py-20 text-slate-400">
+                      <div className="flex flex-col items-center gap-2">
+                        <Wifi className="h-8 w-8 opacity-20" />
+                        <p>Belum ada paket yang dikonfigurasi.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </Card>
     </div>
   )

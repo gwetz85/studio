@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Package, CreditCard, AlertCircle } from "lucide-react"
+import { Users, Package, CreditCard, AlertCircle, CheckCircle2 } from "lucide-react"
 import { db } from "@/lib/db"
 import { useLiveQuery } from "dexie-react-hooks"
 
@@ -21,104 +21,126 @@ export default function Dashboard() {
     }
   }, []);
 
-  if (!stats) return null;
+  if (!stats) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  );
 
   const dashboardItems = [
     {
       title: "Total Pelanggan",
       value: stats.customers,
       icon: Users,
-      color: "text-primary",
-      bg: "bg-primary/10",
+      color: "text-blue-600",
+      bg: "bg-blue-50",
     },
     {
       title: "Paket Aktif",
       value: stats.packages,
       icon: Package,
-      color: "text-accent",
-      bg: "bg-accent/10",
+      color: "text-cyan-600",
+      bg: "bg-cyan-50",
     },
     {
       title: "Pembayaran Menunggu",
       value: stats.pending,
       icon: CreditCard,
-      color: "text-blue-500",
-      bg: "bg-blue-500/10",
+      color: "text-amber-600",
+      bg: "bg-amber-50",
     },
     {
       title: "Peringatan Terlambat",
       value: stats.overdue,
       icon: AlertCircle,
-      color: "text-destructive",
-      bg: "bg-destructive/10",
+      color: "text-rose-600",
+      bg: "bg-rose-50",
     },
   ]
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-primary">Informasi</h1>
-        <p className="text-muted-foreground">Selamat datang di NetInvoice Luring. Berikut adalah ringkasan layanan internet Anda.</p>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-bold tracking-tight text-slate-900">Informasi</h1>
+        <p className="text-slate-500">Ringkasan operasional layanan internet Anda hari ini.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {dashboardItems.map((item) => (
-          <Card key={item.title} className="border-none shadow-sm hover:shadow-md transition-shadow">
+          <Card key={item.title} className="border-none shadow-sm hover:shadow-md transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{item.title}</CardTitle>
-              <div className={`${item.bg} ${item.color} p-2 rounded-lg`}>
+              <CardTitle className="text-sm font-medium text-slate-600">{item.title}</CardTitle>
+              <div className={`${item.bg} ${item.color} p-2.5 rounded-xl`}>
                 <item.icon className="h-4 w-4" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{item.value}</div>
+              <div className="text-3xl font-bold text-slate-900">{item.value}</div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4 border-none shadow-sm">
-          <CardHeader>
-            <CardTitle>Panduan Mulai Cepat</CardTitle>
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        <Card className="border-none shadow-sm overflow-hidden">
+          <CardHeader className="bg-white/50 border-b border-slate-100">
+            <CardTitle className="text-lg">Panduan Cepat</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="p-4 rounded-lg bg-secondary/50 border border-secondary">
-              <h3 className="font-semibold text-primary mb-1">Langkah 1: Tentukan Paket</h3>
-              <p className="text-sm text-muted-foreground">Buka Paket Layanan untuk mengatur rencana internet dan harga Anda.</p>
+          <CardContent className="p-6 space-y-4">
+            <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 transition-colors hover:bg-slate-100/50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">1</div>
+              <div>
+                <h3 className="font-semibold text-slate-900">Atur Paket Layanan</h3>
+                <p className="text-sm text-slate-500">Tentukan kecepatan dan harga bulanan untuk pelanggan Anda.</p>
+              </div>
             </div>
-            <div className="p-4 rounded-lg bg-secondary/50 border border-secondary">
-              <h3 className="font-semibold text-primary mb-1">Langkah 2: Tambah Pelanggan</h3>
-              <p className="text-sm text-muted-foreground">Daftarkan pelanggan Anda dan tetapkan paket di tab Pelanggan.</p>
+            <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 transition-colors hover:bg-slate-100/50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">2</div>
+              <div>
+                <h3 className="font-semibold text-slate-900">Daftarkan Pelanggan</h3>
+                <p className="text-sm text-slate-500">Masukkan data pelanggan dan pilih paket internet yang mereka gunakan.</p>
+              </div>
             </div>
-            <div className="p-4 rounded-lg bg-secondary/50 border border-secondary">
-              <h3 className="font-semibold text-primary mb-1">Langkah 3: Pantau Pembayaran</h3>
-              <p className="text-sm text-muted-foreground">Catat pembayaran bulanan dan tangani pengingat tunggakan menggunakan alat AI kami.</p>
+            <div className="flex gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 transition-colors hover:bg-slate-100/50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-primary shadow-sm font-bold">3</div>
+              <div>
+                <h3 className="font-semibold text-slate-900">Kelola Tagihan</h3>
+                <p className="text-sm text-slate-500">Pantau status pembayaran dan gunakan AI untuk mengirim pengingat.</p>
+              </div>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="col-span-3 border-none shadow-sm">
-          <CardHeader>
-            <CardTitle>Kesehatan Sistem</CardTitle>
+        <Card className="border-none shadow-sm overflow-hidden">
+          <CardHeader className="bg-white/50 border-b border-slate-100">
+            <CardTitle className="text-lg">Status Sistem</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Status Penyimpanan</span>
-                <span className="text-sm font-bold text-green-600">Sinkron (Lokal)</span>
+          <CardContent className="p-6">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-green-50/50 border border-green-100">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="h-5 w-5 text-green-600" />
+                  <span className="text-sm font-medium text-green-900">Database Lokal</span>
+                </div>
+                <Badge className="bg-green-600">Aktif</Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Basis Data</span>
-                <span className="text-sm font-bold">IndexedDB</span>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/30 text-center">
+                  <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">Teknologi</p>
+                  <p className="font-bold text-slate-900">IndexedDB</p>
+                </div>
+                <div className="p-4 rounded-xl border border-slate-100 bg-slate-50/30 text-center">
+                  <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">Mode</p>
+                  <p className="font-bold text-slate-900">Offline-First</p>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Cadangan Terakhir</span>
-                <span className="text-sm font-bold text-muted-foreground">Belum Pernah</span>
+
+              <div className="pt-4 border-t border-slate-100">
+                <p className="text-xs text-slate-400 text-center">
+                  Seluruh data tersimpan secara aman di dalam browser Anda. Tidak diperlukan koneksi internet untuk manajemen dasar.
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground pt-4 border-t">
-                Data Anda disimpan dengan aman di basis data peramban ini. Data tetap tersedia meskipun Anda sedang luring.
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -126,3 +148,5 @@ export default function Dashboard() {
     </div>
   )
 }
+
+import { Badge } from "@/components/ui/badge"
