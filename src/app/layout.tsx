@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'NetInvoice Luring',
+  title: 'MTNET Billing',
   description: 'Kelola pelanggan internet dan pembayaran secara luring',
 };
 

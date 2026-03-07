@@ -34,7 +34,7 @@ export class NetInvoiceDB extends Dexie {
   payments!: Table<Payment>;
 
   constructor() {
-    super('NetInvoiceDB');
+    super('MTNETBillingDB');
     this.version(1).stores({
       customers: '++id, name, email, packageId, status',
       packages: '++id, name',

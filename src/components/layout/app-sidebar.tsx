@@ -52,7 +52,7 @@ export function AppSidebar() {
             <Wifi className="size-5" />
           </div>
           <div className="flex flex-col gap-0.5 leading-none">
-            <span className="font-semibold text-lg">NetInvoice</span>
+            <span className="font-semibold text-lg">MTNET Billing</span>
             <span className="text-xs opacity-80">Manajer Luring</span>
           </div>
         </div>
