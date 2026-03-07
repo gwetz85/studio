@@ -48,7 +48,7 @@ export default function LoginPage() {
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm mb-2">
             <Wifi className="h-6 w-6" />
           </div>
-          <CardTitle className="text-2xl font-bold">MTNET Billing</CardTitle>
+          <CardTitle className="text-2xl font-bold">MTNET SYSTEM</CardTitle>
           <CardDescription className="text-primary-foreground/80">Sistem Manajemen Internet Luring</CardDescription>
         </div>
         

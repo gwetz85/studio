@@ -114,7 +114,7 @@ export default function SettingsPage() {
       const paymentsData = await db.payments.toArray();
       
       const backupData = {
-        version: "1.0.0",
+        version: "2.0.1",
         timestamp: Date.now(),
         data: { customers: customersData, packages: packagesData, payments: paymentsData }
       };
@@ -375,11 +375,11 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <h3 className="font-bold">Informasi Aplikasi</h3>
-                  <p className="text-xs text-slate-400">MTNET Billing - Sistem Manajemen Luring</p>
+                  <p className="text-xs text-slate-400">MTNET SYSTEM - Sistem Manajemen Luring</p>
                 </div>
               </div>
               <div className="flex flex-col sm:items-end gap-1">
-                <span className="text-xs font-mono bg-slate-800 px-2 py-1 rounded text-primary inline-block w-fit">v1.2.0-stable</span>
+                <span className="text-xs font-mono bg-slate-800 px-2 py-1 rounded text-primary inline-block w-fit">v2.0.1</span>
                 <div className="flex items-center gap-1.5 text-[10px] text-sidebar-foreground/60">
                   <User className="h-3 w-3" />
                   <span>Dibuat oleh <span className="text-slate-200 font-semibold">AGUS SURIYADI</span></span>

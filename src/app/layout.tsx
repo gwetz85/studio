@@ -42,7 +42,7 @@ export default function RootLayout({
         const payments = await db.payments.toArray();
         
         const backupData = {
-          version: "1.0.0",
+          version: "2.0.1",
           timestamp: Date.now(),
           data: { customers, packages, payments }
         };
@@ -84,7 +84,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <title>MTNET Billing</title>
+        <title>MTNET SYSTEM</title>
       </head>
       <body className="font-body antialiased transition-colors duration-300">
         {isLoginPage ? (

@@ -103,7 +103,7 @@ export function AppSidebar() {
             <Wifi className="size-5" />
           </div>
           <div className="flex flex-col gap-0.5 leading-none overflow-hidden">
-            <span className="font-semibold text-lg truncate">MTNET Billing</span>
+            <span className="font-semibold text-lg truncate">MTNET SYSTEM</span>
             <div className="flex flex-col gap-0.5">
               {lastBackup && (
                 <div className="flex items-center gap-1 text-[9px] text-sidebar-foreground/60">
