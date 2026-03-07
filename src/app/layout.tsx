@@ -20,6 +20,14 @@ export default function RootLayout({
   const isLoginPage = pathname === "/login";
 
   useEffect(() => {
+    // 1. THEME INITIALIZATION
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
     if (!isLoggedIn) return;
 
     const performMaintenanceTasks = async () => {
@@ -96,14 +104,14 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <title>MTNET Billing</title>
       </head>
-      <body className="font-body antialiased">
+      <body className="font-body antialiased transition-colors duration-300">
         {isLoginPage ? (
           children
         ) : (
           <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white/50 backdrop-blur-md sticky top-0 z-10">
+              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white/50 backdrop-blur-md dark:bg-slate-900/50 sticky top-0 z-10">
                 <SidebarTrigger className="-ml-1" />
                 <div className="flex-1" />
                 <div className="flex items-center gap-2">

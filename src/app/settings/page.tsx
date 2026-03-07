@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Input } from "@/components/ui/input"
 import { db } from "@/lib/db"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
@@ -44,10 +43,14 @@ export default function SettingsPage() {
 
   // Handle Theme Init and Auto Backup Info
   React.useEffect(() => {
-    const theme = localStorage.getItem("theme") || "light";
-    setIsDarkMode(theme === "dark");
-    if (theme === "dark") {
+    const theme = localStorage.getItem("theme");
+    const darkModeActive = theme === "dark";
+    setIsDarkMode(darkModeActive);
+    
+    if (darkModeActive) {
       document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
     }
 
     const backupTime = localStorage.getItem("mtnet_last_backup_time");
@@ -63,18 +66,6 @@ export default function SettingsPage() {
     }
   }, []);
 
-  if (authLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (role !== 'admin') {
-    return null;
-  }
-
   const toggleTheme = (checked: boolean) => {
     setIsDarkMode(checked);
     const theme = checked ? "dark" : "light";
@@ -86,7 +77,7 @@ export default function SettingsPage() {
     }
     toast({
       title: `Tema ${checked ? "Gelap" : "Terang"} Aktif`,
-      description: "Pengaturan tampilan telah disimpan.",
+      description: `Aplikasi sekarang menggunakan Mode ${checked ? "Gelap" : "Terang"}.`,
     });
   };
 
@@ -184,40 +175,52 @@ export default function SettingsPage() {
     }
   };
 
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (role !== 'admin') {
+    return null;
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Pengaturan</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">Pengaturan</h1>
           <p className="text-slate-500">Kelola data aplikasi dan preferensi sistem Anda.</p>
         </div>
-        <Button variant="outline" className="text-rose-600 border-rose-100 hover:bg-rose-50" onClick={logout}>
+        <Button variant="outline" className="text-rose-600 border-rose-100 hover:bg-rose-50 dark:border-rose-900 dark:hover:bg-rose-950" onClick={logout}>
           <LogOut className="mr-2 h-4 w-4" /> Keluar Sesi
         </Button>
       </div>
 
       <div className="grid gap-6">
-        <Card className="border-none shadow-sm">
+        <Card className="border-none shadow-sm dark:bg-slate-900/50">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Sun className="h-5 w-5 text-amber-500 dark:hidden" />
               <Moon className="h-5 w-5 text-indigo-400 hidden dark:block" />
               <CardTitle>Tampilan</CardTitle>
             </div>
-            <CardDescription>Atur bagaimana aplikasi terlihat di perangkat Anda.</CardDescription>
+            <CardDescription>Pilih antara Mode Terang atau Mode Gelap.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between py-2">
               <div className="space-y-0.5">
-                <Label>Mode Gelap</Label>
-                <p className="text-sm text-slate-500">Aktifkan tema gelap untuk kenyamanan mata.</p>
+                <Label className="text-base">Mode Gelap</Label>
+                <p className="text-sm text-slate-500">Ubah tampilan aplikasi menjadi tema gelap.</p>
               </div>
               <Switch checked={isDarkMode} onCheckedChange={toggleTheme} />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-none shadow-sm">
+        <Card className="border-none shadow-sm dark:bg-slate-900/50">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Database className="h-5 w-5 text-primary" />
@@ -226,23 +229,23 @@ export default function SettingsPage() {
             <CardDescription>Cadangkan atau pulihkan data lokal Anda secara aman.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-3">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Download className="h-4 w-4 text-emerald-600" /> Ekspor Data
               </h3>
-              <p className="text-[10px] text-slate-500">Unduh seluruh database dalam format JSON ke perangkat.</p>
-              <Button variant="outline" size="sm" className="w-full bg-white text-xs" onClick={handleBackup}>
+              <p className="text-[10px] text-slate-500">Unduh seluruh database dalam format JSON.</p>
+              <Button variant="outline" size="sm" className="w-full bg-white dark:bg-slate-900 text-xs" onClick={handleBackup}>
                 Mulai Backup
               </Button>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-3">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <Upload className="h-4 w-4 text-blue-600" /> Impor Data
               </h3>
-              <p className="text-[10px] text-slate-500">Pulihkan data dari file backup (.json) yang ada.</p>
+              <p className="text-[10px] text-slate-500">Pulihkan data dari file backup (.json).</p>
               <div className="relative">
-                <Button variant="outline" size="sm" className="w-full bg-white text-xs">
+                <Button variant="outline" size="sm" className="w-full bg-white dark:bg-slate-900 text-xs">
                   Pilih File
                 </Button>
                 <input 
@@ -254,7 +257,7 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-3">
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 space-y-3">
               <h3 className="font-semibold text-sm flex items-center gap-2">
                 <History className="h-4 w-4 text-amber-600" /> Auto Restore
               </h3>
@@ -264,7 +267,7 @@ export default function SettingsPage() {
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full bg-white text-xs border-amber-200 text-amber-700 hover:bg-amber-50" 
+                className="w-full bg-white dark:bg-slate-900 text-xs border-amber-200 dark:border-amber-900 text-amber-700 dark:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950" 
                 onClick={handleRestoreAutoBackup}
                 disabled={!lastAutoBackupTime}
               >
@@ -274,9 +277,9 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-2 border-rose-100 shadow-sm bg-rose-50/20">
+        <Card className="border-2 border-rose-100 dark:border-rose-900 shadow-sm bg-rose-50/20 dark:bg-rose-950/20">
           <CardHeader>
-            <div className="flex items-center gap-2 text-rose-600">
+            <div className="flex items-center gap-2 text-rose-600 dark:text-rose-500">
               <ShieldAlert className="h-5 w-5" />
               <CardTitle>Zona Berbahaya</CardTitle>
             </div>
