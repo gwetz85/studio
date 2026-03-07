@@ -8,18 +8,21 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Bell, CheckCircle2, AlertCircle, Sparkles, Copy, Loader2, Calendar as CalendarIcon, Wallet } from "lucide-react"
+import { Plus, Bell, CheckCircle2, AlertCircle, Sparkles, Copy, Loader2, Calendar as CalendarIcon, Wallet, Printer, X } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { generatePaymentReminder } from "@/ai/flows/generate-payment-reminder"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { format } from "date-fns"
+import { id as localeId } from "date-fns/locale"
 
 export default function PaymentsPage() {
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [reminderDialogOpen, setReminderDialogOpen] = React.useState(false);
+  const [receiptDialogOpen, setReceiptDialogOpen] = React.useState(false);
   const [activePayment, setActivePayment] = React.useState<Payment | null>(null);
   const [reminderMessage, setReminderMessage] = React.useState("");
   const [isGenerating, setIsGenerating] = React.useState(false);
@@ -89,6 +92,24 @@ export default function PaymentsPage() {
     }
   };
 
+  const handlePrintReceipt = (payment: Payment) => {
+    setActivePayment(payment);
+    setReceiptDialogOpen(true);
+  };
+
+  const printReceiptAction = () => {
+    const printContent = document.getElementById('receipt-content');
+    if (!printContent) return;
+    
+    const originalContents = document.body.innerHTML;
+    const printContents = printContent.innerHTML;
+    
+    document.body.innerHTML = printContents;
+    window.print();
+    document.body.innerHTML = originalContents;
+    window.location.reload(); // Re-initialize app state after print
+  };
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(reminderMessage);
     toast({ title: "Pesan disalin" });
@@ -96,12 +117,44 @@ export default function PaymentsPage() {
 
   const getCustomerName = (id: number) => customers?.find(c => c.id === id)?.name || "N/A";
 
+  const formatIDR = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount).replace('Rp', '').trim();
+  };
+
+  // Receipt Helper Data
+  const receiptData = React.useMemo(() => {
+    if (!activePayment || !customers || !packages) return null;
+    const customer = customers.find(c => c.id === activePayment.customerId);
+    const pkg = packages.find(p => p.id === customer?.packageId);
+    if (!customer || !pkg) return null;
+
+    const dateStr = activePayment.paymentDate 
+      ? format(activePayment.paymentDate, "yyyy-MM-dd HH:mm:ss")
+      : format(new Date(), "yyyy-MM-dd HH:mm:ss");
+
+    const [year, month] = activePayment.billingPeriod.split('-');
+    const monthName = format(new Date(parseInt(year), parseInt(month) - 1), "MMMM yyyy", { locale: localeId });
+
+    return {
+      customer,
+      pkg,
+      dateStr,
+      monthName,
+      custNo: `CUST-${customer.id?.toString().padStart(3, '0')}`,
+      invNo: `INV-${activePayment.billingPeriod.replace('-', '')}-${activePayment.id?.toString().padStart(3, '0')}`,
+    };
+  }, [activePayment, customers, packages]);
+
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Tagihan & Pembayaran</h1>
-          <p className="text-slate-500">Monitor arus kas dan kirim pengingat untuk tagihan tertunggak.</p>
+          <p className="text-slate-500">Monitor arus kas dan cetak kwitansi resmi untuk pelanggan.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -181,7 +234,7 @@ export default function PaymentsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="font-mono text-slate-700">
-                      ${payment.amount.toLocaleString()}
+                      Rp {payment.amount.toLocaleString('id-ID')}
                     </TableCell>
                     <TableCell>
                       <Badge 
@@ -196,6 +249,16 @@ export default function PaymentsPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1.5">
+                        {payment.status === 'paid' && (
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 text-xs bg-slate-50 text-slate-600 hover:text-primary" 
+                            onClick={() => handlePrintReceipt(payment)}
+                          >
+                            <Printer className="mr-1 h-3 w-3" /> Kwitansi
+                          </Button>
+                        )}
                         {payment.status !== 'paid' && (
                           <>
                             <Button 
@@ -228,11 +291,6 @@ export default function PaymentsPage() {
                             <AlertCircle className="h-4 w-4" />
                           </Button>
                         )}
-                        {payment.status === 'paid' && (
-                          <div className="text-xs text-slate-400 italic flex items-center gap-1">
-                            <CheckCircle2 className="h-3 w-3" /> Selesai
-                          </div>
-                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -254,6 +312,7 @@ export default function PaymentsPage() {
         </ScrollArea>
       </Card>
 
+      {/* Dialog Pengingat AI */}
       <Dialog open={reminderDialogOpen} onOpenChange={setReminderDialogOpen}>
         <DialogContent className="sm:max-w-md p-0 overflow-hidden border-none shadow-2xl">
           <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
@@ -289,6 +348,125 @@ export default function PaymentsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialog Kwitansi (Receipt) */}
+      <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
+        <DialogContent className="max-w-[800px] p-0 border-none shadow-2xl bg-white overflow-hidden">
+          <div className="p-4 bg-slate-50 border-b flex justify-between items-center no-print">
+            <h2 className="font-semibold flex items-center gap-2"><Printer className="h-4 w-4" /> Pratinjau Kwitansi</h2>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setReceiptDialogOpen(false)}>Tutup</Button>
+              <Button size="sm" onClick={printReceiptAction}><Printer className="mr-2 h-4 w-4" /> Cetak Kwitansi</Button>
+            </div>
+          </div>
+          
+          <ScrollArea className="max-h-[80vh]">
+            <div id="receipt-content" className="p-12 font-mono text-slate-800 bg-white">
+              {receiptData && (
+                <div className="max-w-3xl mx-auto space-y-8">
+                  {/* Header */}
+                  <div className="flex flex-col items-end">
+                    <h1 className="text-4xl font-bold tracking-widest border-b-2 border-slate-900 pb-1">KWITANSI</h1>
+                    <p className="text-xs mt-1">PEMBAYARAN TAGIHAN INTERNET</p>
+                  </div>
+
+                  {/* Info Grid */}
+                  <div className="grid grid-cols-2 gap-x-12 pt-4 pb-4 border-t border-dotted border-slate-300">
+                    <div className="space-y-1">
+                      <div className="flex gap-4">
+                        <span className="w-24 shrink-0">No.Pelanggan</span>
+                        <span className="shrink-0">:</span>
+                        <span>{receiptData.custNo}</span>
+                      </div>
+                      <div className="flex gap-4">
+                        <span className="w-24 shrink-0">Nama</span>
+                        <span className="shrink-0">:</span>
+                        <span className="font-bold">{receiptData.customer.name}</span>
+                      </div>
+                      <div className="flex gap-4">
+                        <span className="w-24 shrink-0">Alamat</span>
+                        <span className="shrink-0">:</span>
+                        <span className="text-sm">{receiptData.customer.address}</span>
+                      </div>
+                    </div>
+                    <div className="space-y-1">
+                      <div className="flex gap-4">
+                        <span className="w-24 shrink-0">Tanggal</span>
+                        <span className="shrink-0">:</span>
+                        <span>{receiptData.dateStr}</span>
+                      </div>
+                      <div className="flex gap-4">
+                        <span className="w-24 shrink-0">No.Kwitansi</span>
+                        <span className="shrink-0">:</span>
+                        <span>{receiptData.invNo}</span>
+                      </div>
+                      <div className="flex gap-4">
+                        <span className="w-24 shrink-0">Kasir</span>
+                        <span className="shrink-0">:</span>
+                        <span>Admin</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Main Item */}
+                  <div className="py-4 border-y border-dotted border-slate-300 flex justify-between items-center">
+                    <div className="flex-1">
+                      {receiptData.custNo} - {receiptData.pkg.speed} {receiptData.pkg.name} - {receiptData.monthName}
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="font-bold">Rp</span>
+                      <span className="w-24 text-right font-bold">{formatIDR(activePayment?.amount || 0)}</span>
+                    </div>
+                  </div>
+
+                  {/* Summary */}
+                  <div className="flex justify-end pt-4">
+                    <div className="w-72 space-y-1">
+                      <div className="flex justify-between">
+                        <span>Biaya Layanan</span>
+                        <div className="flex gap-4">
+                          <span>Rp</span>
+                          <span className="w-24 text-right">{formatIDR(activePayment?.amount || 0)}</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Biaya Administrasi</span>
+                        <div className="flex gap-4">
+                          <span>Rp</span>
+                          <span className="w-24 text-right">0</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between pb-2 border-b border-dotted border-slate-300">
+                        <span>Diskon</span>
+                        <div className="flex gap-4">
+                          <span>Rp</span>
+                          <span className="w-24 text-right">- 0</span>
+                        </div>
+                      </div>
+                      <div className="flex justify-between pt-2 text-lg font-bold">
+                        <span>Biaya Total</span>
+                        <div className="flex gap-4">
+                          <span>Rp</span>
+                          <span className="w-24 text-right">{formatIDR(activePayment?.amount || 0)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <ScrollBar />
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      <style jsx global>{`
+        @media print {
+          .no-print { display: none !important; }
+          body { background: white !important; }
+          #receipt-content { p: 0 !important; width: 100% !important; max-width: none !important; }
+        }
+      `}</style>
     </div>
   )
 }
