@@ -177,7 +177,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900/90 backdrop-blur-2xl rounded-[2.5rem]">
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl bg-white/45 dark:bg-slate-900/45 backdrop-blur-2xl rounded-[2.5rem]">
           <div className="bg-primary/90 p-8 text-white text-center space-y-4">
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-md mb-2">
               <Sparkles className="h-8 w-8 text-white animate-pulse" />
@@ -202,7 +202,7 @@ export default function Dashboard() {
               </div>
             </DialogHeader>
           </div>
-          <div className="p-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
+          <div className="p-6 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
             <DialogFooter>
               <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight rounded-2xl shadow-lg hover:shadow-primary/20 transition-all">
                 Mulai Bekerja
@@ -219,7 +219,7 @@ export default function Dashboard() {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {dashboardItems.map((item) => (
-          <Card key={item.title} className="border-none bg-white/75 dark:bg-slate-900/75 backdrop-blur-md shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl group border border-white/20">
+          <Card key={item.title} className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl group border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{item.title}</CardTitle>
               <div className={`${item.bg} ${item.color} p-2.5 rounded-xl transition-transform group-hover:scale-110`}>
@@ -234,7 +234,7 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-        <Card className="lg:col-span-2 border-none bg-white/75 dark:bg-slate-900/75 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
+        <Card className="lg:col-span-2 border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
           <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
             <CardTitle className="text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
             <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
@@ -265,7 +265,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
         
-        <Card className="border-none bg-white/75 dark:bg-slate-900/75 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
+        <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
           <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50">
             <CardTitle className="text-lg text-slate-900 dark:text-white">Status Sistem</CardTitle>
           </CardHeader>
