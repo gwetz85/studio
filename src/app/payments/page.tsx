@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -8,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Bell, CheckCircle2, AlertCircle, Sparkles, Copy, Loader2, Calendar as CalendarIcon, Wallet, Printer, X } from "lucide-react"
+import { Plus, Bell, CheckCircle2, AlertCircle, Sparkles, Copy, Loader2, Calendar as CalendarIcon, Wallet, Printer, X, Undo2 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -258,14 +259,29 @@ export default function PaymentsPage() {
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1.5">
                         {payment.status === 'paid' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 text-xs bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:text-primary" 
-                            onClick={() => handlePrintReceipt(payment)}
-                          >
-                            <Printer className="mr-1 h-3 w-3" /> Kwitansi
-                          </Button>
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-8 text-xs bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-400 hover:text-primary" 
+                              onClick={() => handlePrintReceipt(payment)}
+                            >
+                              <Printer className="mr-1 h-3 w-3" /> Kwitansi
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400" 
+                              title="Batal Lunas (Kembalikan ke Menunggu)"
+                              onClick={() => {
+                                if (confirm("Batalkan pelunasan ini dan kembalikan status ke Menunggu?")) {
+                                  updateStatus(payment.id!, 'pending');
+                                }
+                              }}
+                            >
+                              <Undo2 className="h-4 w-4" />
+                            </Button>
+                          </>
                         )}
                         {payment.status !== 'paid' && (
                           <>
