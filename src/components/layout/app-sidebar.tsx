@@ -111,6 +111,12 @@ export function AppSidebar() {
                   <span className="truncate">{currentTime}</span>
                 </div>
               )}
+              {lastBackup && (
+                <div className="flex items-center gap-1.5 text-[9px] text-white/50 font-medium">
+                  <Database className="size-2.5 shrink-0" />
+                  <span className="truncate">Backup: {lastBackup}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
