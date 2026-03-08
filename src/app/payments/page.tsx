@@ -104,8 +104,10 @@ export default function PaymentsPage() {
   const handleWhatsAppDirect = (payment: Payment) => {
     const customer = customers?.find(c => c.id === payment.customerId);
     if (!customer) return;
+    const pkg = packages?.find(p => p.id === customer.packageId);
+    const packageName = pkg ? `${pkg.name} (${pkg.speed})` : "N/A";
 
-    const message = `Halo Bapak/Ibu ${customer.name}, ini adalah pengingat tagihan internet MTNET untuk periode ${payment.billingPeriod}.\n\nTotal Tagihan: Rp ${payment.amount.toLocaleString('id-ID')}\nStatus: ${payment.status === 'overdue' ? 'TERLAMBAT' : 'BELUM BAYAR'}\n\nMohon segera melakukan pembayaran. Jika sudah membayar, abaikan pesan ini. Terima kasih.`;
+    const message = `*INFORMASI TAGIHAN INTERNET*\nBerikut kami sampaikan informasi tagihan :\n\n*Nama* : ${customer.name}\n*Alamat Pemasangan* : ${customer.address}\n*Paket* : ${packageName}\n*Nominal Tagihan* : Rp ${payment.amount.toLocaleString('id-ID')}\n*Bulan Penagihan* : ${payment.billingPeriod}\n\nSilahkan lakukan pembayaran atau internet kamu akan di isolir otomatis oleh system kami\n\n*Pembayaran bisa di lakukan melalui*\n*- Pembayaran Bank*\nNomor Rekening : 3801893811\nNama : Agus Suriyadi\nBank Central Asia\n\n*- Dompet Payment*\nDana : 0817319885 - Agus Suriyadi\nGopay : 0817319885 - Agus Suriyadi`;
     
     const encodedMessage = encodeURIComponent(message);
     const phone = formatWhatsAppNumber(customer.phone);
