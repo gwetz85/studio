@@ -187,59 +187,52 @@ export default function Dashboard() {
   } satisfies ChartConfig;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
-          <div className="bg-primary p-8 text-white text-center space-y-4">
-            <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md mb-2 shadow-xl border border-white/20">
-              <MTLogo className="h-12 w-12 text-white" />
+        <DialogContent className="sm:max-w-md p-0 border-none shadow-2xl bg-white dark:bg-slate-900 overflow-hidden">
+          <div className="bg-primary p-6 md:p-8 text-white text-center space-y-4">
+            <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-xl border border-white/20">
+              <MTLogo className="h-10 w-10 md:h-12 md:w-12 text-white" />
             </div>
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-black text-center text-white uppercase tracking-tighter">SELAMAT DATANG DI MTNET SYSTEM</DialogTitle>
-              <div className="text-primary-foreground/90 text-center space-y-4 mt-4">
-                <p className="font-bold text-lg leading-tight">Sistem Manajemen Penagihan & Layanan Internet</p>
-                <div className="text-sm text-left bg-white/10 p-5 rounded-2xl backdrop-blur-sm border border-white/10 shadow-inner">
-                  <p className="mb-3 font-semibold">Dikembangkan oleh:</p>
-                  <p className="font-bold text-lg text-white mb-3">AGUS SURIYADI</p>
-                  <p className="font-medium mb-2 opacity-80 underline decoration-white/30 underline-offset-4 text-xs uppercase tracking-widest">Modul Aplikasi:</p>
-                  <ul className="grid grid-cols-2 gap-2 opacity-90 font-bold text-[10px] uppercase">
-                    <li className="flex items-center gap-1.5"><div className="h-1 w-1 bg-white rounded-full" /> Data Pelanggan</li>
-                    <li className="flex items-center gap-1.5"><div className="h-1 w-1 bg-white rounded-full" /> Billing System</li>
-                    <li className="flex items-center gap-1.5"><div className="h-1 w-1 bg-white rounded-full" /> Isolir & Nonaktif</li>
-                    <li className="flex items-center gap-1.5"><div className="h-1 w-1 bg-white rounded-full" /> Menu Teknisi</li>
-                  </ul>
-                </div>
-                <p className="text-xs italic opacity-80">Aplikasi ini dirancang untuk mempermudah operasional harian Anda dalam satu platform terpadu.</p>
-                <p className="font-black text-xl pt-2 tracking-widest">TERIMA KASIH</p>
-              </div>
-            </DialogHeader>
+            <div className="space-y-2">
+              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">SELAMAT DATANG DI MTNET SYSTEM</h2>
+              <p className="text-sm text-primary-foreground/90 font-medium">Sistem Manajemen Penagihan & Layanan Internet</p>
+            </div>
           </div>
-          <div className="p-6 bg-slate-50 dark:bg-slate-900 border-t">
-            <DialogFooter>
-              <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]">
+          <div className="p-5 md:p-6 space-y-4">
+            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-inner">
+               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Dikembangkan oleh:</p>
+               <p className="font-bold text-lg text-slate-900 dark:text-white mb-3">AGUS SURIYADI</p>
+               <div className="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
+                 <div className="flex items-center gap-1.5"><div className="h-1 w-1 bg-primary rounded-full" /> Data Pelanggan</div>
+                 <div className="flex items-center gap-1.5"><div className="h-1 w-1 bg-primary rounded-full" /> Billing System</div>
+                 <div className="flex items-center gap-1.5"><div className="h-1 w-1 bg-primary rounded-full" /> Isolir & Nonaktif</div>
+                 <div className="flex items-center gap-1.5"><div className="h-1 w-1 bg-primary rounded-full" /> Menu Teknisi</div>
+               </div>
+            </div>
+            <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99]">
                 MASUK KE DASHBOARD
-              </Button>
-            </DialogFooter>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
 
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
-        <p className="text-slate-500 dark:text-slate-400">Ringkasan operasional layanan internet Anda hari ini.</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
+        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Ringkasan operasional layanan internet hari ini.</p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {dashboardItems.map((item) => (
           <Card key={item.title} className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl group border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{item.title}</CardTitle>
-              <div className={`${item.bg} ${item.color} p-2.5 rounded-xl transition-transform group-hover:scale-110`}>
+              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{item.title}</CardTitle>
+              <div className={`${item.bg} ${item.color} p-2 rounded-xl transition-transform group-hover:scale-110`}>
                 <item.icon className="h-4 w-4" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-slate-900 dark:text-white">{item.value}</div>
+              <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{item.value}</div>
             </CardContent>
           </Card>
         ))}
@@ -248,11 +241,11 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
         <Card className="lg:col-span-2 border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
           <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
-            <CardTitle className="text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
+            <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
             <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="h-[350px] w-full">
+          <CardContent className="p-2 md:p-6">
+            <div className="h-[300px] md:h-[350px] w-full">
               <ChartContainer config={chartConfig} className="h-full w-full">
                 <PieChart>
                   <ChartTooltip content={<ChartTooltipContent hideLabel />} />
@@ -260,8 +253,8 @@ export default function Dashboard() {
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={70}
-                    outerRadius={100}
+                    innerRadius={60}
+                    outerRadius={90}
                     paddingAngle={5}
                     dataKey="value"
                     labelLine={false}
@@ -270,7 +263,7 @@ export default function Dashboard() {
                       <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
                     ))}
                   </Pie>
-                  <ChartLegend content={<ChartLegendContent />} className="flex-wrap gap-x-6 gap-y-2 pt-8" />
+                  <ChartLegend content={<ChartLegendContent />} className="flex-wrap gap-x-6 gap-y-2 pt-4" />
                 </PieChart>
               </ChartContainer>
             </div>
@@ -279,36 +272,36 @@ export default function Dashboard() {
         
         <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
           <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50">
-            <CardTitle className="text-lg text-slate-900 dark:text-white">Status Sistem</CardTitle>
+            <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Status Sistem</CardTitle>
           </CardHeader>
-          <CardContent className="p-6">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-green-50/50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30">
+          <CardContent className="p-4 md:p-6">
+            <div className="space-y-4 md:space-y-6">
+              <div className="flex items-center justify-between p-3 md:p-4 rounded-2xl bg-green-50/50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30">
                 <div className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm font-bold text-green-900 dark:text-green-300 uppercase tracking-tight">Database Lokal</span>
+                  <span className="text-xs md:text-sm font-bold text-green-900 dark:text-green-300 uppercase tracking-tight">Database Lokal</span>
                 </div>
-                <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-3 py-1">AKTIF</Badge>
+                <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-2 md:px-3 py-0.5 md:py-1 text-[10px] md:text-xs">AKTIF</Badge>
               </div>
               
-              <div className="grid grid-cols-1 gap-4">
-                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-widest">Periode Saat Ini</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-2xl">{currentPeriod}</p>
+              <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 md:gap-4">
+                <div className="p-3 md:p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-widest">Periode</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-xl md:text-2xl">{currentPeriod}</p>
                 </div>
-                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-widest">Tanggal Hari Ini</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-2xl">{currentDay}</p>
+                <div className="p-3 md:p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-widest">Hari Ini</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-xl md:text-2xl">{currentDay}</p>
                 </div>
               </div>
               
-              <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
+              <div className="p-3 md:p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Wifi className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-bold uppercase text-primary tracking-wider">Info Billing</span>
+                  <span className="text-[10px] font-bold uppercase text-primary tracking-wider">Info Billing</span>
                 </div>
-                <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
-                  Sistem otomatis menerbitkan tagihan setiap tanggal 1. Masa isolasi dimulai setelah tanggal 8.
+                <p className="text-[10px] md:text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
+                  Tagihan terbit otomatis setiap tanggal 1. Masa isolasi dimulai setelah tanggal 8.
                 </p>
               </div>
             </div>
