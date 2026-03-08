@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, UserPlus, Phone, MapPin, Cpu, Printer, FileText, CheckCircle2, X, Eye, User, Mail, Calendar } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, UserPlus, Phone, MapPin, Cpu, Printer, FileText, Eye, User, Mail, Calendar, X } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -26,7 +26,6 @@ export default function PSBPage() {
   const [editingPSB, setEditingPSB] = React.useState<PSBRequest | null>(null);
   const [viewingPSB, setViewingPSB] = React.useState<PSBRequest | null>(null);
   
-  // State for Contract PDF Preview
   const [showContract, setShowContract] = React.useState(false);
   const [activeContractData, setActiveContractData] = React.useState<any>(null);
 
@@ -86,7 +85,6 @@ export default function PSBPage() {
           await db.psb.delete(editingPSB.id);
         }
 
-        // Prepare data for the contract modal
         setActiveContractData({
           ...customerData,
           id: newCustomerId,
@@ -99,7 +97,6 @@ export default function PSBPage() {
         setIsDialogOpen(false);
         setEditingPSB(null);
         
-        // Open contract preview after a small delay
         setTimeout(() => setShowContract(true), 500);
       } else {
         if (editingPSB?.id) {
@@ -158,8 +155,8 @@ export default function PSBPage() {
               <Plus className="mr-2 h-4 w-4" /> Input PSB Baru
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl glass-card rounded-[2rem]">
-            <DialogHeader className="p-6 bg-primary/10 border-b border-white/20">
+          <DialogContent className="max-w-xl p-0 overflow-hidden border-none shadow-2xl">
+            <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b">
               <DialogTitle className="text-xl flex items-center gap-2 dark:text-white">
                 <UserPlus className="h-5 w-5 text-primary" />
                 {editingPSB ? "Edit & Aktivasi PSB" : "Input Permintaan PSB"}
@@ -169,28 +166,28 @@ export default function PSBPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="name" className="dark:text-slate-200">Nama Calon Pelanggan</Label>
-                  <Input id="name" name="name" defaultValue={editingPSB?.name} placeholder="Nama Lengkap" required className="dark:bg-slate-800/50 dark:text-white dark:border-slate-700" />
+                  <Input id="name" name="name" defaultValue={editingPSB?.name} placeholder="Nama Lengkap" required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="dark:text-slate-200">Email</Label>
-                  <Input id="email" name="email" type="email" defaultValue={editingPSB?.email} placeholder="email@contoh.com" required className="dark:bg-slate-800/50 dark:text-white dark:border-slate-700" />
+                  <Input id="email" name="email" type="email" defaultValue={editingPSB?.email} placeholder="email@contoh.com" required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="dark:text-slate-200">Nomor Telepon</Label>
-                  <Input id="phone" name="phone" defaultValue={editingPSB?.phone} placeholder="0812..." required className="dark:bg-slate-800/50 dark:text-white dark:border-slate-700" />
+                  <Input id="phone" name="phone" defaultValue={editingPSB?.phone} placeholder="0812..." required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="modemSnMac" className="dark:text-slate-200">SN / MAC Modem</Label>
-                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingPSB?.modemSnMac} placeholder="SN Modem / Alamat MAC" className="dark:bg-slate-800/50 dark:text-white dark:border-slate-700" />
+                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingPSB?.modemSnMac} placeholder="SN Modem / Alamat MAC" className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="address" className="dark:text-slate-200">Alamat Pemasangan</Label>
-                  <Input id="address" name="address" defaultValue={editingPSB?.address} placeholder="Alamat lengkap..." required className="dark:bg-slate-800/50 dark:text-white dark:border-slate-700" />
+                  <Input id="address" name="address" defaultValue={editingPSB?.address} placeholder="Alamat lengkap..." required className="dark:bg-slate-800 dark:text-white dark:border-slate-700" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="packageId" className="dark:text-slate-200">Paket Yang Diminta</Label>
                   <Select name="packageId" defaultValue={editingPSB?.packageId?.toString()}>
-                    <SelectTrigger className="dark:bg-slate-800/50 dark:text-white dark:border-slate-700">
+                    <SelectTrigger className="dark:bg-slate-800 dark:text-white dark:border-slate-700">
                       <SelectValue placeholder="Pilih paket" />
                     </SelectTrigger>
                     <SelectContent>
@@ -205,7 +202,7 @@ export default function PSBPage() {
                 <div className="space-y-2">
                   <Label htmlFor="status" className="dark:text-slate-200">Status PSB</Label>
                   <Select name="status" defaultValue={editingPSB?.status || "pasif"}>
-                    <SelectTrigger className="dark:bg-slate-800/50 dark:text-white dark:border-slate-700">
+                    <SelectTrigger className="dark:bg-slate-800 dark:text-white dark:border-slate-700">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -217,7 +214,7 @@ export default function PSBPage() {
               </div>
               <DialogFooter className="pt-4">
                 <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="dark:text-slate-400">Batal</Button>
-                <Button type="submit" className="bg-primary hover:bg-primary/90 rounded-xl">
+                <Button type="submit" className="bg-primary hover:bg-primary/90">
                   {editingPSB ? "Simpan Perubahan" : "Daftarkan PSB"}
                 </Button>
               </DialogFooter>
@@ -226,9 +223,8 @@ export default function PSBPage() {
         </Dialog>
       </div>
 
-      {/* View Details Modal */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900 rounded-[2rem] glass-card">
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900">
           <DialogHeader className="p-6 bg-primary text-white">
             <DialogTitle className="text-xl flex items-center gap-2">
               <Eye className="h-5 w-5" />
@@ -250,18 +246,18 @@ export default function PSBPage() {
                   </div>
                 </div>
 
-                <Separator className="opacity-50" />
+                <Separator className="dark:bg-slate-800" />
 
                 <div className="grid grid-cols-1 gap-4 text-sm">
                   <div className="space-y-1">
-                    <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Kontak Person</Label>
+                    <Label className="text-xs text-slate-500">Kontak Person</Label>
                     <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
                       <Phone className="h-4 w-4 text-primary" /> {viewingPSB.phone}
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Alamat Pemasangan</Label>
+                    <Label className="text-xs text-slate-500">Alamat Pemasangan</Label>
                     <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
                       <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" /> 
                       <span className="leading-relaxed">{viewingPSB.address}</span>
@@ -269,7 +265,7 @@ export default function PSBPage() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Identitas Perangkat</Label>
+                    <Label className="text-xs text-slate-500">Identitas Perangkat</Label>
                     <div className="flex items-center gap-2 text-primary font-mono font-bold">
                       <Cpu className="h-4 w-4" /> {viewingPSB.modemSnMac || "Belum ada SN/MAC"}
                     </div>
@@ -277,21 +273,21 @@ export default function PSBPage() {
 
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <div className="space-y-1">
-                      <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Paket Diminta</Label>
+                      <Label className="text-xs text-slate-500">Paket Diminta</Label>
                       <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary w-fit">
                         {getPackageName(viewingPSB.packageId)}
                       </Badge>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Status Antrian</Label>
-                      <Badge className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 w-fit uppercase">
-                        {viewingPSB.status}
+                      <Label className="text-xs text-slate-500">Status Antrian</Label>
+                      <Badge className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 w-fit">
+                        {viewingPSB.status.toUpperCase()}
                       </Badge>
                     </div>
                   </div>
 
                   <div className="space-y-1 pt-2">
-                    <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Waktu Input</Label>
+                    <Label className="text-xs text-slate-500">Waktu Input</Label>
                     <div className="flex items-center gap-2 text-slate-500 text-xs">
                       <Calendar className="h-3.5 w-3.5" /> {format(new Date(viewingPSB.createdAt), 'dd MMMM yyyy, HH:mm', { locale: localeId })}
                     </div>
@@ -301,24 +297,23 @@ export default function PSBPage() {
             )}
           </div>
           <DialogFooter className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t">
-            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} className="w-full rounded-xl">Tutup Pratinjau</Button>
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} className="w-full">Tutup Pratinjau</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Contract Modal */}
       <Dialog open={showContract} onOpenChange={setShowContract}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem]">
+        <DialogContent className="max-w-4xl p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-slate-900">
           <DialogHeader className="p-6 bg-slate-100 dark:bg-slate-800 border-b flex flex-row items-center justify-between no-print">
             <DialogTitle className="flex items-center gap-2 text-slate-900 dark:text-white">
               <FileText className="h-5 w-5 text-primary" />
               Surat Perjanjian Berlangganan (Kontrak)
             </DialogTitle>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setShowContract(false)} className="rounded-xl">
+              <Button variant="outline" size="sm" onClick={() => setShowContract(false)}>
                 <X className="h-4 w-4 mr-1" /> Tutup
               </Button>
-              <Button size="sm" onClick={handlePrintContract} className="bg-primary hover:bg-primary/90 rounded-xl">
+              <Button size="sm" onClick={handlePrintContract}>
                 <Printer className="h-4 w-4 mr-1" /> Cetak / PDF
               </Button>
             </div>
@@ -328,19 +323,16 @@ export default function PSBPage() {
             <div id="contract-print-area" className="p-12 font-serif text-slate-900 bg-white leading-relaxed">
               {activeContractData && (
                 <div className="max-w-3xl mx-auto space-y-6 text-justify">
-                  {/* Header Kontrak */}
                   <div className="text-center space-y-2 border-b-2 border-slate-900 pb-4">
                     <h1 className="text-2xl font-bold uppercase underline">Surat Perjanjian Berlangganan Internet</h1>
                     <p className="text-sm font-bold">MTNET SYSTEM - SOLUSI INTERNET CEPAT & TERPERCAYA</p>
                     <p className="text-xs italic">Nomor Kontrak: MTNET/CONT/{activeContractData.id}/{format(new Date(), 'yyyyMM')}</p>
                   </div>
 
-                  {/* Pembukaan */}
                   <p className="text-sm">
                     Pada hari ini, <strong>{format(new Date(), 'EEEE, dd MMMM yyyy', { locale: localeId })}</strong>, yang bertanda tangan di bawah ini:
                   </p>
 
-                  {/* Pihak-pihak */}
                   <div className="space-y-4 text-sm">
                     <div className="grid grid-cols-4">
                       <span className="font-bold">Nama</span>
@@ -364,7 +356,6 @@ export default function PSBPage() {
                     Selanjutnya disebut sebagai <strong>"PELANGGAN"</strong>, dengan ini menyatakan setuju untuk berlangganan layanan internet dari <strong>MTNET SYSTEM</strong> (selanjutnya disebut "PENYEDIA") dengan ketentuan sebagai berikut:
                   </p>
 
-                  {/* Pasal-pasal */}
                   <div className="space-y-4 text-xs">
                     <div>
                       <h4 className="font-bold uppercase">Pasal 1: Lingkup Layanan</h4>
@@ -374,30 +365,20 @@ export default function PSBPage() {
                     <div>
                       <h4 className="font-bold uppercase">Pasal 2: Masa Kontrak & Pemutusan</h4>
                       <p><strong>2.1. Masa Minimal Berlangganan:</strong> PELANGGAN wajib berlangganan minimal selama <strong>6 (ENAM) BULAN</strong> sejak tanggal aktivasi.</p>
-                      <p><strong>2.2. Denda Pemutusan Dini:</strong> Apabila PELANGGAN melakukan pemutusan layanan sebelum masa 6 bulan berakhir, maka PELANGGAN wajib membayar denda sebesar <strong>Rp 500.000 (Lima Ratus Ribu Rupiah)</strong> atau sisa bulan berjalan.</p>
+                      <p><strong>2.2. Denda Pemutusan Dini:</strong> Apabila PELANGGAN melakukan pemutusan layanan sebelum masa 6 bulan berakhir, maka PELANGGAN wajib membayar denda sebesar <strong>Rp 500.000 (Lima Ratus Ribu Rupiah)</strong>.</p>
                     </div>
 
                     <div>
                       <h4 className="font-bold uppercase">Pasal 3: Biaya dan Pembayaran</h4>
                       <p>3.1. Tagihan diterbitkan setiap tanggal 1 setiap bulannya.</p>
-                      <p>3.2. Batas waktu pembayaran adalah tanggal 8 setiap bulannya. Keterlambatan pembayaran akan mengakibatkan isolasi layanan secara otomatis oleh sistem.</p>
+                      <p>3.2. Batas waktu pembayaran adalah tanggal 8 setiap bulannya.</p>
                     </div>
 
                     <div>
                       <h4 className="font-bold uppercase">Pasal 4: Peralatan</h4>
-                      <p>Peralatan (Modem/ONT) dengan SN/MAC: <strong>{activeContractData.modemSnMac || "-"}</strong> adalah milik PENYEDIA yang dipinjamkan kepada PELANGGAN. PELANGGAN wajib menjaga kondisi alat tersebut dan dilarang merusak atau memindah-tangankan tanpa ijin PENYEDIA.</p>
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold uppercase">Pasal 5: Batasan Penggunaan</h4>
-                      <p>PELANGGAN dilarang menjual kembali (resale) layanan internet PENYEDIA kepada pihak lain tanpa ijin tertulis. Pelanggaran terhadap poin ini akan mengakibatkan pemutusan layanan secara sepihak tanpa pengembalian biaya.</p>
+                      <p>Peralatan (Modem/ONT) dengan SN/MAC: <strong>{activeContractData.modemSnMac || "-"}</strong> adalah milik PENYEDIA yang dipinjamkan.</p>
                     </div>
                   </div>
-
-                  {/* Penutup & Tanda Tangan */}
-                  <p className="text-sm pt-4">
-                    Demikian surat perjanjian ini dibuat dengan sebenar-benarnya untuk dapat dipergunakan sebagaimana mestinya.
-                  </p>
 
                   <div className="grid grid-cols-2 text-center pt-8 text-sm">
                     <div className="space-y-16">
@@ -417,7 +398,7 @@ export default function PSBPage() {
         </DialogContent>
       </Dialog>
 
-      <div className="flex items-center gap-4 glass-card p-2 rounded-2xl shadow-sm border border-white/20">
+      <div className="flex items-center gap-4 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800">
         <Search className="h-4 w-4 text-slate-400 ml-3" />
         <Input 
           placeholder="Cari berdasarkan nama, telepon, atau modem..." 
@@ -427,33 +408,33 @@ export default function PSBPage() {
         />
       </div>
 
-      <Card className="border-none shadow-sm overflow-hidden glass-card rounded-[2rem]">
+      <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
         <ScrollArea className="w-full">
           <CardContent className="p-0">
             <Table>
               <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
                 <TableRow>
-                  <TableHead className="py-4 px-6 dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest">Calon Pelanggan</TableHead>
-                  <TableHead className="dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest">Paket Diminta</TableHead>
-                  <TableHead className="dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest">Status</TableHead>
-                  <TableHead className="dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest">Modem & Alamat</TableHead>
-                  <TableHead className="text-right px-6 dark:text-slate-400 font-bold uppercase text-[10px] tracking-widest">Aksi</TableHead>
+                  <TableHead className="py-4 px-6 dark:text-slate-400">Calon Pelanggan</TableHead>
+                  <TableHead className="dark:text-slate-400">Paket Diminta</TableHead>
+                  <TableHead className="dark:text-slate-400">Status</TableHead>
+                  <TableHead className="dark:text-slate-400">Modem & Alamat</TableHead>
+                  <TableHead className="text-right px-6 dark:text-slate-400">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {psbRequests?.map((request) => (
-                  <TableRow key={request.id} className="hover:bg-primary/5 transition-colors dark:border-slate-800">
+                  <TableRow key={request.id} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors dark:border-slate-800">
                     <TableCell className="py-4 px-6">
                       <div className="font-bold text-slate-900 dark:text-white">{request.name}</div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">{request.email}</div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="font-medium bg-primary/10 text-primary border-primary/20">
+                      <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
                         {getPackageName(request.packageId)}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">PASIF (WAITS)</Badge>
+                      <Badge className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400">PASIF</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col gap-1 text-sm text-slate-600 dark:text-slate-400">
@@ -467,7 +448,7 @@ export default function PSBPage() {
                           type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 text-slate-600 dark:text-slate-400 hover:text-primary rounded-full" 
+                          className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-primary" 
                           title="Lihat Detail" 
                           onClick={() => handleOpenView(request)}
                         >
@@ -477,7 +458,7 @@ export default function PSBPage() {
                           type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 text-primary hover:bg-primary/10 rounded-full" 
+                          className="h-8 w-8 text-primary hover:bg-primary/10" 
                           title="Edit & Aktivasi" 
                           onClick={(e) => {
                             e.stopPropagation();
@@ -491,7 +472,7 @@ export default function PSBPage() {
                           type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-9 w-9 text-rose-600 hover:bg-rose-50 rounded-full" 
+                          className="h-8 w-8 text-rose-600 hover:bg-rose-50" 
                           title="Hapus" 
                           onClick={(e) => {
                             e.stopPropagation();
@@ -506,12 +487,10 @@ export default function PSBPage() {
                 ))}
                 {!psbRequests?.length && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-24 text-slate-400">
-                      <div className="flex flex-col items-center gap-4">
-                        <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-full">
-                          <UserPlus className="h-10 w-10 opacity-20" />
-                        </div>
-                        <p className="font-medium">Belum ada antrian PSB.</p>
+                    <TableCell colSpan={5} className="text-center py-20 text-slate-400">
+                      <div className="flex flex-col items-center gap-2">
+                        <UserPlus className="h-8 w-8 opacity-20" />
+                        <p>Belum ada antrian PSB.</p>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -528,7 +507,6 @@ export default function PSBPage() {
           .no-print { display: none !important; }
           body { background: white !important; font-family: serif !important; }
           #contract-print-area { padding: 0 !important; width: 100% !important; max-width: none !important; }
-          .glass-card { background: transparent !important; border: none !important; box-shadow: none !important; backdrop-filter: none !important; }
         }
       `}</style>
     </div>

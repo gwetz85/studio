@@ -177,8 +177,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl bg-white/45 dark:bg-slate-900/45 backdrop-blur-2xl rounded-[2.5rem]">
-          <div className="bg-primary/90 p-8 text-white text-center space-y-4">
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
+          <div className="bg-primary p-8 text-white text-center space-y-4">
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-md mb-2">
               <Sparkles className="h-8 w-8 text-white animate-pulse" />
             </div>
@@ -186,9 +186,9 @@ export default function Dashboard() {
               <DialogTitle className="text-2xl font-bold text-center text-white uppercase tracking-tight">SELAMAT DATANG DI APLIKASI MTNET SYSTEM</DialogTitle>
               <div className="text-primary-foreground/90 text-center space-y-4 mt-4">
                 <p className="font-bold text-lg">Aplikasi ini dibuat dan dikembangkan oleh AGUS SURIYADI</p>
-                <div className="text-sm text-left bg-white/10 p-5 rounded-3xl backdrop-blur-sm border border-white/10">
+                <div className="text-sm text-left bg-white/10 p-5 rounded-xl backdrop-blur-sm border border-white/10">
                   <p className="mb-3 font-medium">Mohon pergunakan aplikasi ini dengan sebaiknya.</p>
-                  <p className="font-bold mb-2 underline decoration-white/30 underline-offset-4">Aplikasi iini berisi tentang :</p>
+                  <p className="font-bold mb-2 underline decoration-white/30 underline-offset-4">Aplikasi ini berisi tentang :</p>
                   <ul className="list-disc list-inside space-y-1.5 opacity-90 font-medium">
                     <li>Data Pelanggan</li>
                     <li>Payment</li>
@@ -202,9 +202,9 @@ export default function Dashboard() {
               </div>
             </DialogHeader>
           </div>
-          <div className="p-6 bg-white/30 dark:bg-slate-900/30 backdrop-blur-md">
+          <div className="p-6 bg-slate-50 dark:bg-slate-900 border-t">
             <DialogFooter>
-              <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight rounded-2xl shadow-lg hover:shadow-primary/20 transition-all">
+              <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight shadow-lg transition-all">
                 Mulai Bekerja
               </Button>
             </DialogFooter>
