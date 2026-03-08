@@ -20,8 +20,7 @@ import {
   Pie, 
   Cell, 
   ResponsiveContainer, 
-  Tooltip, 
-  Legend 
+  Tooltip 
 } from "recharts"
 import { 
   ChartContainer, 
@@ -234,10 +233,7 @@ export default function Dashboard() {
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
         <Card className="lg:col-span-2 border-none bg-white/75 dark:bg-slate-900/75 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
           <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
-              <CardDescription className="dark:text-slate-400">Perbandingan komposisi pelanggan berdasarkan status layanan.</CardDescription>
-            </div>
+            <CardTitle className="text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
             <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
           </CardHeader>
           <CardContent className="p-6">
@@ -269,7 +265,6 @@ export default function Dashboard() {
                       color: '#000'
                     }} 
                   />
-                  <Legend verticalAlign="bottom" height={36}/>
                 </PieChart>
               </ResponsiveContainer>
             </div>
