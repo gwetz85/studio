@@ -107,7 +107,8 @@ export default function IsolatedPage() {
                           <CreditCard className="h-8 w-8 opacity-20" />
                           <p>Tidak ada pelanggan yang terisolir untuk periode ini.</p>
                         </div>
-                      </TableRow>
+                      </TableCell>
+                    </TableRow>
                   )}
                 </TableBody>
               </Table>
