@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Bell, CheckCircle2, AlertCircle, Sparkles, Copy, Loader2, Calendar as CalendarIcon, Wallet, Printer, X, Undo2, MessageCircle } from "lucide-react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
@@ -209,6 +209,9 @@ export default function PaymentsPage() {
               <DialogTitle className="flex items-center gap-2 dark:text-white">
                 <Wallet className="h-5 w-5 text-primary" /> Terbitkan Invoice
               </DialogTitle>
+              <DialogDescription className="text-xs text-muted-foreground">
+                Lengkapi data di bawah untuk membuat catatan tagihan baru.
+              </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div className="space-y-2">
@@ -385,6 +388,9 @@ export default function PaymentsPage() {
               <Sparkles className="h-5 w-5 text-primary" />
               Asisten Pengingat AI
             </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Gunakan kecerdasan buatan untuk menyusun pesan yang dipersonalisasi.
+            </DialogDescription>
           </DialogHeader>
           <div className="p-6 space-y-4">
             {isGenerating ? (
@@ -419,13 +425,16 @@ export default function PaymentsPage() {
 
       <Dialog open={receiptDialogOpen} onOpenChange={setReceiptDialogOpen}>
         <DialogContent className="max-w-[800px] p-0 border-none shadow-2xl bg-white overflow-hidden">
-          <div className="p-4 bg-slate-50 border-b flex justify-between items-center no-print">
-            <h2 className="font-semibold flex items-center gap-2"><Printer className="h-4 w-4" /> Pratinjau Kwitansi</h2>
+          <DialogHeader className="p-4 bg-slate-50 border-b flex flex-row justify-between items-center no-print">
+            <DialogTitle className="font-semibold flex items-center gap-2">
+              <Printer className="h-4 w-4" /> Pratinjau Kwitansi Pembayaran
+            </DialogTitle>
+            <DialogDescription className="sr-only">Halaman pratinjau kwitansi resmi MTNET.</DialogDescription>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => setReceiptDialogOpen(false)}>Tutup</Button>
               <Button size="sm" onClick={printReceiptAction}><Printer className="mr-2 h-4 w-4" /> Cetak Kwitansi</Button>
             </div>
-          </div>
+          </DialogHeader>
           
           <ScrollArea className="max-h-[80vh]">
             <div id="receipt-content" className="p-12 font-mono text-slate-800 bg-white">

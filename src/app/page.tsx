@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -12,6 +13,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -190,15 +192,17 @@ export default function Dashboard() {
     <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
         <DialogContent className="sm:max-w-md p-0 border-none shadow-2xl bg-white dark:bg-slate-900 overflow-hidden">
-          <div className="bg-primary p-6 md:p-8 text-white text-center space-y-4">
-            <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-xl border border-white/20">
+          <DialogHeader className="bg-primary p-6 md:p-8 text-white text-center space-y-4">
+            <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-xl border border-white/20 mx-auto">
               <MTLogo className="h-10 w-10 md:h-12 md:w-12 text-white" />
             </div>
             <div className="space-y-2">
-              <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter">SELAMAT DATANG DI MTNET SYSTEM</h2>
-              <p className="text-sm text-primary-foreground/90 font-medium">Sistem Manajemen Penagihan & Layanan Internet</p>
+              <DialogTitle className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">SELAMAT DATANG DI MTNET SYSTEM</DialogTitle>
+              <DialogDescription className="text-sm text-primary-foreground/90 font-medium">
+                Sistem Manajemen Penagihan & Layanan Internet
+              </DialogDescription>
             </div>
-          </div>
+          </DialogHeader>
           <div className="p-5 md:p-6 space-y-4">
             <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-inner">
                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Dikembangkan oleh:</p>
