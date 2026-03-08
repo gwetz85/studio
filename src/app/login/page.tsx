@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -5,10 +6,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Wifi, Lock, User as UserIcon, AlertCircle } from "lucide-react"
+import { Lock, User as UserIcon, AlertCircle } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+
+// Custom MTnet Logo Component
+const MTLogo = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M6 32V10L20 22L34 10V32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M20 22V36" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 36H28" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="6" cy="10" r="2.5" fill="currentColor"/>
+    <circle cx="34" cy="10" r="2.5" fill="currentColor"/>
+    <circle cx="20" cy="22" r="2.5" fill="currentColor"/>
+  </svg>
+)
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -46,7 +59,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md border-none shadow-2xl overflow-hidden">
         <div className="bg-primary p-8 text-white text-center space-y-2">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm mb-2">
-            <Wifi className="h-6 w-6" />
+            <MTLogo className="size-8" />
           </div>
           <CardTitle className="text-2xl font-bold">MTNET SYSTEM</CardTitle>
           <CardDescription className="text-primary-foreground/80">Sistem Manajemen Internet Luring</CardDescription>

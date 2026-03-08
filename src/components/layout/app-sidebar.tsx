@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -20,6 +21,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+
+// Custom MTnet Logo Component
+const MTLogo = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    {/* Stylized M and T Path */}
+    <path d="M6 32V10L20 22L34 10V32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M20 22V36" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 36H28" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    {/* Network Nodes for Tech Feel */}
+    <circle cx="6" cy="10" r="2.5" fill="currentColor"/>
+    <circle cx="34" cy="10" r="2.5" fill="currentColor"/>
+    <circle cx="20" cy="22" r="2.5" fill="currentColor"/>
+  </svg>
+)
 
 const items = [
   {
@@ -100,7 +115,7 @@ export function AppSidebar() {
       <SidebarHeader className="border-b border-white/10">
         <div className="flex items-center gap-3 px-2 py-4">
           <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 text-white">
-            <Wifi className="size-6" />
+            <MTLogo className="size-7" />
           </div>
           <div className="flex flex-col gap-1 leading-none overflow-hidden">
             <span className="font-extrabold text-xl truncate tracking-tight uppercase">MTNET</span>
