@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Package, CreditCard, CheckCircle2, ShieldAlert, Wifi, Sparkles, BarChart3 } from "lucide-react"
+import { Users, Package, CreditCard, CheckCircle2, ShieldAlert, Wifi, Sparkles, PieChart as PieChartIcon } from "lucide-react"
 import { db } from "@/lib/db"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Badge } from "@/components/ui/badge"
@@ -18,13 +18,12 @@ import {
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { 
-  Bar, 
-  BarChart, 
-  CartesianGrid, 
-  XAxis, 
-  YAxis, 
-  ResponsiveContainer,
-  Cell
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  Tooltip, 
+  Legend 
 } from "recharts"
 import { 
   ChartContainer, 
@@ -167,15 +166,26 @@ export default function Dashboard() {
   ];
 
   const chartData = [
-    { status: "Aktif", count: stats.active, fill: "hsl(var(--primary))" },
-    { status: "Pasif", count: stats.passive, fill: "hsl(var(--accent))" },
-    { status: "Non-Aktif", count: stats.inactive, fill: "hsl(var(--destructive))" },
+    { name: "Aktif", value: stats.active, fill: "hsl(var(--primary))" },
+    { name: "Pasif", value: stats.passive, fill: "hsl(var(--accent))" },
+    { name: "Non-Aktif", value: stats.inactive, fill: "hsl(var(--destructive))" },
   ];
 
   const chartConfig = {
-    count: {
-      label: "Jumlah Pelanggan",
+    value: {
+      label: "Jumlah",
+    },
+    active: {
+      label: "Aktif",
       color: "hsl(var(--primary))",
+    },
+    passive: {
+      label: "Pasif",
+      color: "hsl(var(--accent))",
+    },
+    inactive: {
+      label: "Non-Aktif",
+      color: "hsl(var(--destructive))",
     },
   } satisfies ChartConfig;
 
@@ -188,27 +198,28 @@ export default function Dashboard() {
               <Sparkles className="h-8 w-8 text-white animate-pulse" />
             </div>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-center text-white">SELAMAT DATANG DI APLIKASI MTNET SYSTEM</DialogTitle>
-              <DialogDescription className="text-primary-foreground/90 text-center space-y-4">
-                <p className="font-semibold">Aplikasi ini dibuat dan dikembangkan oleh AGUS SURIYADI</p>
-                <div className="text-sm text-left bg-white/10 p-4 rounded-2xl backdrop-blur-sm">
-                  <p className="mb-2">Mohon pergunakan aplikasi ini dengan sebaiknya.</p>
-                  <p className="font-bold mb-1 underline">Aplikasi ini berisi tentang:</p>
-                  <ul className="list-disc list-inside space-y-0.5 opacity-90">
+              <DialogTitle className="text-2xl font-bold text-center text-white uppercase tracking-tight">SELAMAT DATANG DI APLIKASI MTNET SYSTEM</DialogTitle>
+              <div className="text-primary-foreground/90 text-center space-y-4 mt-4">
+                <p className="font-bold text-lg">Aplikasi ini dibuat dan dikembangkan oleh AGUS SURIYADI</p>
+                <div className="text-sm text-left bg-white/10 p-5 rounded-3xl backdrop-blur-sm border border-white/10">
+                  <p className="mb-3 font-medium">Mohon pergunakan aplikasi ini dengan sebaiknya.</p>
+                  <p className="font-bold mb-2 underline decoration-white/30 underline-offset-4">Aplikasi iini berisi tentang :</p>
+                  <ul className="list-disc list-inside space-y-1.5 opacity-90 font-medium">
                     <li>Data Pelanggan</li>
                     <li>Payment</li>
                     <li>User Isolir dan Nonaktif</li>
                     <li>Fitur Teknisi</li>
                   </ul>
                 </div>
-                <p className="text-xs italic">Aplikasi ini memberikan pengalaman bekerja secara terorganisir di 1 aplikasi dan akan terus melakukan update fitur secara berkala.</p>
-                <p className="font-bold pt-2">Terima Kasih</p>
-              </DialogDescription>
+                <p className="text-sm leading-relaxed">Aplikasi ini juga memberikan pengalaman bekerja secara terorganisir di 1 aplikasi.</p>
+                <p className="text-xs opacity-75 italic">Aplikasi ini akan terus melakukan update baik perbaikkan di sisi Fitur maupun disisi layanan.</p>
+                <p className="font-bold text-xl pt-2">Terima Kasih</p>
+              </div>
             </DialogHeader>
           </div>
           <div className="p-6 bg-white dark:bg-slate-900">
             <DialogFooter>
-              <Button onClick={() => setShowWelcome(false)} className="w-full h-11 font-bold tracking-tight rounded-2xl">
+              <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight rounded-2xl shadow-lg hover:shadow-primary/20 transition-all">
                 Mulai Bekerja
               </Button>
             </DialogFooter>
@@ -223,10 +234,10 @@ export default function Dashboard() {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {dashboardItems.map((item) => (
-          <Card key={item.title} className="border-none shadow-sm hover:shadow-md transition-all duration-300 dark:bg-slate-900/50 rounded-2xl">
+          <Card key={item.title} className="border-none shadow-sm hover:shadow-md transition-all duration-300 dark:bg-slate-900/50 rounded-2xl group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">{item.title}</CardTitle>
-              <div className={`${item.bg} ${item.color} p-2.5 rounded-xl`}>
+              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">{item.title}</CardTitle>
+              <div className={`${item.bg} ${item.color} p-2.5 rounded-xl transition-transform group-hover:scale-110`}>
                 <item.icon className="h-4 w-4" />
               </div>
             </CardHeader>
@@ -238,39 +249,47 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-        {/* Grafik Status Pelanggan */}
+        {/* Grafik Status Pelanggan - Pie Chart */}
         <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden dark:bg-slate-900/50 rounded-2xl">
           <CardHeader className="bg-white/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
-              <CardDescription>Perbandingan jumlah pelanggan berdasarkan status layanan.</CardDescription>
+              <CardDescription>Perbandingan komposisi pelanggan berdasarkan status layanan.</CardDescription>
             </div>
-            <BarChart3 className="h-5 w-5 text-primary opacity-50" />
+            <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
           </CardHeader>
           <CardContent className="p-6">
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
-                <XAxis 
-                  dataKey="status" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: 'currentColor', fontSize: 12 }}
-                  dy={10}
-                />
-                <YAxis hide />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Bar 
-                  dataKey="count" 
-                  radius={[8, 8, 0, 0]}
-                  barSize={60}
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ChartContainer>
+            <div className="h-[300px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={chartData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ 
+                      borderRadius: '16px', 
+                      border: 'none', 
+                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+                      backgroundColor: 'hsl(var(--card))',
+                      color: 'hsl(var(--foreground))'
+                    }} 
+                  />
+                  <Legend verticalAlign="bottom" height={36}/>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
         
@@ -281,32 +300,32 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-6">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-green-50/50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-green-50/50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
                 <div className="flex items-center gap-3">
-                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  <span className="text-sm font-medium text-green-900 dark:text-green-100">Database Lokal</span>
+                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-sm font-bold text-green-900 dark:text-green-100 uppercase tracking-tight">Database Lokal</span>
                 </div>
-                <Badge className="bg-green-600 dark:bg-green-500 rounded-lg">Aktif</Badge>
+                <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-3 py-1">AKTIF</Badge>
               </div>
               
               <div className="grid grid-cols-1 gap-4">
-                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Periode Saat Ini</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-xl">{currentPeriod}</p>
+                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-widest">Periode Saat Ini</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-2xl">{currentPeriod}</p>
                 </div>
-                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center">
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">Tanggal Operasional</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-xl">{currentDay}</p>
+                <div className="p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-widest">Tanggal Hari Ini</p>
+                  <p className="font-bold text-slate-900 dark:text-white text-2xl">{currentDay}</p>
                 </div>
               </div>
               
-              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
+              <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Wifi className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-bold uppercase text-primary">Info Billing</span>
+                  <span className="text-xs font-bold uppercase text-primary tracking-wider">Info Billing</span>
                 </div>
-                <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                  Tagihan otomatis diterbitkan setiap tanggal 1. Masa isolasi dimulai setelah tanggal 9 untuk pelanggan yang belum melunasi.
+                <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
+                  Sistem otomatis menerbitkan tagihan setiap tanggal 1. Masa isolasi dimulai setelah tanggal 9.
                 </p>
               </div>
             </div>
