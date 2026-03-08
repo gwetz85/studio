@@ -8,12 +8,13 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, UserPlus, Phone, MapPin, Cpu, Printer, FileText, CheckCircle2, X } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, UserPlus, Phone, MapPin, Cpu, Printer, FileText, CheckCircle2, X, Eye, User, Mail, Calendar } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
 import { format } from "date-fns"
 import { id as localeId } from "date-fns/locale"
 
@@ -21,7 +22,9 @@ export default function PSBPage() {
   const { toast } = useToast();
   const [search, setSearch] = React.useState("");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
   const [editingPSB, setEditingPSB] = React.useState<PSBRequest | null>(null);
+  const [viewingPSB, setViewingPSB] = React.useState<PSBRequest | null>(null);
   
   // State for Contract PDF Preview
   const [showContract, setShowContract] = React.useState(false);
@@ -40,6 +43,11 @@ export default function PSBPage() {
   }, [search]);
 
   const packages = useLiveQuery(() => db.packages.toArray());
+
+  const handleOpenView = (request: PSBRequest) => {
+    setViewingPSB(request);
+    setIsViewDialogOpen(true);
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -218,6 +226,86 @@ export default function PSBPage() {
         </Dialog>
       </div>
 
+      {/* View Details Modal */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900 rounded-[2rem] glass-card">
+          <DialogHeader className="p-6 bg-primary text-white">
+            <DialogTitle className="text-xl flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Detail Data PSB
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-6 space-y-6">
+            {viewingPSB && (
+              <div className="space-y-5">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                    <User className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{viewingPSB.name}</h3>
+                    <p className="text-sm text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <Mail className="h-3 w-3" /> {viewingPSB.email}
+                    </p>
+                  </div>
+                </div>
+
+                <Separator className="opacity-50" />
+
+                <div className="grid grid-cols-1 gap-4 text-sm">
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Kontak Person</Label>
+                    <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                      <Phone className="h-4 w-4 text-primary" /> {viewingPSB.phone}
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Alamat Pemasangan</Label>
+                    <div className="flex items-start gap-2 text-slate-700 dark:text-slate-300">
+                      <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" /> 
+                      <span className="leading-relaxed">{viewingPSB.address}</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Identitas Perangkat</Label>
+                    <div className="flex items-center gap-2 text-primary font-mono font-bold">
+                      <Cpu className="h-4 w-4" /> {viewingPSB.modemSnMac || "Belum ada SN/MAC"}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Paket Diminta</Label>
+                      <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary w-fit">
+                        {getPackageName(viewingPSB.packageId)}
+                      </Badge>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Status Antrian</Label>
+                      <Badge className="bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 w-fit uppercase">
+                        {viewingPSB.status}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-2">
+                    <Label className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Waktu Input</Label>
+                    <div className="flex items-center gap-2 text-slate-500 text-xs">
+                      <Calendar className="h-3.5 w-3.5" /> {format(new Date(viewingPSB.createdAt), 'dd MMMM yyyy, HH:mm', { locale: localeId })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          <DialogFooter className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t">
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)} className="w-full rounded-xl">Tutup Pratinjau</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Contract Modal */}
       <Dialog open={showContract} onOpenChange={setShowContract}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden border-none shadow-2xl bg-white dark:bg-slate-900 rounded-[2rem]">
@@ -375,6 +463,16 @@ export default function PSBPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
+                        <Button 
+                          type="button"
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-9 w-9 text-slate-600 dark:text-slate-400 hover:text-primary rounded-full" 
+                          title="Lihat Detail" 
+                          onClick={() => handleOpenView(request)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         <Button 
                           type="button"
                           variant="ghost" 
