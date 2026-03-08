@@ -20,10 +20,13 @@ import {
   Pie, 
   Cell, 
   ResponsiveContainer, 
-  Tooltip 
 } from "recharts"
 import { 
   ChartContainer, 
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
   type ChartConfig 
 } from "@/components/ui/chart"
 
@@ -166,9 +169,9 @@ export default function Dashboard() {
 
   const chartConfig = {
     value: { label: "Jumlah" },
-    active: { label: "Aktif", color: "hsl(var(--primary))" },
-    passive: { label: "Pasif", color: "hsl(var(--accent))" },
-    inactive: { label: "Non-Aktif", color: "hsl(var(--destructive))" },
+    Aktif: { label: "Aktif", color: "hsl(var(--primary))" },
+    Pasif: { label: "Pasif", color: "hsl(var(--accent))" },
+    "Non-Aktif": { label: "Non-Aktif", color: "hsl(var(--destructive))" },
   } satisfies ChartConfig;
 
   return (
@@ -237,36 +240,27 @@ export default function Dashboard() {
             <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
           </CardHeader>
           <CardContent className="p-6">
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[350px] w-full">
+              <ChartContainer config={chartConfig} className="h-full w-full">
                 <PieChart>
+                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                   <Pie
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
+                    innerRadius={70}
                     outerRadius={100}
                     paddingAngle={5}
                     dataKey="value"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
                     {chartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
                     ))}
                   </Pie>
-                  <Tooltip 
-                    contentStyle={{ 
-                      borderRadius: '16px', 
-                      border: 'none', 
-                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                      backdropFilter: 'blur(10px)',
-                      color: '#000'
-                    }} 
-                  />
+                  <ChartLegend content={<ChartLegendContent />} className="flex-wrap gap-x-6 gap-y-2 pt-8" />
                 </PieChart>
-              </ResponsiveContainer>
+              </ChartContainer>
             </div>
           </CardContent>
         </Card>
