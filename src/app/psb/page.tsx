@@ -292,7 +292,7 @@ export default function PSBPage() {
                     <div>
                       <h4 className="font-bold uppercase">Pasal 3: Biaya dan Pembayaran</h4>
                       <p>3.1. Tagihan diterbitkan setiap tanggal 1 setiap bulannya.</p>
-                      <p>3.2. Batas waktu pembayaran adalah tanggal 9 setiap bulannya. Keterlambatan pembayaran akan mengakibatkan isolasi layanan secara otomatis oleh sistem.</p>
+                      <p>3.2. Batas waktu pembayaran adalah tanggal 8 setiap bulannya. Keterlambatan pembayaran akan mengakibatkan isolasi layanan secara otomatis oleh sistem.</p>
                     </div>
 
                     <div>

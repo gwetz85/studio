@@ -102,7 +102,7 @@ export default function Dashboard() {
     const pendingPayments = await db.payments.where('status').equals('pending').count();
     
     let isolatedCount = 0;
-    if (currentDay > 9) {
+    if (currentDay > 8) {
       const activeCustomers = await db.customers.where('status').equals('active').toArray();
       const currentPaidPayments = await db.payments
         .where('billingPeriod').equals(currentPeriod)
@@ -296,7 +296,7 @@ export default function Dashboard() {
                   <span className="text-xs font-bold uppercase text-primary tracking-wider">Info Billing</span>
                 </div>
                 <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
-                  Sistem otomatis menerbitkan tagihan setiap tanggal 1. Masa isolasi dimulai setelah tanggal 9.
+                  Sistem otomatis menerbitkan tagihan setiap tanggal 1. Masa isolasi dimulai setelah tanggal 8.
                 </p>
               </div>
             </div>

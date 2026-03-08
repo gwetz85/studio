@@ -12,7 +12,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 export default function IsolatedPage() {
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const currentDay = new Date().getDate();
-  const isAfterCutoff = currentDay > 9;
+  const isAfterCutoff = currentDay > 8;
 
   const isolatedCustomers = useLiveQuery(async () => {
     if (!isAfterCutoff) return [];
@@ -45,7 +45,7 @@ export default function IsolatedPage() {
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">User Terisolir</h1>
         </div>
         <p className="text-slate-500 dark:text-slate-400">
-          Daftar pelanggan aktif yang belum melunasi tagihan periode <strong>{currentPeriod}</strong> setelah melewati batas tanggal 9.
+          Daftar pelanggan aktif yang belum melunasi tagihan periode <strong>{currentPeriod}</strong> setelah melewati batas tanggal 8.
         </p>
       </div>
 
@@ -55,7 +55,7 @@ export default function IsolatedPage() {
             <Clock className="h-8 w-8 text-amber-500 mx-auto" />
             <h3 className="font-semibold text-amber-900 dark:text-amber-100">Belum Memasuki Masa Isolasi</h3>
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              Isolasi otomatis akan aktif setelah tanggal 9 setiap bulannya. Saat ini tanggal {currentDay}.
+              Isolasi otomatis akan aktif setelah tanggal 8 setiap bulannya. Saat ini tanggal {currentDay}.
             </p>
           </CardContent>
         </Card>
@@ -107,8 +107,7 @@ export default function IsolatedPage() {
                           <CreditCard className="h-8 w-8 opacity-20" />
                           <p>Tidak ada pelanggan yang terisolir untuk periode ini.</p>
                         </div>
-                      </TableCell>
-                    </TableRow>
+                      </TableRow>
                   )}
                 </TableBody>
               </Table>
