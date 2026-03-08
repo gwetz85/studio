@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Bell, CheckCircle2, AlertCircle, Sparkles, Copy, Loader2, Calendar as CalendarIcon, Wallet, Printer, X, Undo2 } from "lucide-react"
+import { Plus, Bell, CheckCircle2, AlertCircle, Sparkles, Copy, Loader2, Calendar as CalendarIcon, Wallet, Printer, X, Undo2, MessageCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -91,6 +91,27 @@ export default function PaymentsPage() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleWhatsAppDirect = (payment: Payment) => {
+    const customer = customers?.find(c => c.id === payment.customerId);
+    if (!customer) return;
+
+    const message = `Halo Bapak/Ibu ${customer.name}, ini adalah pengingat tagihan internet MTNET untuk periode ${payment.billingPeriod}.\n\nTotal Tagihan: Rp ${payment.amount.toLocaleString('id-ID')}\nStatus: ${payment.status === 'overdue' ? 'TERLAMBAT' : 'BELUM BAYAR'}\n\nMohon segera melakukan pembayaran. Jika sudah membayar, abaikan pesan ini. Terima kasih.`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${customer.phone.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleWhatsAppFromAI = () => {
+    if (!activePayment || !reminderMessage) return;
+    const customer = customers?.find(c => c.id === activePayment.customerId);
+    if (!customer) return;
+
+    const encodedMessage = encodeURIComponent(reminderMessage);
+    const whatsappUrl = `https://wa.me/${customer.phone.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const handlePrintReceipt = (payment: Payment) => {
@@ -296,6 +317,15 @@ export default function PaymentsPage() {
                             <Button 
                               variant="ghost" 
                               size="icon" 
+                              className="h-8 w-8 text-green-600 hover:bg-green-50 dark:text-green-500 dark:hover:bg-green-900/20" 
+                              title="Kirim WhatsApp"
+                              onClick={() => handleWhatsAppDirect(payment)}
+                            >
+                              <MessageCircle className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
                               className="h-8 w-8 text-primary hover:bg-primary/10 dark:text-primary dark:hover:bg-primary/20" 
                               title="Kirim Pengingat AI"
                               onClick={() => handleGenerateReminder(payment)}
@@ -355,9 +385,12 @@ export default function PaymentsPage() {
                 <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700 text-sm leading-relaxed text-slate-700 dark:text-slate-300 shadow-inner min-h-[100px]">
                   {reminderMessage || "Ups, terjadi masalah saat memproses permintaan AI."}
                 </div>
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
                   <Button variant="outline" size="sm" className="shadow-sm dark:border-slate-700 dark:text-slate-300" onClick={copyToClipboard} disabled={!reminderMessage}>
                     <Copy className="mr-2 h-3.5 w-3.5" /> Salin Teks
+                  </Button>
+                  <Button variant="outline" size="sm" className="shadow-sm border-green-200 text-green-700 bg-green-50 dark:border-green-900 dark:text-green-500 dark:bg-green-950 hover:bg-green-100" onClick={handleWhatsAppFromAI} disabled={!reminderMessage}>
+                    <MessageCircle className="mr-2 h-3.5 w-3.5" /> Kirim ke WA
                   </Button>
                 </div>
               </>
