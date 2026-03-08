@@ -113,8 +113,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="pb-4">
-        <div className="flex items-center gap-3 px-2 py-2">
+      <SidebarHeader className="border-b border-white/10 bg-black/10 backdrop-blur-md p-4">
+        <div className="flex items-center gap-3 px-2 py-1">
           <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 text-white">
             <MTLogo className="size-7" />
           </div>
@@ -137,8 +137,6 @@ export function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      
-      <SidebarSeparator className="mx-4 bg-white/10" />
 
       <SidebarContent className="pt-2">
         <SidebarGroup>
