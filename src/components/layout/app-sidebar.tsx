@@ -20,6 +20,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar"
 
 // Custom MTnet Logo Component
@@ -112,8 +113,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-white/10">
-        <div className="flex items-center gap-3 px-2 py-4">
+      <SidebarHeader className="pb-4">
+        <div className="flex items-center gap-3 px-2 py-2">
           <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 text-white">
             <MTLogo className="size-7" />
           </div>
@@ -136,9 +137,12 @@ export function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent>
+      
+      <SidebarSeparator className="mx-4 bg-white/10" />
+
+      <SidebarContent className="pt-2">
         <SidebarGroup>
-          <SidebarGroupLabel>Menu Navigasi</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-white/40 mb-2">Navigasi Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -149,8 +153,8 @@ export function AppSidebar() {
                     tooltip={item.title}
                   >
                     <Link href={item.url} className="flex items-center gap-3 transition-all duration-300">
-                      <item.icon className={pathname === item.url ? "scale-110" : "opacity-70"} />
-                      <span>{item.title}</span>
+                      <item.icon className={pathname === item.url ? "scale-110 text-white" : "opacity-70"} />
+                      <span className={pathname === item.url ? "text-white" : ""}>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -159,11 +163,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
       <SidebarFooter className="border-t border-white/10 p-4 space-y-4 bg-black/10 backdrop-blur-md">
         <div className="px-2">
           <div className="flex items-center gap-2 mb-1">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Online System</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Sistem Luring</span>
           </div>
           <div className="text-sm font-bold truncate text-white">{username}</div>
           <div className="text-[10px] font-medium text-white/60 uppercase">{role === 'admin' ? 'Administrator' : 'Staff'}</div>
