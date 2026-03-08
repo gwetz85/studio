@@ -20,7 +20,6 @@ export default function RootLayout({
   const isLoginPage = pathname === "/login";
 
   useEffect(() => {
-    // 1. THEME & COLOR INITIALIZATION
     const savedTheme = localStorage.getItem("theme");
     const savedSidebarColor = localStorage.getItem("sidebar_color") || "blue";
 
@@ -36,7 +35,6 @@ export default function RootLayout({
 
     const performMaintenanceTasks = async () => {
       try {
-        // 1. AUTO BACKUP LOGIC
         const customers = await db.customers.toArray();
         const packages = await db.packages.toArray();
         const payments = await db.payments.toArray();
@@ -50,7 +48,6 @@ export default function RootLayout({
         localStorage.setItem("mtnet_auto_backup", JSON.stringify(backupData));
         localStorage.setItem("mtnet_last_backup_time", backupData.timestamp.toString());
         
-        // 2. DISPATCH EVENT
         window.dispatchEvent(new Event('mtnet-backup-updated'));
         
         console.log("Maintenance performed at:", new Date().toLocaleTimeString());
@@ -59,12 +56,8 @@ export default function RootLayout({
       }
     };
 
-    // Run once on load
     performMaintenanceTasks();
-
-    // Set interval for 10 minutes (600,000 ms)
     const interval = setInterval(performMaintenanceTasks, 10 * 60 * 1000);
-    
     return () => clearInterval(interval);
   }, [isLoggedIn]);
 
@@ -86,19 +79,26 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         <title>MTNET SYSTEM</title>
       </head>
-      <body className="antialiased transition-colors duration-300">
+      <body className="antialiased transition-colors duration-300 relative min-h-screen">
+        {/* Background Image for Glass Effect */}
+        <div 
+          className="fixed inset-0 z-[-1] bg-cover bg-center bg-no-repeat bg-fixed opacity-10 dark:opacity-20 pointer-events-none"
+          style={{ backgroundImage: "url('https://picsum.photos/seed/net1/1920/1080')" }}
+          data-ai-hint="network technology"
+        />
+        
         {isLoginPage ? (
           children
         ) : (
           <SidebarProvider>
             <AppSidebar />
-            <SidebarInset>
-              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white/50 backdrop-blur-md dark:bg-slate-900/50 sticky top-0 z-10">
+            <SidebarInset className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
+              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white/60 backdrop-blur-xl dark:bg-slate-900/60 sticky top-0 z-10">
                 <SidebarTrigger className="-ml-1" />
                 <div className="flex-1" />
                 <div className="flex items-center gap-2">
                   <div className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Siap Luring" />
-                  <span className="text-xs font-medium text-muted-foreground">Mode Lokal</span>
+                  <span className="text-xs font-medium text-muted-foreground dark:text-slate-300">Mode Lokal</span>
                 </div>
               </header>
               <main className="flex-1 p-6 md:p-8">

@@ -1,9 +1,8 @@
-
 "use client"
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Package, CreditCard, CheckCircle2, ShieldAlert, Wifi, Sparkles, PieChart as PieChartIcon } from "lucide-react"
+import { Users, Package, CreditCard, ShieldAlert, Wifi, Sparkles, PieChart as PieChartIcon } from "lucide-react"
 import { db } from "@/lib/db"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Badge } from "@/components/ui/badge"
@@ -13,7 +12,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -27,8 +25,6 @@ import {
 } from "recharts"
 import { 
   ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent, 
   type ChartConfig 
 } from "@/components/ui/chart"
 
@@ -39,7 +35,6 @@ export default function Dashboard() {
   const [isProcessingAutoBill, setIsProcessingAutoBill] = React.useState(false);
   const [showWelcome, setShowWelcome] = React.useState(false);
 
-  // Welcome Pop-up Logic
   React.useEffect(() => {
     const welcomeShown = sessionStorage.getItem("mtnet_welcome_shown");
     if (!welcomeShown) {
@@ -51,7 +46,6 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Auto Generate Bills Logic
   React.useEffect(() => {
     const generateMonthlyBills = async () => {
       if (isProcessingAutoBill) return;
@@ -140,28 +134,28 @@ export default function Dashboard() {
       value: stats.total,
       icon: Users,
       color: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-50 dark:bg-blue-900/20",
+      bg: "bg-blue-100/50 dark:bg-blue-900/30",
     },
     {
       title: "Paket Aktif",
       value: stats.packages,
       icon: Package,
       color: "text-cyan-600 dark:text-cyan-400",
-      bg: "bg-cyan-50 dark:bg-cyan-900/20",
+      bg: "bg-cyan-100/50 dark:bg-cyan-900/30",
     },
     {
       title: "Pembayaran Menunggu",
       value: stats.pending,
       icon: CreditCard,
       color: "text-amber-600 dark:text-amber-400",
-      bg: "bg-amber-50 dark:bg-amber-900/20",
+      bg: "bg-amber-100/50 dark:bg-amber-900/30",
     },
     {
       title: "User Terisolir",
       value: stats.isolated,
       icon: ShieldAlert,
       color: "text-rose-600 dark:text-rose-400",
-      bg: "bg-rose-50 dark:bg-rose-900/20",
+      bg: "bg-rose-100/50 dark:bg-rose-900/30",
     },
   ];
 
@@ -172,28 +166,17 @@ export default function Dashboard() {
   ];
 
   const chartConfig = {
-    value: {
-      label: "Jumlah",
-    },
-    active: {
-      label: "Aktif",
-      color: "hsl(var(--primary))",
-    },
-    passive: {
-      label: "Pasif",
-      color: "hsl(var(--accent))",
-    },
-    inactive: {
-      label: "Non-Aktif",
-      color: "hsl(var(--destructive))",
-    },
+    value: { label: "Jumlah" },
+    active: { label: "Aktif", color: "hsl(var(--primary))" },
+    passive: { label: "Pasif", color: "hsl(var(--accent))" },
+    inactive: { label: "Non-Aktif", color: "hsl(var(--destructive))" },
   } satisfies ChartConfig;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900 rounded-[2.5rem]">
-          <div className="bg-primary p-8 text-white text-center space-y-4">
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl dark:bg-slate-900/90 backdrop-blur-2xl rounded-[2.5rem]">
+          <div className="bg-primary/90 p-8 text-white text-center space-y-4">
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-md mb-2">
               <Sparkles className="h-8 w-8 text-white animate-pulse" />
             </div>
@@ -217,7 +200,7 @@ export default function Dashboard() {
               </div>
             </DialogHeader>
           </div>
-          <div className="p-6 bg-white dark:bg-slate-900">
+          <div className="p-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md">
             <DialogFooter>
               <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight rounded-2xl shadow-lg hover:shadow-primary/20 transition-all">
                 Mulai Bekerja
@@ -234,9 +217,9 @@ export default function Dashboard() {
 
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {dashboardItems.map((item) => (
-          <Card key={item.title} className="border-none shadow-sm hover:shadow-md transition-all duration-300 dark:bg-slate-900/50 rounded-2xl group">
+          <Card key={item.title} className="border-none bg-white/75 dark:bg-slate-900/75 backdrop-blur-md shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl group border border-white/20">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">{item.title}</CardTitle>
+              <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{item.title}</CardTitle>
               <div className={`${item.bg} ${item.color} p-2.5 rounded-xl transition-transform group-hover:scale-110`}>
                 <item.icon className="h-4 w-4" />
               </div>
@@ -249,12 +232,11 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-        {/* Grafik Status Pelanggan - Pie Chart */}
-        <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden dark:bg-slate-900/50 rounded-2xl">
-          <CardHeader className="bg-white/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+        <Card className="lg:col-span-2 border-none bg-white/75 dark:bg-slate-900/75 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
+          <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
-              <CardDescription>Perbandingan komposisi pelanggan berdasarkan status layanan.</CardDescription>
+              <CardDescription className="dark:text-slate-400">Perbandingan komposisi pelanggan berdasarkan status layanan.</CardDescription>
             </div>
             <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
           </CardHeader>
@@ -282,8 +264,9 @@ export default function Dashboard() {
                       borderRadius: '16px', 
                       border: 'none', 
                       boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                      backgroundColor: 'hsl(var(--card))',
-                      color: 'hsl(var(--foreground))'
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      backdropFilter: 'blur(10px)',
+                      color: '#000'
                     }} 
                   />
                   <Legend verticalAlign="bottom" height={36}/>
@@ -293,17 +276,16 @@ export default function Dashboard() {
           </CardContent>
         </Card>
         
-        {/* Status Sistem */}
-        <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900/50 rounded-2xl">
-          <CardHeader className="bg-white/50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+        <Card className="border-none bg-white/75 dark:bg-slate-900/75 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
+          <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50">
             <CardTitle className="text-lg text-slate-900 dark:text-white">Status Sistem</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
             <div className="space-y-6">
-              <div className="flex items-center justify-between p-4 rounded-2xl bg-green-50/50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+              <div className="flex items-center justify-between p-4 rounded-2xl bg-green-50/50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30">
                 <div className="flex items-center gap-3">
                   <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-sm font-bold text-green-900 dark:text-green-100 uppercase tracking-tight">Database Lokal</span>
+                  <span className="text-sm font-bold text-green-900 dark:text-green-300 uppercase tracking-tight">Database Lokal</span>
                 </div>
                 <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-3 py-1">AKTIF</Badge>
               </div>
@@ -319,7 +301,7 @@ export default function Dashboard() {
                 </div>
               </div>
               
-              <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30">
+              <div className="p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Wifi className="h-4 w-4 text-primary" />
                   <span className="text-xs font-bold uppercase text-primary tracking-wider">Info Billing</span>
