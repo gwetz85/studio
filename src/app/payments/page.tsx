@@ -32,6 +32,14 @@ export default function PaymentsPage() {
   const customers = useLiveQuery(() => db.customers.toArray());
   const packages = useLiveQuery(() => db.packages.toArray());
 
+  const formatWhatsAppNumber = (phone: string) => {
+    let cleaned = phone.replace(/[^0-9]/g, '');
+    if (cleaned.startsWith('0')) {
+      cleaned = '62' + cleaned.substring(1);
+    }
+    return cleaned;
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -100,7 +108,8 @@ export default function PaymentsPage() {
     const message = `Halo Bapak/Ibu ${customer.name}, ini adalah pengingat tagihan internet MTNET untuk periode ${payment.billingPeriod}.\n\nTotal Tagihan: Rp ${payment.amount.toLocaleString('id-ID')}\nStatus: ${payment.status === 'overdue' ? 'TERLAMBAT' : 'BELUM BAYAR'}\n\nMohon segera melakukan pembayaran. Jika sudah membayar, abaikan pesan ini. Terima kasih.`;
     
     const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${customer.phone.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
+    const phone = formatWhatsAppNumber(customer.phone);
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -110,7 +119,8 @@ export default function PaymentsPage() {
     if (!customer) return;
 
     const encodedMessage = encodeURIComponent(reminderMessage);
-    const whatsappUrl = `https://wa.me/${customer.phone.replace(/[^0-9]/g, '')}?text=${encodedMessage}`;
+    const phone = formatWhatsAppNumber(customer.phone);
+    const whatsappUrl = `https://wa.me/${phone}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
   };
 
