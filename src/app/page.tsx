@@ -30,6 +30,18 @@ import {
   type ChartConfig 
 } from "@/components/ui/chart"
 
+// Custom MTnet Logo Component
+const MTLogo = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+    <path d="M6 32V10L20 22L34 10V32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M20 22V36" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M12 36H28" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+    <circle cx="6" cy="10" r="2.5" fill="currentColor"/>
+    <circle cx="34" cy="10" r="2.5" fill="currentColor"/>
+    <circle cx="20" cy="22" r="2.5" fill="currentColor"/>
+  </svg>
+)
+
 export default function Dashboard() {
   const { toast } = useToast();
   const currentPeriod = new Date().toISOString().slice(0, 7);
@@ -179,33 +191,33 @@ export default function Dashboard() {
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
           <div className="bg-primary p-8 text-white text-center space-y-4">
-            <div className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur-md mb-2">
-              <Sparkles className="h-8 w-8 text-white animate-pulse" />
+            <div className="inline-flex h-20 w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md mb-2 shadow-xl border border-white/20">
+              <MTLogo className="h-12 w-12 text-white" />
             </div>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-center text-white uppercase tracking-tight">SELAMAT DATANG DI APLIKASI MTNET SYSTEM</DialogTitle>
+              <DialogTitle className="text-2xl font-black text-center text-white uppercase tracking-tighter">SELAMAT DATANG DI MTNET SYSTEM</DialogTitle>
               <div className="text-primary-foreground/90 text-center space-y-4 mt-4">
-                <p className="font-bold text-lg">Aplikasi ini dibuat dan dikembangkan oleh AGUS SURIYADI</p>
-                <div className="text-sm text-left bg-white/10 p-5 rounded-xl backdrop-blur-sm border border-white/10">
-                  <p className="mb-3 font-medium">Mohon pergunakan aplikasi ini dengan sebaiknya.</p>
-                  <p className="font-bold mb-2 underline decoration-white/30 underline-offset-4">Aplikasi ini berisi tentang :</p>
-                  <ul className="list-disc list-inside space-y-1.5 opacity-90 font-medium">
-                    <li>Data Pelanggan</li>
-                    <li>Payment</li>
-                    <li>User Isolir dan Nonaktif</li>
-                    <li>Fitur Teknisi</li>
+                <p className="font-bold text-lg leading-tight">Sistem Manajemen Penagihan & Layanan Internet</p>
+                <div className="text-sm text-left bg-white/10 p-5 rounded-2xl backdrop-blur-sm border border-white/10 shadow-inner">
+                  <p className="mb-3 font-semibold">Dikembangkan oleh:</p>
+                  <p className="font-bold text-lg text-white mb-3">AGUS SURIYADI</p>
+                  <p className="font-medium mb-2 opacity-80 underline decoration-white/30 underline-offset-4 text-xs uppercase tracking-widest">Modul Aplikasi:</p>
+                  <ul className="grid grid-cols-2 gap-2 opacity-90 font-bold text-[10px] uppercase">
+                    <li className="flex items-center gap-1.5"><div className="h-1 w-1 bg-white rounded-full" /> Data Pelanggan</li>
+                    <li className="flex items-center gap-1.5"><div className="h-1 w-1 bg-white rounded-full" /> Billing System</li>
+                    <li className="flex items-center gap-1.5"><div className="h-1 w-1 bg-white rounded-full" /> Isolir & Nonaktif</li>
+                    <li className="flex items-center gap-1.5"><div className="h-1 w-1 bg-white rounded-full" /> Menu Teknisi</li>
                   </ul>
                 </div>
-                <p className="text-sm leading-relaxed">Aplikasi ini juga memberikan pengalaman bekerja secara terorganisir di 1 aplikasi.</p>
-                <p className="text-xs opacity-75 italic">Aplikasi ini akan terus melakukan update baik perbaikkan di sisi Fitur maupun disisi layanan.</p>
-                <p className="font-bold text-xl pt-2">Terima Kasih</p>
+                <p className="text-xs italic opacity-80">Aplikasi ini dirancang untuk mempermudah operasional harian Anda dalam satu platform terpadu.</p>
+                <p className="font-black text-xl pt-2 tracking-widest">TERIMA KASIH</p>
               </div>
             </DialogHeader>
           </div>
           <div className="p-6 bg-slate-50 dark:bg-slate-900 border-t">
             <DialogFooter>
-              <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight shadow-lg transition-all">
-                Mulai Bekerja
+              <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]">
+                MASUK KE DASHBOARD
               </Button>
             </DialogFooter>
           </div>
