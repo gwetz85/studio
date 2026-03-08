@@ -97,24 +97,18 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-sidebar-border/30">
-        <div className="flex items-center gap-2 px-2 py-4">
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
-            <Wifi className="size-5" />
+      <SidebarHeader className="border-b border-white/10">
+        <div className="flex items-center gap-3 px-2 py-4">
+          <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 text-white">
+            <Wifi className="size-6" />
           </div>
-          <div className="flex flex-col gap-1.5 leading-none overflow-hidden">
-            <span className="font-bold text-lg truncate tracking-tight">MTNET SYSTEM</span>
-            <div className="flex flex-col gap-1">
-              {lastBackup && (
-                <div className="flex items-center gap-1.5 text-[11px] text-sidebar-foreground/80">
-                  <Database className="size-3.5 shrink-0" />
-                  <span className="truncate font-medium">Backup: {lastBackup}</span>
-                </div>
-              )}
+          <div className="flex flex-col gap-1 leading-none overflow-hidden">
+            <span className="font-extrabold text-xl truncate tracking-tight uppercase">MTNET</span>
+            <div className="flex flex-col gap-0.5">
               {currentTime && (
-                <div className="flex items-center gap-1.5 text-[11px] text-sidebar-foreground/90 font-mono">
-                  <Clock className="size-3.5 shrink-0" />
-                  <span className="truncate font-bold">Jam: {currentTime}</span>
+                <div className="flex items-center gap-1.5 text-[10px] text-white/70 font-mono">
+                  <Clock className="size-3 shrink-0" />
+                  <span className="truncate">{currentTime}</span>
                 </div>
               )}
             </div>
@@ -123,7 +117,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-sidebar-foreground/60">Manajemen</SidebarGroupLabel>
+          <SidebarGroupLabel>Menu Navigasi</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
@@ -133,8 +127,8 @@ export function AppSidebar() {
                     isActive={pathname === item.url}
                     tooltip={item.title}
                   >
-                    <Link href={item.url}>
-                      <item.icon />
+                    <Link href={item.url} className="flex items-center gap-3 transition-all duration-300">
+                      <item.icon className={pathname === item.url ? "scale-110" : "opacity-70"} />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
@@ -144,11 +138,14 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter className="border-t border-sidebar-border/30 p-2 space-y-2">
-        <div className="px-2 py-2 mb-2">
-          <div className="text-xs font-semibold opacity-60 uppercase tracking-wider mb-1">Pengguna</div>
-          <div className="text-sm font-medium truncate">{username}</div>
-          <div className="text-[10px] opacity-70 uppercase">{role === 'admin' ? 'Administrator' : 'Staff'}</div>
+      <SidebarFooter className="border-t border-white/10 p-4 space-y-4 bg-black/10 backdrop-blur-md">
+        <div className="px-2">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Online System</span>
+          </div>
+          <div className="text-sm font-bold truncate text-white">{username}</div>
+          <div className="text-[10px] font-medium text-white/60 uppercase">{role === 'admin' ? 'Administrator' : 'Staff'}</div>
         </div>
         
         <SidebarMenu>
@@ -158,6 +155,7 @@ export function AppSidebar() {
                 asChild 
                 isActive={pathname === "/settings"} 
                 tooltip="Pengaturan"
+                className="hover:bg-white/10"
               >
                 <Link href="/settings">
                   <Settings />
@@ -171,7 +169,7 @@ export function AppSidebar() {
             <SidebarMenuButton 
               onClick={logout}
               tooltip="Keluar"
-              className="text-rose-200 hover:text-white hover:bg-rose-600/20"
+              className="text-rose-200 hover:text-white hover:bg-rose-600/40 transition-colors"
             >
               <LogOut />
               <span>Keluar</span>
