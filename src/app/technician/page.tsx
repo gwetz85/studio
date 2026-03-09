@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -66,10 +67,31 @@ export default function TechnicianPage() {
 
     if (cmd === "help") {
       addLine("Daftar Perintah:");
-      addLine("  ping [host] - Melakukan pengetesan latensi jaringan");
-      addLine("  clear       - Membersihkan layar terminal");
-      addLine("  status      - Mengecek status node MTNET");
-      addLine("  exit        - Menutup sesi bantuan");
+      addLine("  ipconfig [/all] - Membaca konfigurasi IP perangkat");
+      addLine("  ping [host]     - Melakukan pengetesan latensi jaringan");
+      addLine("  clear           - Membersihkan layar terminal");
+      addLine("  status          - Mengecek status node MTNET");
+      addLine("  exit            - Menutup sesi bantuan");
+    } else if (cmd.startsWith("ipconfig")) {
+      addLine("");
+      addLine("Windows IP Configuration");
+      addLine("");
+      addLine("Ethernet adapter Ethernet:");
+      addLine("");
+      addLine("   Connection-specific DNS Suffix  . : ");
+      addLine("   IPv4 Address. . . . . . . . . . . : 192.168.1.15");
+      addLine("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
+      addLine("   Default Gateway . . . . . . . . . : 192.168.1.1");
+      
+      if (cmd.includes("/all")) {
+        addLine("   Description . . . . . . . . . . . : MTNET Virtual Network Adapter");
+        addLine("   Physical Address. . . . . . . . . : 00-AA-BB-CC-DD-EE");
+        addLine("   DHCP Enabled. . . . . . . . . . . : Yes");
+        addLine("   Autoconfiguration Enabled . . . . : Yes");
+        addLine("   DHCP Server . . . . . . . . . . . : 192.168.1.1");
+        addLine("   DNS Servers . . . . . . . . . . . : 8.8.8.8");
+        addLine("                                       1.1.1.1");
+      }
     } else if (cmd.startsWith("ping")) {
       const parts = cmd.split(" ");
       const host = parts[1] || "google.com";
@@ -80,7 +102,7 @@ export default function TechnicianPage() {
       addLine("Checking MTNET Nodes...");
       addLine("Node Jakarta: ONLINE (Latency 12ms)");
       addLine("Node Singapore: ONLINE (Latency 34ms)");
-      addLine("Main Database: CONNECTED");
+      addLine("Main Database: CONNECTED (LOCAL)");
     } else {
       addLine(`'${cmd}' is not recognized as an internal or external command.`);
     }
@@ -99,7 +121,6 @@ export default function TechnicianPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          {/* Terminal CMD Card */}
           <Card className="border-none shadow-2xl bg-[#0c0c0c] text-[#00ff00] font-mono overflow-hidden rounded-2xl ring-1 ring-slate-800">
             <CardHeader className="bg-[#1a1a1a] border-b border-[#333] py-3 px-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex items-center gap-2">
@@ -155,7 +176,6 @@ export default function TechnicianPage() {
             </CardContent>
           </Card>
 
-          {/* Modem Configuration Card */}
           <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
             <CardHeader className="border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center gap-3">
@@ -195,7 +215,6 @@ export default function TechnicianPage() {
         </div>
 
         <div className="space-y-6">
-          {/* Speedtest Card */}
           <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group dark:bg-slate-900/40">
             <CardHeader className="bg-primary p-6 text-white">
               <div className="flex items-center justify-between">
@@ -223,15 +242,18 @@ export default function TechnicianPage() {
           <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2 dark:text-white">
-                <Info className="h-4 w-4 text-amber-500" /> Tips Teknisi
+                <div className="h-4 w-4 rounded-full bg-amber-500/10 flex items-center justify-center">
+                  <Info className="h-3 w-3 text-amber-500" />
+                </div>
+                Tips Teknisi
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                <strong>Ping Stabil:</strong> Latensi di bawah 30ms adalah ideal untuk game online. Jika di atas 100ms, periksa redaman kabel fiber (ideal -18dBm sampai -24dBm).
+                <strong>Ping Stabil:</strong> Latensi di bawah 30ms adalah ideal untuk game online. Jika di atas 100ms, periksa redaman kabel fiber.
               </div>
               <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-                <strong>Sinyal Wi-Fi:</strong> Gunakan frekuensi 5GHz untuk kecepatan maksimal, dan 2.4GHz untuk jangkauan lebih jauh namun rentan interferensi.
+                <strong>IP Gateway:</strong> Gunakan perintah <code>ipconfig</code> untuk melihat Default Gateway. IP tersebut biasanya adalah alamat login modem.
               </div>
             </CardContent>
           </Card>
