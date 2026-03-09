@@ -104,11 +104,10 @@ export default function Dashboard() {
             default: connectionType = conn.type.charAt(0).toUpperCase() + conn.type.slice(1);
           }
         } else if (conn.effectiveType) {
-          // Fallback for browsers that only support effectiveType (like mobile Chrome)
           connectionType = `Seluler (${conn.effectiveType.toUpperCase()})`;
         }
       } else {
-        connectionType = "Wi-Fi / Ethernet"; // Default fallback
+        connectionType = "Wi-Fi / Ethernet";
       }
 
       // Memory Detection
@@ -356,7 +355,7 @@ export default function Dashboard() {
               {deviceInfo.type === "Desktop" ? <Laptop className="h-5 w-5 text-primary opacity-50" /> : <Smartphone className="h-5 w-5 text-primary opacity-50" />}
             </CardHeader>
             <CardContent className="p-4 md:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Laptop className="h-3 w-3" /> Nama Perangkat</span>
@@ -386,23 +385,6 @@ export default function Dashboard() {
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Akses</span>
                     <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-2 text-[10px] w-fit">TEROTORISASI</Badge>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mac Address</span>
-                      <Info className="h-2.5 w-2.5 text-slate-300" title="Keamanan Browser" />
-                    </div>
-                    <span className="text-xs font-mono text-slate-500 italic">HIDDEN (Browser Policy)</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SN / IMEI</span>
-                      <Info className="h-2.5 w-2.5 text-slate-300" title="Keamanan Browser" />
-                    </div>
-                    <span className="text-xs font-mono text-slate-500 italic">HIDDEN (Browser Policy)</span>
                   </div>
                 </div>
               </div>
