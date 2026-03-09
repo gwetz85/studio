@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Package, CreditCard, ShieldAlert, Wifi, Sparkles, PieChart as PieChartIcon, Laptop, Smartphone, Info } from "lucide-react"
+import { Users, Package, CreditCard, ShieldAlert, Wifi, Sparkles, PieChart as PieChartIcon, Laptop, Smartphone, Info, HardDrive, Cpu as CpuIcon, Network } from "lucide-react"
 import { db } from "@/lib/db"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Badge } from "@/components/ui/badge"
@@ -53,7 +53,10 @@ export default function Dashboard() {
   const [deviceInfo, setDeviceInfo] = React.useState({ 
     os: "Detecting...", 
     type: "Desktop",
-    name: "Generic Device"
+    name: "Generic Device",
+    connection: "Detecting...",
+    storage: "Detecting...",
+    memory: "Detecting..."
   });
 
   React.useEffect(() => {
@@ -67,18 +70,53 @@ export default function Dashboard() {
     }
 
     // Detect Device Info
-    const ua = window.navigator.userAgent;
-    let os = "Unknown OS";
-    let type = "Desktop";
-    let name = "PC / Laptop";
+    const detectDevice = async () => {
+      const ua = window.navigator.userAgent;
+      let os = "Unknown OS";
+      let type = "Desktop";
+      let name = "PC / Laptop";
 
-    if (/Android/.test(ua)) { os = "Android"; type = "Smartphone"; name = "Android Device"; }
-    else if (/iPhone|iPad|iPod/.test(ua)) { os = "iOS"; type = "Smartphone"; name = "Apple Device"; }
-    else if (/Windows/.test(ua)) { os = "Windows"; name = "Windows PC"; }
-    else if (/Macintosh/.test(ua)) { os = "macOS"; name = "Apple Mac"; }
-    else if (/Linux/.test(ua)) { os = "Linux"; name = "Linux PC"; }
+      // OS Detection
+      if (/Android/.test(ua)) { os = "Android"; type = "Smartphone"; name = "Android Device"; }
+      else if (/iPhone|iPad|iPod/.test(ua)) { os = "iOS"; type = "Smartphone"; name = "Apple Device"; }
+      else if (/Windows NT 10.0/.test(ua)) { os = "Windows 10/11"; name = "Windows PC"; }
+      else if (/Windows NT 6.3/.test(ua)) { os = "Windows 8.1"; name = "Windows PC"; }
+      else if (/Windows NT 6.2/.test(ua)) { os = "Windows 8"; name = "Windows PC"; }
+      else if (/Windows NT 6.1/.test(ua)) { os = "Windows 7"; name = "Windows PC"; }
+      else if (/Macintosh/.test(ua)) { os = "macOS"; name = "Apple Mac"; }
+      else if (/Linux/.test(ua)) { os = "Linux"; name = "Linux PC"; }
 
-    setDeviceInfo({ os, type, name });
+      // Connection Detection
+      let connectionType = "Ethernet / Wi-Fi";
+      const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+      if (conn) {
+        if (conn.type) {
+          connectionType = conn.type.charAt(0).toUpperCase() + conn.type.slice(1);
+        } else if (conn.effectiveType) {
+          connectionType = conn.effectiveType.toUpperCase() + " (Mobile/Cellular)";
+        }
+      }
+
+      // Memory Detection
+      let memory = "N/A";
+      if ((navigator as any).deviceMemory) {
+        memory = `${(navigator as any).deviceMemory} GB RAM`;
+      }
+
+      // Storage Detection
+      let storage = "N/A";
+      if (navigator.storage && navigator.storage.estimate) {
+        const estimate = await navigator.storage.estimate();
+        if (estimate.quota) {
+          const quotaGB = Math.round(estimate.quota / (1024 * 1024 * 1024));
+          storage = `~${quotaGB} GB Total`;
+        }
+      }
+
+      setDeviceInfo({ os, type, name, connection: connectionType, memory, storage });
+    };
+
+    detectDevice();
   }, []);
 
   React.useEffect(() => {
@@ -294,50 +332,67 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* New Device Status Card */}
+          {/* Device Identity Card */}
           <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
             <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Identitas Perangkat</CardTitle>
-                <CardDescription className="text-xs">Data perangkat yang mengakses sistem saat ini.</CardDescription>
+                <CardDescription className="text-xs">Deteksi teknis perangkat akses sistem.</CardDescription>
               </div>
               {deviceInfo.type === "Desktop" ? <Laptop className="h-5 w-5 text-primary opacity-50" /> : <Smartphone className="h-5 w-5 text-primary opacity-50" />}
             </CardHeader>
             <CardContent className="p-4 md:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 <div className="space-y-4">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nama Perangkat</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Laptop className="h-3 w-3" /> Nama Perangkat</span>
                     <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.name}</span>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">OS / Platform</span>
-                    <Badge variant="secondary" className="w-fit bg-primary/10 text-primary border-primary/20">{deviceInfo.os} ({deviceInfo.type})</Badge>
+                    <Badge variant="secondary" className="w-fit bg-primary/10 text-primary border-primary/20 text-[10px]">{deviceInfo.os} ({deviceInfo.type})</Badge>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Network className="h-3 w-3" /> Koneksi Via</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.connection}</span>
                   </div>
                 </div>
+
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><CpuIcon className="h-3 w-3" /> Memory Perangkat</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.memory}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><HardDrive className="h-3 w-3" /> Total Penyimpanan</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.storage}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Akses</span>
+                    <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-2 text-[10px] w-fit">TEROTORISASI</Badge>
+                  </div>
+                </div>
+
                 <div className="space-y-4">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mac Address</span>
-                      <Info className="h-3 w-3 text-slate-300" title="Terbatas oleh Browser Policy" />
+                      <Info className="h-2.5 w-2.5 text-slate-300" title="Keamanan Browser" />
                     </div>
-                    <span className="text-xs font-mono text-slate-500 italic">Tersembunyi (Keamanan Browser)</span>
+                    <span className="text-xs font-mono text-slate-500 italic">HIDDEN (Browser Policy)</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col gap-1">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SN / IMEI</span>
-                      <span className="text-xs font-mono text-slate-500 italic">Not Available</span>
+                      <Info className="h-2.5 w-2.5 text-slate-300" title="Keamanan Browser" />
                     </div>
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Akses</span>
-                      <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-2 text-[10px] w-fit">TEROTORISASI</Badge>
-                    </div>
+                    <span className="text-xs font-mono text-slate-500 italic">HIDDEN (Browser Policy)</span>
                   </div>
                 </div>
               </div>
               <div className="mt-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30">
                 <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-relaxed font-medium italic">
-                  * Informasi perangkat sensitif (SN/IMEI/MAC) tidak dapat dibaca langsung melalui peramban web demi privasi dan keamanan sistem. Gunakan aplikasi teknisi khusus untuk pembacaan perangkat keras mendalam.
+                  * Informasi perangkat keras mendalam (SN/IMEI/MAC) dibatasi oleh kebijakan keamanan peramban demi privasi. Data Memori dan Penyimpanan adalah estimasi yang diizinkan oleh sistem operasi.
                 </p>
               </div>
             </CardContent>
