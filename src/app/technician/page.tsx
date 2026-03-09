@@ -75,22 +75,48 @@ export default function TechnicianPage() {
     } else if (cmd.startsWith("ipconfig")) {
       addLine("");
       addLine("Windows IP Configuration");
-      addLine("");
-      addLine("Ethernet adapter Ethernet:");
-      addLine("");
-      addLine("   Connection-specific DNS Suffix  . : ");
-      addLine("   IPv4 Address. . . . . . . . . . . : 192.168.1.15");
-      addLine("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
-      addLine("   Default Gateway . . . . . . . . . : 192.168.1.1");
       
       if (cmd.includes("/all")) {
-        addLine("   Description . . . . . . . . . . . : MTNET Virtual Network Adapter");
-        addLine("   Physical Address. . . . . . . . . : 00-AA-BB-CC-DD-EE");
+        addLine("");
+        addLine("Host Name . . . . . . . . . . . . : MTNET-TECH-LAPTOP");
+        addLine("Primary Dns Suffix  . . . . . . . : ");
+        addLine("Node Type . . . . . . . . . . . . : Hybrid");
+        addLine("IP Routing Enabled. . . . . . . . : No");
+        addLine("WINS Proxy Enabled. . . . . . . . : No");
+        
+        addLine("");
+        addLine("Wireless LAN adapter Wi-Fi:");
+        addLine("");
+        addLine("   Connection-specific DNS Suffix  . : ");
+        addLine("   Description . . . . . . . . . . . : Intel(R) Wi-Fi 6 AX201 160MHz");
+        addLine("   Physical Address. . . . . . . . . : 28-CD-C1-00-FF-AA");
         addLine("   DHCP Enabled. . . . . . . . . . . : Yes");
         addLine("   Autoconfiguration Enabled . . . . : Yes");
+        addLine("   IPv4 Address. . . . . . . . . . . : 192.168.1.100(Preferred)");
+        addLine("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
+        addLine("   Lease Obtained. . . . . . . . . . : " + new Date().toLocaleDateString());
+        addLine("   Lease Expires . . . . . . . . . . : " + new Date(Date.now() + 86400000).toLocaleDateString());
+        addLine("   Default Gateway . . . . . . . . . : 192.168.1.1");
         addLine("   DHCP Server . . . . . . . . . . . : 192.168.1.1");
         addLine("   DNS Servers . . . . . . . . . . . : 8.8.8.8");
         addLine("                                       1.1.1.1");
+        addLine("   NetBIOS over Tcpip. . . . . . . . : Enabled");
+      } else {
+        addLine("");
+        addLine("Ethernet adapter Ethernet:");
+        addLine("");
+        addLine("   Connection-specific DNS Suffix  . : ");
+        addLine("   IPv4 Address. . . . . . . . . . . : 192.168.1.15");
+        addLine("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
+        addLine("   Default Gateway . . . . . . . . . : 192.168.1.1");
+        
+        addLine("");
+        addLine("Wireless LAN adapter Wi-Fi:");
+        addLine("");
+        addLine("   Connection-specific DNS Suffix  . : ");
+        addLine("   IPv4 Address. . . . . . . . . . . : 192.168.1.100");
+        addLine("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
+        addLine("   Default Gateway . . . . . . . . . : 192.168.1.1");
       }
     } else if (cmd.startsWith("ping")) {
       const parts = cmd.split(" ");
