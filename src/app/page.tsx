@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Package, CreditCard, ShieldAlert, Wifi, Sparkles, PieChart as PieChartIcon } from "lucide-react"
+import { Users, Package, CreditCard, ShieldAlert, Wifi, Sparkles, PieChart as PieChartIcon, Laptop, Smartphone, Info } from "lucide-react"
 import { db } from "@/lib/db"
 import { useLiveQuery } from "dexie-react-hooks"
 import { Badge } from "@/components/ui/badge"
@@ -50,6 +50,11 @@ export default function Dashboard() {
   const currentDay = new Date().getDate();
   const [isProcessingAutoBill, setIsProcessingAutoBill] = React.useState(false);
   const [showWelcome, setShowWelcome] = React.useState(false);
+  const [deviceInfo, setDeviceInfo] = React.useState({ 
+    os: "Detecting...", 
+    type: "Desktop",
+    name: "Generic Device"
+  });
 
   React.useEffect(() => {
     const welcomeShown = sessionStorage.getItem("mtnet_welcome_shown");
@@ -60,6 +65,20 @@ export default function Dashboard() {
       }, 500);
       return () => clearTimeout(timer);
     }
+
+    // Detect Device Info
+    const ua = window.navigator.userAgent;
+    let os = "Unknown OS";
+    let type = "Desktop";
+    let name = "PC / Laptop";
+
+    if (/Android/.test(ua)) { os = "Android"; type = "Smartphone"; name = "Android Device"; }
+    else if (/iPhone|iPad|iPod/.test(ua)) { os = "iOS"; type = "Smartphone"; name = "Apple Device"; }
+    else if (/Windows/.test(ua)) { os = "Windows"; name = "Windows PC"; }
+    else if (/Macintosh/.test(ua)) { os = "macOS"; name = "Apple Mac"; }
+    else if (/Linux/.test(ua)) { os = "Linux"; name = "Linux PC"; }
+
+    setDeviceInfo({ os, type, name });
   }, []);
 
   React.useEffect(() => {
@@ -104,7 +123,7 @@ export default function Dashboard() {
     };
 
     generateMonthlyBills();
-  }, [currentPeriod, toast]);
+  }, [currentPeriod, toast, isProcessingAutoBill]);
 
   const stats = useLiveQuery(async () => {
     const totalCount = await db.customers.count();
@@ -196,7 +215,7 @@ export default function Dashboard() {
             <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-xl border border-white/20 mx-auto">
               <MTLogo className="h-10 w-10 md:h-12 md:w-12 text-white" />
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2 text-center">
               <DialogTitle className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">SELAMAT DATANG DI MTNET SYSTEM</DialogTitle>
               <DialogDescription className="text-sm text-primary-foreground/90 font-medium">
                 Sistem Manajemen Penagihan & Layanan Internet
@@ -243,36 +262,87 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-        <Card className="lg:col-span-2 border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
-          <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
-            <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
-            <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
-          </CardHeader>
-          <CardContent className="p-2 md:p-6">
-            <div className="h-[300px] md:h-[350px] w-full">
-              <ChartContainer config={chartConfig} className="h-full w-full">
-                <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={90}
-                    paddingAngle={5}
-                    dataKey="value"
-                    labelLine={false}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
-                    ))}
-                  </Pie>
-                  <ChartLegend content={<ChartLegendContent />} className="flex-wrap gap-x-6 gap-y-2 pt-4" />
-                </PieChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
+            <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
+              <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
+              <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
+            </CardHeader>
+            <CardContent className="p-2 md:p-6">
+              <div className="h-[300px] md:h-[350px] w-full">
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    <Pie
+                      data={chartData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={60}
+                      outerRadius={90}
+                      paddingAngle={5}
+                      dataKey="value"
+                      labelLine={false}
+                    >
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
+                      ))}
+                    </Pie>
+                    <ChartLegend content={<ChartLegendContent />} className="flex-wrap gap-x-6 gap-y-2 pt-4" />
+                  </PieChart>
+                </ChartContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* New Device Status Card */}
+          <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
+            <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Identitas Perangkat</CardTitle>
+                <CardDescription className="text-xs">Data perangkat yang mengakses sistem saat ini.</CardDescription>
+              </div>
+              {deviceInfo.type === "Desktop" ? <Laptop className="h-5 w-5 text-primary opacity-50" /> : <Smartphone className="h-5 w-5 text-primary opacity-50" />}
+            </CardHeader>
+            <CardContent className="p-4 md:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Nama Perangkat</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.name}</span>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">OS / Platform</span>
+                    <Badge variant="secondary" className="w-fit bg-primary/10 text-primary border-primary/20">{deviceInfo.os} ({deviceInfo.type})</Badge>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mac Address</span>
+                      <Info className="h-3 w-3 text-slate-300" title="Terbatas oleh Browser Policy" />
+                    </div>
+                    <span className="text-xs font-mono text-slate-500 italic">Tersembunyi (Keamanan Browser)</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">SN / IMEI</span>
+                      <span className="text-xs font-mono text-slate-500 italic">Not Available</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Akses</span>
+                      <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-2 text-[10px] w-fit">TEROTORISASI</Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30">
+                <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-relaxed font-medium italic">
+                  * Informasi perangkat sensitif (SN/IMEI/MAC) tidak dapat dibaca langsung melalui peramban web demi privasi dan keamanan sistem. Gunakan aplikasi teknisi khusus untuk pembacaan perangkat keras mendalam.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
         
         <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
           <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50">
