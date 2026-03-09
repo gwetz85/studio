@@ -14,14 +14,12 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { 
   PieChart, 
   Pie, 
   Cell, 
-  ResponsiveContainer, 
 } from "recharts"
 import { 
   ChartContainer, 
@@ -51,12 +49,12 @@ export default function Dashboard() {
   const [isProcessingAutoBill, setIsProcessingAutoBill] = React.useState(false);
   const [showWelcome, setShowWelcome] = React.useState(false);
   const [deviceInfo, setDeviceInfo] = React.useState({ 
-    os: "Detecting...", 
+    os: "Mendeteksi...", 
     type: "Desktop",
-    name: "Generic Device",
-    connection: "Detecting...",
-    storage: "Detecting...",
-    memory: "Detecting..."
+    name: "Perangkat Generik",
+    connection: "Mendeteksi...",
+    storage: "Mendeteksi...",
+    memory: "Mendeteksi..."
   });
 
   React.useEffect(() => {
@@ -69,32 +67,48 @@ export default function Dashboard() {
       return () => clearTimeout(timer);
     }
 
-    // Detect Device Info
     const detectDevice = async () => {
       const ua = window.navigator.userAgent;
-      let os = "Unknown OS";
+      let os = "OS Tidak Diketahui";
       let type = "Desktop";
       let name = "PC / Laptop";
 
       // OS Detection
-      if (/Android/.test(ua)) { os = "Android"; type = "Smartphone"; name = "Android Device"; }
-      else if (/iPhone|iPad|iPod/.test(ua)) { os = "iOS"; type = "Smartphone"; name = "Apple Device"; }
-      else if (/Windows NT 10.0/.test(ua)) { os = "Windows 10/11"; name = "Windows PC"; }
-      else if (/Windows NT 6.3/.test(ua)) { os = "Windows 8.1"; name = "Windows PC"; }
-      else if (/Windows NT 6.2/.test(ua)) { os = "Windows 8"; name = "Windows PC"; }
-      else if (/Windows NT 6.1/.test(ua)) { os = "Windows 7"; name = "Windows PC"; }
-      else if (/Macintosh/.test(ua)) { os = "macOS"; name = "Apple Mac"; }
-      else if (/Linux/.test(ua)) { os = "Linux"; name = "Linux PC"; }
+      if (/Android/.test(ua)) { 
+        os = "Android"; type = "Smartphone"; name = "Perangkat Android"; 
+      }
+      else if (/iPhone|iPad|iPod/.test(ua)) { 
+        os = "iOS"; type = "Smartphone"; name = "Perangkat Apple"; 
+      }
+      else if (/Windows NT 10.0/.test(ua)) { 
+        os = "Windows 10/11"; name = "Windows PC"; 
+      }
+      else if (/Macintosh/.test(ua)) { 
+        os = "macOS"; name = "Apple Mac"; 
+      }
+      else if (/Linux/.test(ua)) { 
+        os = "Linux"; name = "Linux PC"; 
+      }
 
-      // Connection Detection
-      let connectionType = "Ethernet / Wi-Fi";
+      // Real-time Connection Detection
+      let connectionType = "Tidak Diketahui";
       const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
+      
       if (conn) {
         if (conn.type) {
-          connectionType = conn.type.charAt(0).toUpperCase() + conn.type.slice(1);
+          switch(conn.type) {
+            case 'wifi': connectionType = "Wi-Fi"; break;
+            case 'ethernet': connectionType = "Ethernet (Kabel)"; break;
+            case 'cellular': connectionType = "Data Seluler"; break;
+            case 'none': connectionType = "Terputus"; break;
+            default: connectionType = conn.type.charAt(0).toUpperCase() + conn.type.slice(1);
+          }
         } else if (conn.effectiveType) {
-          connectionType = conn.effectiveType.toUpperCase() + " (Mobile/Cellular)";
+          // Fallback for browsers that only support effectiveType (like mobile Chrome)
+          connectionType = `Seluler (${conn.effectiveType.toUpperCase()})`;
         }
+      } else {
+        connectionType = "Wi-Fi / Ethernet"; // Default fallback
       }
 
       // Memory Detection
@@ -354,7 +368,9 @@ export default function Dashboard() {
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Network className="h-3 w-3" /> Koneksi Via</span>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.connection}</span>
+                    <Badge variant="outline" className="w-fit border-green-200 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 text-xs px-2 py-0">
+                      {deviceInfo.connection}
+                    </Badge>
                   </div>
                 </div>
 
@@ -392,7 +408,7 @@ export default function Dashboard() {
               </div>
               <div className="mt-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30">
                 <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-relaxed font-medium italic">
-                  * Informasi perangkat keras mendalam (SN/IMEI/MAC) dibatasi oleh kebijakan keamanan peramban demi privasi. Data Memori dan Penyimpanan adalah estimasi yang diizinkan oleh sistem operasi.
+                  * Informasi koneksi dan perangkat keras diakses melalui API standar peramban. Beberapa data sensitif dibatasi oleh kebijakan keamanan demi privasi.
                 </p>
               </div>
             </CardContent>
