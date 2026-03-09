@@ -18,6 +18,7 @@ const commonGatewayIps = [
 ];
 
 export default function TechnicianPage() {
+  const [deviceInfo, setDeviceInfo] = React.useState({ os: "Unknown", type: "Desktop" });
   const [terminalLines, setTerminalLines] = React.useState<string[]>([
     "MTNET System [Version 2.0.1]",
     "(c) 2024 MTNET Corporation. All rights reserved.",
@@ -27,6 +28,20 @@ export default function TechnicianPage() {
   const [command, setCommand] = React.useState("");
   const [isPinging, setIsPinging] = React.useState(false);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    // Detect Device Info for "Real Data" Feel
+    const ua = window.navigator.userAgent;
+    let os = "Windows";
+    let type = "Desktop";
+
+    if (/Android/.test(ua)) { os = "Android"; type = "Smartphone"; }
+    else if (/iPhone|iPad|iPod/.test(ua)) { os = "iOS"; type = "Smartphone"; }
+    else if (/Macintosh/.test(ua)) { os = "macOS"; type = "Desktop"; }
+    else if (/Linux/.test(ua)) { os = "Linux"; type = "Desktop"; }
+
+    setDeviceInfo({ os, type });
+  }, []);
 
   React.useEffect(() => {
     if (scrollRef.current) {
@@ -74,28 +89,27 @@ export default function TechnicianPage() {
       addLine("  exit            - Menutup sesi bantuan");
     } else if (cmd.startsWith("ipconfig")) {
       addLine("");
-      addLine("Windows IP Configuration");
+      addLine(`${deviceInfo.os} IP Configuration`);
       
       if (cmd.includes("/all")) {
         addLine("");
-        addLine("Host Name . . . . . . . . . . . . : MTNET-TECH-LAPTOP");
+        addLine(`Host Name . . . . . . . . . . . . : MTNET-${deviceInfo.os.toUpperCase()}-DEVICE`);
         addLine("Primary Dns Suffix  . . . . . . . : ");
-        addLine("Node Type . . . . . . . . . . . . : Hybrid");
+        addLine(`Node Type . . . . . . . . . . . . : ${deviceInfo.type === 'Smartphone' ? 'Broadcast' : 'Hybrid'}`);
         addLine("IP Routing Enabled. . . . . . . . : No");
         addLine("WINS Proxy Enabled. . . . . . . . : No");
         
         addLine("");
-        addLine("Wireless LAN adapter Wi-Fi:");
+        addLine(`${deviceInfo.os === 'Android' || deviceInfo.os === 'iOS' ? 'Mobile Network' : 'Wireless LAN'} adapter Connection:`);
         addLine("");
         addLine("   Connection-specific DNS Suffix  . : ");
-        addLine("   Description . . . . . . . . . . . : Intel(R) Wi-Fi 6 AX201 160MHz");
-        addLine("   Physical Address. . . . . . . . . : 28-CD-C1-00-FF-AA");
+        addLine(`   Description . . . . . . . . . . . : ${deviceInfo.os} Wireless Interface`);
+        addLine(`   Physical Address. . . . . . . . . : ${deviceInfo.os === 'Windows' ? '28-CD-C1' : '00-AA-BB'}-00-FF-AA`);
         addLine("   DHCP Enabled. . . . . . . . . . . : Yes");
         addLine("   Autoconfiguration Enabled . . . . : Yes");
         addLine("   IPv4 Address. . . . . . . . . . . : 192.168.1.100(Preferred)");
         addLine("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
         addLine("   Lease Obtained. . . . . . . . . . : " + new Date().toLocaleDateString());
-        addLine("   Lease Expires . . . . . . . . . . : " + new Date(Date.now() + 86400000).toLocaleDateString());
         addLine("   Default Gateway . . . . . . . . . : 192.168.1.1");
         addLine("   DHCP Server . . . . . . . . . . . : 192.168.1.1");
         addLine("   DNS Servers . . . . . . . . . . . : 8.8.8.8");
@@ -103,17 +117,8 @@ export default function TechnicianPage() {
         addLine("   NetBIOS over Tcpip. . . . . . . . : Enabled");
       } else {
         addLine("");
-        addLine("Ethernet adapter Ethernet:");
+        addLine(`${deviceInfo.type} Connection:`);
         addLine("");
-        addLine("   Connection-specific DNS Suffix  . : ");
-        addLine("   IPv4 Address. . . . . . . . . . . : 192.168.1.15");
-        addLine("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
-        addLine("   Default Gateway . . . . . . . . . : 192.168.1.1");
-        
-        addLine("");
-        addLine("Wireless LAN adapter Wi-Fi:");
-        addLine("");
-        addLine("   Connection-specific DNS Suffix  . : ");
         addLine("   IPv4 Address. . . . . . . . . . . : 192.168.1.100");
         addLine("   Subnet Mask . . . . . . . . . . . : 255.255.255.0");
         addLine("   Default Gateway . . . . . . . . . : 192.168.1.1");
@@ -129,6 +134,7 @@ export default function TechnicianPage() {
       addLine("Node Jakarta: ONLINE (Latency 12ms)");
       addLine("Node Singapore: ONLINE (Latency 34ms)");
       addLine("Main Database: CONNECTED (LOCAL)");
+      addLine(`Device Detected: ${deviceInfo.os} (${deviceInfo.type})`);
     } else {
       addLine(`'${cmd}' is not recognized as an internal or external command.`);
     }
@@ -139,10 +145,10 @@ export default function TechnicianPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Menu Teknisi</h1>
-        <p className="text-slate-500 dark:text-slate-400">Alat bantu lapangan untuk pengecekan jaringan dan konfigurasi modem.</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Menu Teknisi</h1>
+        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Alat bantu lapangan untuk pengecekan jaringan dan konfigurasi modem.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -151,27 +157,27 @@ export default function TechnicianPage() {
             <CardHeader className="bg-[#1a1a1a] border-b border-[#333] py-3 px-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex items-center gap-2">
                 <TerminalIcon className="h-4 w-4 text-slate-400" />
-                <span className="text-xs text-slate-300 font-bold uppercase tracking-widest">Command Prompt - MTNET_v2.0.1</span>
+                <span className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">Command Prompt - MTNET_v2.0.1</span>
               </div>
               <div className="flex gap-1.5">
-                <div className="h-3 w-3 rounded-full bg-slate-700" />
-                <div className="h-3 w-3 rounded-full bg-slate-700" />
-                <div className="h-3 w-3 rounded-full bg-rose-900" />
+                <div className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+                <div className="h-2.5 w-2.5 rounded-full bg-slate-700" />
+                <div className="h-2.5 w-2.5 rounded-full bg-rose-900" />
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              <div className="p-4 h-[350px] overflow-hidden flex flex-col">
+              <div className="p-4 h-[300px] md:h-[400px] overflow-hidden flex flex-col">
                 <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-1 mb-4 scrollbar-hide">
                   {terminalLines.map((line, i) => (
-                    <p key={i} className="text-sm leading-relaxed whitespace-pre-wrap">{line}</p>
+                    <p key={i} className="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{line}</p>
                   ))}
-                  {isPinging && <div className="animate-pulse">_</div>}
+                  {isPinging && <div className="animate-pulse text-xs md:text-sm">_</div>}
                 </div>
                 <form onSubmit={handleCommand} className="flex items-center gap-2 border-t border-[#333] pt-3">
                   <ChevronRight className="h-4 w-4 text-[#00ff00] shrink-0" />
                   <input
                     type="text"
-                    className="bg-transparent border-none outline-none flex-1 text-sm font-mono text-[#00ff00] placeholder:text-[#00ff00]/30"
+                    className="bg-transparent border-none outline-none flex-1 text-xs md:text-sm font-mono text-[#00ff00] placeholder:text-[#00ff00]/30"
                     placeholder="Ketik perintah di sini..."
                     value={command}
                     onChange={(e) => setCommand(e.target.value)}
@@ -203,34 +209,34 @@ export default function TechnicianPage() {
           </Card>
 
           <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
-            <CardHeader className="border-b border-slate-100 dark:border-slate-800">
+            <CardHeader className="border-b border-slate-100 dark:border-slate-800 p-4 md:p-6">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                  <Settings2 className="h-6 w-6" />
+                  <Settings2 className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <CardTitle className="dark:text-white">Konfigurasi Modem</CardTitle>
-                  <CardDescription className="dark:text-slate-400">Akses cepat ke halaman admin perangkat pelanggan.</CardDescription>
+                  <CardTitle className="text-base md:text-lg dark:text-white">Konfigurasi Modem</CardTitle>
+                  <CardDescription className="text-xs md:text-sm dark:text-slate-400">Akses cepat ke halaman admin perangkat pelanggan.</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6">
-              <div className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="p-4 md:p-6">
+              <div className="grid gap-3 md:gap-4 sm:grid-cols-2">
                 {commonGatewayIps.map((item) => (
                   <div 
                     key={item.ip} 
-                    className="flex flex-col p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="flex flex-col p-3 md:p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   >
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">{item.label}</span>
+                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 md:mb-2">{item.label}</span>
                     <div className="flex items-center justify-between">
-                      <code className="text-sm font-mono text-primary font-bold">{item.ip.replace('http://', '')}</code>
+                      <code className="text-xs md:text-sm font-mono text-primary font-bold">{item.ip.replace('http://', '')}</code>
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="h-8 text-primary hover:bg-primary/5" 
+                        className="h-7 md:h-8 text-primary hover:bg-primary/5 text-xs" 
                         onClick={() => openExternal(item.ip)}
                       >
-                        Buka <ExternalLink className="ml-2 h-3 w-3" />
+                        Buka <ExternalLink className="ml-1.5 h-3 w-3" />
                       </Button>
                     </div>
                   </div>
@@ -242,22 +248,22 @@ export default function TechnicianPage() {
 
         <div className="space-y-6">
           <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group dark:bg-slate-900/40">
-            <CardHeader className="bg-primary p-6 text-white">
+            <CardHeader className="bg-primary p-5 md:p-6 text-white">
               <div className="flex items-center justify-between">
                 <div className="p-2 bg-white/20 rounded-lg">
-                  <Gauge className="h-6 w-6" />
+                  <Gauge className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
-                <Badge className="bg-white/20 text-white border-none">External Tool</Badge>
+                <Badge className="bg-white/20 text-white border-none text-[10px]">External Tool</Badge>
               </div>
-              <CardTitle className="mt-4 text-xl">Uji Kecepatan</CardTitle>
-              <CardDescription className="text-primary-foreground/80">Cek kualitas bandwidth pelanggan.</CardDescription>
+              <CardTitle className="mt-4 text-lg md:text-xl">Uji Kecepatan</CardTitle>
+              <CardDescription className="text-xs md:text-sm text-primary-foreground/80">Cek kualitas bandwidth pelanggan.</CardDescription>
             </CardHeader>
-            <CardContent className="p-6">
-              <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+            <CardContent className="p-5 md:p-6">
+              <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
                 Gunakan layanan Speedtest resmi Centralnet untuk memastikan pelanggan mendapatkan kecepatan sesuai paket.
               </p>
               <Button 
-                className="w-full group-hover:scale-[1.02] transition-transform shadow-lg" 
+                className="w-full group-hover:scale-[1.02] transition-transform shadow-lg h-10 md:h-11 text-sm" 
                 onClick={() => openExternal('https://centralnet.speedtestcustom.com/')}
               >
                 Buka Speedtest <ExternalLink className="ml-2 h-4 w-4" />
@@ -266,20 +272,20 @@ export default function TechnicianPage() {
           </Card>
 
           <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-sm flex items-center gap-2 dark:text-white">
+            <CardHeader className="p-4 md:p-6">
+              <CardTitle className="text-xs md:text-sm flex items-center gap-2 dark:text-white">
                 <div className="h-4 w-4 rounded-full bg-amber-500/10 flex items-center justify-center">
                   <Info className="h-3 w-3 text-amber-500" />
                 </div>
                 Tips Teknisi
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+            <CardContent className="px-4 pb-4 md:px-6 md:pb-6 space-y-4">
+              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-[10px] md:text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
                 <strong>Ping Stabil:</strong> Latensi di bawah 30ms adalah ideal untuk game online. Jika di atas 100ms, periksa redaman kabel fiber.
               </div>
-              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-                <strong>IP Gateway:</strong> Gunakan perintah <code>ipconfig</code> untuk melihat Default Gateway. IP tersebut biasanya adalah alamat login modem.
+              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-[10px] md:text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
+                <strong>Info Perangkat:</strong> Terminal secara otomatis mendeteksi bahwa Anda menggunakan <strong>{deviceInfo.os}</strong> ({deviceInfo.type}).
               </div>
             </CardContent>
           </Card>
