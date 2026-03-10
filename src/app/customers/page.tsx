@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Phone, MapPin, Eye, Receipt, Calendar, Cpu } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, User, Phone, MapPin, Eye, Receipt, Calendar, Cpu, ShieldAlert } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -26,6 +26,10 @@ export default function CustomersPage() {
   const [editingCustomer, setEditingCustomer] = React.useState<Customer | null>(null);
   const [viewingCustomer, setViewingCustomer] = React.useState<Customer | null>(null);
 
+  const currentPeriod = new Date().toISOString().slice(0, 7);
+  const currentDay = new Date().getDate();
+  const isAfterCutoff = currentDay > 8;
+
   const customers = useLiveQuery(() => {
     const query = db.customers.where('status').anyOf(['active', 'passive']);
     if (!search) return query.toArray();
@@ -40,6 +44,10 @@ export default function CustomersPage() {
 
   const packages = useLiveQuery(() => db.packages.toArray());
   
+  const currentPeriodPayments = useLiveQuery(() => 
+    db.payments.where('billingPeriod').equals(currentPeriod).toArray()
+  , [currentPeriod]);
+
   const customerPayments = useLiveQuery(async () => {
     if (!viewingCustomer?.id) return [];
     return db.payments
@@ -49,6 +57,13 @@ export default function CustomersPage() {
       .reverse()
       .toArray();
   }, [viewingCustomer]);
+
+  const isIsolated = (customer: Customer) => {
+    if (customer.status !== 'active') return false;
+    if (!isAfterCutoff) return false;
+    const payment = currentPeriodPayments?.find(p => p.customerId === customer.id);
+    return !payment || payment.status !== 'paid';
+  };
 
   const handleOpenAddDialog = () => {
     setEditingCustomer(null);
@@ -127,7 +142,7 @@ export default function CustomersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Daftar Pelanggan</h1>
-          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Kelola data pelanggan Aktif dan Pasif.</p>
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Kelola data pelanggan Aktif, Pasif, dan Terisolir.</p>
         </div>
         <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
           <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
@@ -253,16 +268,22 @@ export default function CustomersPage() {
                         <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Status Layanan</h3>
                         <div className="space-y-4">
                           <div className="flex flex-wrap items-center gap-2">
-                            <Badge 
-                              className={
-                                viewingCustomer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800' : 
-                                viewingCustomer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' :
-                                'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
-                              }
-                            >
-                              {viewingCustomer.status === 'active' ? 'Aktif' : 
-                               viewingCustomer.status === 'passive' ? 'Pasif' : 'Non-Aktif'}
-                            </Badge>
+                            {isIsolated(viewingCustomer) ? (
+                              <Badge className="bg-rose-600 text-white border-rose-700 animate-pulse">
+                                <ShieldAlert className="h-3 w-3 mr-1" /> TERISOLIR
+                              </Badge>
+                            ) : (
+                              <Badge 
+                                className={
+                                  viewingCustomer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800' : 
+                                  viewingCustomer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800' :
+                                  'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
+                                }
+                              >
+                                {viewingCustomer.status === 'active' ? 'Aktif' : 
+                                 viewingCustomer.status === 'passive' ? 'Pasif' : 'Non-Aktif'}
+                              </Badge>
+                            )}
                             <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary">
                               {getPackageName(viewingCustomer.packageId)}
                             </Badge>
@@ -355,86 +376,95 @@ export default function CustomersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {customers?.map((customer) => (
-                  <TableRow key={customer.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors dark:border-slate-800">
-                    <TableCell className="py-3 px-4 md:px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs md:text-sm">
-                          {customer.name?.charAt(0).toUpperCase() || '?'}
+                {customers?.map((customer) => {
+                  const customerIsolated = isIsolated(customer);
+                  return (
+                    <TableRow key={customer.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors dark:border-slate-800">
+                      <TableCell className="py-3 px-4 md:px-6">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs md:text-sm">
+                            {customer.name?.charAt(0).toUpperCase() || '?'}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-slate-900 dark:text-white text-xs md:text-sm">{customer.name}</span>
+                            <span className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px] md:max-w-none">{customer.email}</span>
+                          </div>
                         </div>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-slate-900 dark:text-white text-xs md:text-sm">{customer.name}</span>
-                          <span className="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 truncate max-w-[120px] md:max-w-none">{customer.email}</span>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 text-[10px]">
-                        {getPackageName(customer.packageId)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge 
-                        className={cn(
-                          "text-[10px] px-2 py-0.5",
-                          customer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400' : 
-                          customer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400' :
-                          'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400'
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="secondary" className="font-medium bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 text-[10px]">
+                          {getPackageName(customer.packageId)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {customerIsolated ? (
+                          <Badge className="text-[10px] px-2 py-0.5 bg-rose-600 text-white border-rose-700 animate-pulse">
+                            ISOLIR
+                          </Badge>
+                        ) : (
+                          <Badge 
+                            className={cn(
+                              "text-[10px] px-2 py-0.5",
+                              customer.status === 'active' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400' : 
+                              customer.status === 'passive' ? 'bg-amber-50 text-amber-700 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400' :
+                              'bg-rose-50 text-rose-700 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400'
+                            )}
+                          >
+                            {customer.status === 'active' ? 'Aktif' : 
+                             customer.status === 'passive' ? 'Pasif' : 'Non-Aktif'}
+                          </Badge>
                         )}
-                      >
-                        {customer.status === 'active' ? 'Aktif' : 
-                         customer.status === 'passive' ? 'Pasif' : 'Non-Aktif'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      <div className="flex flex-col gap-1 text-[10px] text-slate-600 dark:text-slate-400">
-                        <div className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {customer.phone}</div>
-                        <div className="flex items-center gap-1.5 text-primary font-mono"><Cpu className="h-3 w-3" /> {customer.modemSnMac || "-"}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right px-4 md:px-6">
-                      <div className="flex justify-end gap-0.5 md:gap-1">
-                        <Button 
-                          type="button"
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-primary" 
-                          title="Pratinjau Data"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenPreview(customer);
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          type="button"
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-primary" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleOpenEditDialog(customer);
-                          }}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          type="button"
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-rose-600" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (customer.id) deleteCustomer(customer.id);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        <div className="flex flex-col gap-1 text-[10px] text-slate-600 dark:text-slate-400">
+                          <div className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {customer.phone}</div>
+                          <div className="flex items-center gap-1.5 text-primary font-mono"><Cpu className="h-3 w-3" /> {customer.modemSnMac || "-"}</div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right px-4 md:px-6">
+                        <div className="flex justify-end gap-0.5 md:gap-1">
+                          <Button 
+                            type="button"
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-primary" 
+                            title="Pratinjau Data"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenPreview(customer);
+                            }}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            type="button"
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-primary" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditDialog(customer);
+                            }}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            type="button"
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-rose-600" 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (customer.id) deleteCustomer(customer.id);
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
                 {!customers?.length && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center py-20 text-slate-400">
