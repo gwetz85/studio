@@ -1,3 +1,4 @@
+
 import Dexie, { type Table } from 'dexie';
 
 export interface ServicePackage {
@@ -16,9 +17,9 @@ export interface Customer {
   email: string;
   packageId: number;
   status: 'active' | 'passive' | 'inactive';
-  modemSnMac?: string; // Field baru untuk SN/MAC Modem
+  modemSnMac?: string; 
   createdAt: number;
-  deactivationDate?: number; // Tanggal saat status berubah menjadi Non-Aktif
+  deactivationDate?: number; 
 }
 
 export interface PSBRequest {
@@ -29,7 +30,7 @@ export interface PSBRequest {
   email: string;
   packageId: number;
   status: 'pasif' | 'aktif';
-  modemSnMac?: string; // Field baru untuk SN/MAC Modem
+  modemSnMac?: string; 
   createdAt: number;
 }
 
@@ -37,7 +38,7 @@ export interface Payment {
   id?: number;
   customerId: number;
   amount: number;
-  billingPeriod: string; // e.g., "2023-10"
+  billingPeriod: string; // e.g., "2024-01"
   status: 'paid' | 'pending' | 'overdue';
   paymentDate?: number;
 }
@@ -50,10 +51,10 @@ export class NetInvoiceDB extends Dexie {
 
   constructor() {
     super('MTNETBillingDB');
-    this.version(3).stores({
+    this.version(4).stores({
       customers: '++id, name, email, packageId, status, deactivationDate',
       packages: '++id, name',
-      payments: '++id, customerId, billingPeriod, status',
+      payments: '++id, customerId, billingPeriod, status, [customerId+billingPeriod]',
       psb: '++id, name, email, packageId, status'
     });
   }

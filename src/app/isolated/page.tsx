@@ -1,15 +1,19 @@
+
 "use client"
 
 import * as React from "react"
 import { useLiveQuery } from "dexie-react-hooks"
 import { db, type Customer, type Payment } from "@/lib/db"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ShieldAlert, Phone, MapPin, CreditCard, Clock } from "lucide-react"
+import { ShieldAlert, Phone, MapPin, CreditCard, Clock, CheckCircle2, UserX } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 
 export default function IsolatedPage() {
+  const { toast } = useToast();
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const currentDay = new Date().getDate();
   const isAfterCutoff = currentDay > 8;
@@ -20,9 +24,6 @@ export default function IsolatedPage() {
     const allCustomers = await db.customers.where('status').equals('active').toArray();
     const currentPayments = await db.payments.where('billingPeriod').equals(currentPeriod).toArray();
     
-    // Pelanggan terisolir adalah mereka yang:
-    // 1. Status Aktif
-    // 2. Belum melakukan pembayaran 'paid' untuk periode ini
     return allCustomers.filter(customer => {
       const payment = currentPayments.find(p => p.customerId === customer.id);
       return !payment || payment.status !== 'paid';
@@ -33,6 +34,55 @@ export default function IsolatedPage() {
 
   const getPackageName = (id: number) => {
     return packages?.find(p => p.id === id)?.name || "N/A";
+  };
+
+  const handleQuickPay = async (customer: Customer) => {
+    if (!customer.id) return;
+    
+    try {
+      const pkg = packages?.find(p => p.id === customer.packageId);
+      const existingPayment = await db.payments
+        .where('[customerId+billingPeriod]')
+        .equals([customer.id, currentPeriod])
+        .first();
+
+      if (existingPayment) {
+        await db.payments.update(existingPayment.id!, { 
+          status: 'paid', 
+          paymentDate: Date.now() 
+        });
+      } else {
+        await db.payments.add({
+          customerId: customer.id,
+          amount: pkg?.price || 0,
+          billingPeriod: currentPeriod,
+          status: 'paid',
+          paymentDate: Date.now()
+        });
+      }
+
+      toast({ 
+        title: "Pelanggan Diaktifkan", 
+        description: `${customer.name} telah melunasi tagihan dan kembali Aktif.` 
+      });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Gagal memproses aktivasi" });
+    }
+  };
+
+  const handleDeactivate = async (customer: Customer) => {
+    if (!customer.id) return;
+    if (confirm(`Nonaktifkan layanan untuk ${customer.name}? Pelanggan akan dipindah ke arsip Nonaktif.`)) {
+      try {
+        await db.customers.update(customer.id, { 
+          status: 'inactive',
+          deactivationDate: Date.now()
+        });
+        toast({ title: "Pelanggan Dinonaktifkan" });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Gagal memproses status" });
+      }
+    }
   };
 
   return (
@@ -69,8 +119,8 @@ export default function IsolatedPage() {
                     <TableHead className="py-4 px-6 dark:text-slate-400">Pelanggan</TableHead>
                     <TableHead className="dark:text-slate-400">Paket</TableHead>
                     <TableHead className="dark:text-slate-400">Kontak</TableHead>
-                    <TableHead className="dark:text-slate-400">Alamat</TableHead>
-                    <TableHead className="text-right px-6 dark:text-slate-400">Status Akses</TableHead>
+                    <TableHead className="dark:text-slate-400 text-center">Status</TableHead>
+                    <TableHead className="text-right px-6 dark:text-slate-400">Ubah Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -90,13 +140,29 @@ export default function IsolatedPage() {
                           <Phone className="h-3 w-3" /> {customer.phone}
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400 max-w-[200px] truncate">
-                          <MapPin className="h-3 w-3" /> {customer.address}
-                        </div>
+                      <TableCell className="text-center">
+                        <Badge className="bg-rose-600 animate-pulse">TERISOLIR</Badge>
                       </TableCell>
                       <TableCell className="text-right px-6">
-                        <Badge className="bg-rose-600 hover:bg-rose-700 dark:bg-rose-700 dark:hover:bg-rose-600">TERISOLIR</Badge>
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-8 text-[10px] border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-400"
+                            onClick={() => handleQuickPay(customer)}
+                          >
+                            <CheckCircle2 className="mr-1 h-3 w-3" /> Bayar & Aktifkan
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-rose-500 hover:bg-rose-50"
+                            title="Nonaktifkan Layanan"
+                            onClick={() => handleDeactivate(customer)}
+                          >
+                            <UserX className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
