@@ -47,8 +47,10 @@ export function useAuth() {
   const register = async (username: string, pass: string, userRole: UserRole = "user") => {
     const cleanUsername = username.trim().toLowerCase();
     if (!cleanUsername) throw new Error("Username tidak boleh kosong");
+    if (cleanUsername.includes(" ")) throw new Error("Username tidak boleh mengandung spasi");
     
-    const email = `${cleanUsername}@mtnet.com`
+    // Pastikan format email valid, hindari double domain jika user mengetik email lengkap
+    const email = cleanUsername.includes("@") ? cleanUsername : `${cleanUsername}@mtnet.com`
     
     // 1. Create user in Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
