@@ -12,13 +12,13 @@ service cloud.firestore {
       return isSignedIn() && (
         request.auth.token.email == "agus@mtnet.com" ||
         request.auth.uid == "EdUhRV3odgO5TTzVMPSBAsMFaNP2" ||
-        request.auth.token.email.startsWith("admin@")
+        (request.auth.token.email != null && request.auth.token.email.startsWith("admin@"))
       );
     }
 
     // --- Global Access Rules ---
 
-    // Pelanggan, Paket, Invoices, Issues: Read for all Staff, Write for Admin
+    // Pelanggan, Paket, Invoices: Read for all Staff, Write for Admin
     match /customers/{id} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
@@ -43,15 +43,14 @@ service cloud.firestore {
 
     // Users: Self Read/Write, Admin Full
     match /users/{userId} {
-      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow list: if isAdmin();
-      allow create, update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
-      allow delete: if isAdmin() && userId != request.auth.uid;
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if isAdmin();
     }
 
-    // Issues: Read/Write for Staff (except delete), Admin Full
+    // Issues: Read/Write for Staff, Full for Admin
     match /issues/{id} {
-      allow read, create, update: if isSignedIn();
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
   }

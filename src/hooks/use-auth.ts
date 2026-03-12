@@ -48,9 +48,11 @@ export function useAuth() {
         const currentUsername = user.displayName || user.email?.split('@')[0] || "User";
         if (isMounted) setUsername(currentUsername);
         
-        // Agus is ALWAYS admin
         const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
         const currentDeviceId = getDeviceId();
+
+        // Immediate role assignment for Agus to avoid race conditions
+        if (isAgus && isMounted) setRole('admin');
 
         try {
           const userDocRef = doc(db, "users", user.uid);
@@ -60,14 +62,12 @@ export function useAuth() {
 
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            // Force admin if it's Agus even if DB says otherwise
             finalRole = isAgus ? "admin" : (userData.role as UserRole || "user");
 
             if (isAgus && userData.role !== 'admin') {
               updateDoc(userDocRef, { role: 'admin' });
             }
 
-            // Device Binding Check (Skip for Agus)
             if (!isAgus) {
               if (userData.deviceId && userData.deviceId !== currentDeviceId) {
                 if (isMounted) setDeviceError("Akun terkunci di perangkat lain. Hubungi Admin untuk reset.");
@@ -78,7 +78,6 @@ export function useAuth() {
               }
             }
           } else {
-            // Create user document if missing
             await setDoc(userDocRef, {
               username: currentUsername,
               email: user.email,
@@ -90,13 +89,10 @@ export function useAuth() {
 
           if (isMounted) setRole(finalRole);
 
-          // Route Protection
           if (finalRole === "user" && (pathname === "/settings" || pathname === "/users")) {
             router.push("/");
           }
         } catch (e) {
-          console.error("Auth check failed", e);
-          // Fallback for Agus if network fails
           if (isMounted && isAgus) setRole('admin');
         }
       } else if (!isUserLoading && !user && pathname !== "/login") {
