@@ -36,7 +36,8 @@ export default function UsersManagementPage() {
     e.preventDefault();
     setIsLoading(true);
     const formData = new FormData(e.currentTarget);
-    const username = formData.get("username") as string;
+    const rawUsername = formData.get("username") as string;
+    const username = rawUsername.trim().toLowerCase();
     const password = formData.get("password") as string;
     const role = formData.get("role") as UserRole;
     
@@ -49,10 +50,14 @@ export default function UsersManagementPage() {
       setIsDialogOpen(false);
     } catch (error: any) {
       console.error(error);
+      const message = error.code === 'auth/invalid-email' 
+        ? "Format username tidak valid. Pastikan tidak mengandung spasi." 
+        : "Pastikan password minimal 6 karakter atau username belum terdaftar.";
+        
       toast({ 
         variant: "destructive", 
         title: "Gagal mendaftarkan user",
-        description: "Pastikan password minimal 6 karakter atau username belum terdaftar."
+        description: message
       });
     } finally {
       setIsLoading(false);

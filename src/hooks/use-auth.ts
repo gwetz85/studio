@@ -24,7 +24,8 @@ export function useAuth() {
       if (user) {
         // Simple role check based on email
         const adminEmails = ["admin@mtnet.com", "agus@mtnet.com"];
-        const userRole: UserRole = adminEmails.includes(user.email || "") ? "admin" : "user"
+        const userEmail = (user.email || "").toLowerCase().trim();
+        const userRole: UserRole = adminEmails.includes(userEmail) ? "admin" : "user"
         setRole(userRole)
         setUsername(user.displayName || user.email?.split('@')[0] || "User")
 
@@ -38,21 +39,26 @@ export function useAuth() {
   }, [user, isUserLoading, pathname, router])
 
   const login = async (email: string, pass: string) => {
-    await signInWithEmailAndPassword(authInstance, email, pass)
+    const cleanEmail = email.trim().toLowerCase();
+    await signInWithEmailAndPassword(authInstance, cleanEmail, pass)
     router.push("/")
   }
 
   const register = async (username: string, pass: string, userRole: UserRole = "user") => {
-    const email = `${username}@mtnet.com`
+    const cleanUsername = username.trim().toLowerCase();
+    if (!cleanUsername) throw new Error("Username tidak boleh kosong");
+    
+    const email = `${cleanUsername}@mtnet.com`
+    
     // 1. Create user in Firebase Auth
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
     
     // 2. Update display name
-    await updateProfile(userCredential.user, { displayName: username })
+    await updateProfile(userCredential.user, { displayName: cleanUsername })
 
     // 3. Save role to Firestore for management visibility
     await addDoc(collection(db, "users"), {
-      username: username,
+      username: cleanUsername,
       email: email,
       role: userRole,
       createdAt: Date.now()

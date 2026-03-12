@@ -35,7 +35,8 @@ export default function LoginPage() {
     setIsLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const username = formData.get("username") as string
+    const rawUsername = formData.get("username") as string
+    const username = rawUsername.trim().toLowerCase()
     const password = formData.get("password") as string
 
     try {
@@ -49,7 +50,9 @@ export default function LoginPage() {
       }
     } catch (err: any) {
       console.error(err)
-      if (isRegisterMode) {
+      if (err.code === 'auth/invalid-email') {
+        setError("Format username tidak valid. Pastikan tidak ada spasi atau karakter khusus.")
+      } else if (isRegisterMode) {
         setError("Gagal mendaftar. Username mungkin sudah ada atau password terlalu lemah.")
       } else {
         setError("Username atau password salah. Pastikan akun sudah terdaftar.")
