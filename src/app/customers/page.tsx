@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Eye } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, User, Eye, Phone, MapPin, Cpu, Calendar, CreditCard, Clock } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -18,6 +18,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
+import { format } from "date-fns"
+import { id as localeId } from "date-fns/locale"
 
 export default function CustomersPage() {
   const { toast } = useToast();
@@ -62,11 +64,10 @@ export default function CustomersPage() {
     if (!viewingCustomer?.id || !user) return null;
     return query(
       collection(db, "invoices"), 
-      where("customerId", "==", viewingCustomer.id),
-      where("status", "==", "paid")
+      where("customerId", "==", viewingCustomer.id)
     );
   }, [db, viewingCustomer, user]);
-  const { data: customerPayments } = useCollection(viewInvoicesQuery);
+  const { data: customerInvoices } = useCollection(viewInvoicesQuery);
 
   const filteredCustomers = React.useMemo(() => {
     if (!customersRaw) return [];
@@ -163,6 +164,11 @@ export default function CustomersPage() {
     return packages?.find(p => p.id === id)?.name || "N/A";
   };
 
+  const formatDate = (ts: number | undefined) => {
+    if (!ts) return "N/A";
+    return format(new Date(ts), "dd MMMM yyyy", { locale: localeId });
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -247,62 +253,142 @@ export default function CustomersPage() {
       </Dialog>
 
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-3xl p-0">
+        <DialogContent className="max-w-4xl p-0">
           <DialogHeader className="p-6 bg-primary text-white">
-            <DialogTitle className="text-xl flex items-center gap-2">
-              <Eye className="h-5 w-5" /> Detail Pelanggan
+            <DialogTitle className="text-xl flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Eye className="h-5 w-5" /> Detail Lengkap Pelanggan
+              </div>
+              <Badge variant="outline" className="border-white text-white">
+                Reg: {formatDate(viewingCustomer?.createdAt)}
+              </Badge>
             </DialogTitle>
           </DialogHeader>
-          <div className="p-6 md:p-8">
-            {viewingCustomer && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Informasi Pribadi</h3>
-                    <div className="flex items-start gap-3">
-                      <User className="h-4 w-4 text-primary mt-1" />
-                      <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.name || "N/A"}</p>
-                        <p className="text-xs text-slate-500">{viewingCustomer.email || "No Email"}</p>
+          <ScrollArea className="max-h-[85vh]">
+            <div className="p-6 md:p-8 space-y-8">
+              {viewingCustomer && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                  <div className="md:col-span-2 space-y-6">
+                    <section className="space-y-4">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <User className="h-3 w-3" /> Informasi Identitas
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
+                        <div>
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">Nama Lengkap</p>
+                          <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.name || "N/A"}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-slate-500 uppercase font-bold">Email</p>
+                          <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.email || "No Email"}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-primary" />
+                          <div>
+                            <p className="text-[10px] text-slate-500 uppercase font-bold">Telepon</p>
+                            <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.phone || "N/A"}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Cpu className="h-4 w-4 text-primary" />
+                          <div>
+                            <p className="text-[10px] text-slate-500 uppercase font-bold">SN / MAC Modem</p>
+                            <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.modemSnMac || "N/A"}</p>
+                          </div>
+                        </div>
+                        <div className="sm:col-span-2 flex items-start gap-2 border-t pt-4">
+                          <MapPin className="h-4 w-4 text-rose-500 mt-1" />
+                          <div>
+                            <p className="text-[10px] text-slate-500 uppercase font-bold">Alamat Pemasangan</p>
+                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{viewingCustomer.address || "N/A"}</p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Status</h3>
-                    <div className="flex flex-wrap gap-2">
-                       <Badge className={cn(isIsolated(viewingCustomer) ? "bg-rose-600" : "bg-emerald-600")}>
-                        {isIsolated(viewingCustomer) ? "TERISOLIR" : (viewingCustomer.status?.toUpperCase() || "N/A")}
-                       </Badge>
-                       <Badge variant="outline">{getPackageName(viewingCustomer.packageId)}</Badge>
-                    </div>
-                  </div>
-                </div>
-                
-                <Separator />
+                    </section>
 
-                <div className="space-y-4">
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-widest">Riwayat Pembayaran</h3>
-                  <div className="rounded-xl border overflow-hidden">
-                    <Table>
-                      <TableBody>
-                        {customerPayments?.map((p) => (
-                          <TableRow key={p.id}>
-                            <TableCell className="text-xs font-medium">{p.billingPeriod || "N/A"}</TableCell>
-                            <TableCell className="text-xs text-right font-semibold text-emerald-600">
-                              Rp {(p.amount || 0).toLocaleString('id-ID')}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                        {customerPayments?.length === 0 && (
-                          <TableRow><TableCell className="text-center text-xs text-slate-400 py-8">Belum ada riwayat pembayaran.</TableCell></TableRow>
-                        )}
-                      </TableBody>
-                    </Table>
+                    <section className="space-y-4">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <CreditCard className="h-3 w-3" /> Rekapan Pembayaran
+                      </h3>
+                      <div className="rounded-xl border border-slate-100 overflow-hidden">
+                        <Table>
+                          <TableHeader className="bg-slate-50">
+                            <TableRow>
+                              <TableHead className="text-[10px] uppercase">Periode</TableHead>
+                              <TableHead className="text-[10px] uppercase">Status</TableHead>
+                              <TableHead className="text-[10px] uppercase text-right">Nominal</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {customerInvoices?.sort((a,b) => b.billingPeriod.localeCompare(a.billingPeriod)).map((inv) => (
+                              <TableRow key={inv.id}>
+                                <TableCell className="text-xs font-medium flex items-center gap-2">
+                                  <Calendar className="h-3 w-3 text-slate-400" />
+                                  {inv.billingPeriod}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge variant="outline" className={cn(
+                                    "text-[9px] px-1.5 py-0",
+                                    inv.status === 'paid' ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-amber-600 border-amber-200 bg-amber-50"
+                                  )}>
+                                    {inv.status.toUpperCase()}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-xs text-right font-mono font-bold text-slate-700">
+                                  Rp {(inv.amount || 0).toLocaleString('id-ID')}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                            {(!customerInvoices || customerInvoices.length === 0) && (
+                              <TableRow><TableCell colSpan={3} className="text-center text-xs text-slate-400 py-12">Belum ada riwayat tagihan.</TableCell></TableRow>
+                            )}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </section>
+                  </div>
+
+                  <div className="space-y-6">
+                    <Card className="p-6 bg-slate-50 dark:bg-slate-900/50 border-none shadow-none space-y-4">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Status Berlangganan</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500">Layanan</span>
+                          <Badge className={cn(
+                            "px-4 py-1",
+                            isIsolated(viewingCustomer) ? "bg-rose-600" : (viewingCustomer.status === 'active' ? "bg-emerald-600" : "bg-amber-500")
+                          )}>
+                            {isIsolated(viewingCustomer) ? "TERISOLIR" : (viewingCustomer.status?.toUpperCase() || "N/A")}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-slate-500">Paket Aktif</span>
+                          <span className="text-sm font-bold text-primary">{getPackageName(viewingCustomer.packageId)}</span>
+                        </div>
+                        <Separator />
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs text-slate-500">
+                            <Clock className="h-3 w-3" /> Terakhir Update
+                          </div>
+                          <p className="text-xs font-medium">{formatDate(viewingCustomer.updatedAt || viewingCustomer.createdAt)}</p>
+                        </div>
+                      </div>
+                    </Card>
+
+                    <div className="p-4 rounded-xl border border-primary/10 bg-primary/5 space-y-2">
+                       <h4 className="text-[10px] font-black text-primary uppercase">Catatan Sistem</h4>
+                       <p className="text-[10px] text-slate-600 leading-relaxed italic">
+                        Data ini disinkronkan secara real-time dari cloud database MTNET. Perubahan status akan mempengaruhi hak akses jaringan pelanggan secara otomatis.
+                       </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          </ScrollArea>
+          <DialogFooter className="p-4 border-t">
+            <Button onClick={() => setIsPreviewOpen(false)} className="w-full sm:w-auto">Tutup Detail</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
