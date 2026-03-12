@@ -20,7 +20,6 @@ export function useAuth() {
   const [username, setUsername] = useState<string | null>(null)
   const [deviceError, setDeviceError] = useState<string | null>(null)
 
-  // Helper to get or create a Device ID
   const getDeviceId = () => {
     if (typeof window === "undefined") return null;
     let id = localStorage.getItem("mtnet_device_id");
@@ -32,9 +31,11 @@ export function useAuth() {
   }
 
   useEffect(() => {
-    setRole(null)
-    setUsername(null)
-    setDeviceError(null)
+    if (!user) {
+      setRole(null)
+      setUsername(null)
+      setDeviceError(null)
+    }
   }, [user])
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export function useAuth() {
         
         let userRole: UserRole = "user";
         const currentDeviceId = getDeviceId();
+        const isAgus = user.email === 'agus@mtnet.com' || user.displayName === 'agus';
 
         try {
           const userDocRef = doc(db, "users", user.uid);
@@ -53,26 +55,28 @@ export function useAuth() {
             const userData = userDoc.data();
             userRole = userData.role as UserRole;
 
-            // --- Device Binding Logic ---
-            // If it's a primary admin (agus), we usually allow it anywhere, 
-            // but for staff, we strictly bind to deviceId.
-            if (user.email !== 'agus@mtnet.com') {
+            if (!isAgus) {
               if (userData.deviceId && userData.deviceId !== currentDeviceId) {
                 setDeviceError("Akun terkunci di perangkat lain. Hubungi Admin untuk reset.");
                 return;
               }
-              
-              // If no deviceId bound yet, bind it now
               if (!userData.deviceId && currentDeviceId) {
                 await updateDoc(userDocRef, { deviceId: currentDeviceId });
               }
             }
           }
 
-          // Special hardcoded admin check for 'agus'
-          if (user.email === 'agus@mtnet.com' || user.email?.startsWith('admin@')) {
+          if (isAgus || user.email?.startsWith('admin@')) {
             userRole = "admin";
-            if (userDoc.exists() && userDoc.data().role !== 'admin') {
+            if (!userDoc.exists()) {
+              await setDoc(userDocRef, {
+                username: user.displayName || 'agus',
+                email: user.email,
+                role: 'admin',
+                createdAt: Date.now(),
+                deviceId: currentDeviceId
+              });
+            } else if (userDoc.data().role !== 'admin') {
               await updateDoc(userDocRef, { role: 'admin' });
             }
           }
@@ -80,13 +84,13 @@ export function useAuth() {
           console.warn("Auth check failed", e);
         }
         
-        setRole(userRole)
+        setRole(userRole);
 
         if (userRole === "user" && (pathname === "/settings" || pathname === "/users")) {
-          router.push("/")
+          router.push("/");
         }
       } else if (!isUserLoading && !user && pathname !== "/login") {
-        router.push("/login")
+        router.push("/login");
       }
     }
     
@@ -96,8 +100,8 @@ export function useAuth() {
   const login = async (email: string, pass: string) => {
     const cleanEmail = email.trim().toLowerCase();
     const finalEmail = cleanEmail.includes("@") ? cleanEmail : `${cleanEmail}@mtnet.com`;
-    await signInWithEmailAndPassword(authInstance, finalEmail, pass)
-    router.push("/")
+    await signInWithEmailAndPassword(authInstance, finalEmail, pass);
+    router.push("/");
   }
 
   const register = async (username: string, pass: string, userRole: UserRole = "user") => {
@@ -105,7 +109,8 @@ export function useAuth() {
     if (!cleanUsername) throw new Error("Username tidak boleh kosong");
     if (cleanUsername.includes(" ")) throw new Error("Username tidak boleh mengandung spasi");
     
-    const finalRole = cleanUsername === 'agus' ? 'admin' : userRole;
+    const isAgus = cleanUsername === 'agus';
+    const finalRole = isAgus ? 'admin' : userRole;
     const email = cleanUsername.includes("@") ? cleanUsername : `${cleanUsername}@mtnet.com`
     
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
@@ -116,7 +121,7 @@ export function useAuth() {
       email: email,
       role: finalRole,
       createdAt: Date.now(),
-      deviceId: getDeviceId() // Bind on registration
+      deviceId: isAgus ? null : getDeviceId()
     })
 
     return userCredential.user

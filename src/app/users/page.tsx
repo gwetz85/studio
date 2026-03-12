@@ -39,29 +39,16 @@ export default function UsersManagementPage() {
     e.preventDefault();
     setIsRegistering(true);
     const formData = new FormData(e.currentTarget);
-    const rawUsername = formData.get("username") as string;
-    const username = rawUsername.trim().toLowerCase();
+    const username = formData.get("username") as string;
     const password = formData.get("password") as string;
     const role = formData.get("role") as UserRole;
     
     try {
       await register(username, password, role);
-      toast({ 
-        title: "User Berhasil Didaftarkan", 
-        description: `Akun ${username} telah dibuat di sistem Auth.` 
-      });
+      toast({ title: "User Berhasil Didaftarkan" });
       setIsDialogOpen(false);
     } catch (error: any) {
-      console.error(error);
-      const message = error.code === 'auth/invalid-email' 
-        ? "Format username tidak valid. Pastikan tidak mengandung spasi." 
-        : "Pastikan password minimal 6 karakter atau username belum terdaftar.";
-        
-      toast({ 
-        variant: "destructive", 
-        title: "Gagal mendaftarkan user",
-        description: message
-      });
+      toast({ variant: "destructive", title: "Gagal mendaftarkan user", description: error.message });
     } finally {
       setIsRegistering(false);
     }
@@ -76,7 +63,7 @@ export default function UsersManagementPage() {
 
     try {
       await updateDoc(doc(db, "users", editingUser.id), { role: newRole });
-      toast({ title: "Role Diperbarui", description: `Role ${editingUser.username} sekarang adalah ${newRole}.` });
+      toast({ title: "Role Diperbarui" });
       setIsRoleDialogOpen(false);
       setEditingUser(null);
     } catch (error) {
@@ -85,10 +72,10 @@ export default function UsersManagementPage() {
   };
 
   const handleResetDevice = async (userId: string, username: string) => {
-    if (confirm(`Hapus kaitan perangkat untuk ${username}? User akan dapat login di perangkat baru.`)) {
+    if (confirm(`Hapus kaitan perangkat untuk ${username}?`)) {
       try {
         await updateDoc(doc(db, "users", userId), { deviceId: null });
-        toast({ title: "Perangkat Berhasil Di-reset", description: `Akses perangkat ${username} kini telah terbuka.` });
+        toast({ title: "Perangkat Berhasil Di-reset" });
       } catch (error) {
         toast({ variant: "destructive", title: "Gagal me-reset perangkat" });
       }
@@ -96,7 +83,7 @@ export default function UsersManagementPage() {
   };
 
   const deleteUser = async (id: string) => {
-    if (confirm("Hapus akses user ini dari database Firestore?")) {
+    if (confirm("Hapus akses user ini?")) {
       try {
         await deleteDoc(doc(db, "users", id));
         toast({ title: "Data user dihapus" });
@@ -106,23 +93,14 @@ export default function UsersManagementPage() {
     }
   };
 
-  if (isAuthLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="flex flex-col items-center gap-2">
-           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-           <p className="text-xs text-slate-500 font-medium">Memverifikasi akses...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isAuthLoading) return null;
 
   if (currentUserRole !== 'admin') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center space-y-4">
         <ShieldCheck className="h-16 w-16 text-rose-500 opacity-20" />
         <h2 className="text-xl font-bold">Akses Dibatasi</h2>
-        <p className="text-slate-500">Hanya Administrator yang dapat mengelola pengguna sistem.</p>
+        <p className="text-slate-500">Hanya Administrator yang dapat mengelola pengguna.</p>
       </div>
     );
   }
@@ -142,33 +120,31 @@ export default function UsersManagementPage() {
           </DialogTrigger>
           <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
             <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
-              <DialogTitle className="flex items-center gap-2">
+              <DialogTitle className="flex items-center gap-2 text-slate-900">
                 <UsersRound className="h-5 w-5 text-primary" />
-                Registrasi Akun Staf (Auth Online)
+                Registrasi Akun Staf
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <Alert className="bg-amber-50 border-amber-100 text-amber-800 py-2">
                 <AlertCircle className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-[10px]">
-                  PENTING: Menambahkan user baru akan membuat Anda otomatis LOGOUT dari sesi ini.
+                  PENTING: Menambahkan user baru akan membuat sesi login Anda saat ini tertutup.
                 </AlertDescription>
               </Alert>
 
               <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input id="username" name="username" required placeholder="Contoh: agus_teknisi" />
+                <Label htmlFor="username" className="text-slate-900">Username</Label>
+                <Input id="username" name="username" required placeholder="agus_teknisi" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Katasandi</Label>
+                <Label htmlFor="password" className="text-slate-900">Katasandi</Label>
                 <Input id="password" name="password" type="password" required placeholder="Min. 6 Karakter" minLength={6} />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="role">Role User</Label>
+                <Label htmlFor="role" className="text-slate-900">Role User</Label>
                 <Select name="role" defaultValue="user">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Administrator</SelectItem>
                     <SelectItem value="user">Staff / Teknisi</SelectItem>
@@ -188,18 +164,16 @@ export default function UsersManagementPage() {
       <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
           <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-slate-900">
               <Shield className="h-5 w-5 text-primary" />
               Ubah Role: {editingUser?.username}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdateRole} className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="role">Pilih Role Baru</Label>
+              <Label htmlFor="role" className="text-slate-900">Pilih Role Baru</Label>
               <Select name="role" defaultValue={editingUser?.role || "user"}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
+                <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="admin">Administrator</SelectItem>
                   <SelectItem value="user">Staff / Teknisi</SelectItem>
@@ -231,7 +205,7 @@ export default function UsersManagementPage() {
 
                 return (
                   <TableRow key={u.id}>
-                    <TableCell className="py-4 px-6 font-semibold">{u.username}</TableCell>
+                    <TableCell className="py-4 px-6 font-semibold text-slate-900">{u.username}</TableCell>
                     <TableCell>
                       <Badge variant={effectiveRole === 'admin' ? "default" : "secondary"}>
                         {effectiveRole === 'admin' ? 'ADMIN' : 'STAFF'}
@@ -239,45 +213,22 @@ export default function UsersManagementPage() {
                     </TableCell>
                     <TableCell>
                       {u.deviceId ? (
-                        <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-100">
-                          TERKUNCI
-                        </Badge>
+                        <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-100">TERKUNCI</Badge>
                       ) : (
-                        <Badge variant="outline" className="text-slate-400">
-                          TERBUKA
-                        </Badge>
+                        <Badge variant="outline" className="text-slate-400">TERBUKA</Badge>
                       )}
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
                         {!isPrimaryAdmin && (
                           <>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="text-amber-600 hover:bg-amber-50"
-                              title="Reset Device"
-                              onClick={() => handleResetDevice(u.id!, u.username)}
-                            >
+                            <Button variant="ghost" size="icon" className="text-amber-600" title="Reset Device" onClick={() => handleResetDevice(u.id!, u.username)}>
                               <Unlock className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="text-primary hover:bg-primary/5"
-                              onClick={() => {
-                                setEditingUser(u);
-                                setIsRoleDialogOpen(true);
-                              }}
-                            >
+                            <Button variant="ghost" size="icon" className="text-primary" onClick={() => { setEditingUser(u); setIsRoleDialogOpen(true); }}>
                               <Edit2 className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="text-rose-600 hover:bg-rose-50"
-                              onClick={() => deleteUser(u.id!)}
-                            >
+                            <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => deleteUser(u.id!)}>
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </>
@@ -287,13 +238,6 @@ export default function UsersManagementPage() {
                   </TableRow>
                 );
               })}
-              {!isDataLoading && users?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-slate-400">
-                    Belum ada user yang terdaftar.
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </ScrollArea>
