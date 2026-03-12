@@ -23,25 +23,26 @@ export default function IssuesPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
-  const { role } = useAuth();
+  const { role, isLoading: isAuthLoading } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 
   // Hanya menampilkan yang PENDING atau PROCESS
+  // Penting: Tunggu hingga role terkonfirmasi sebelum kueri
   const issuesQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || isAuthLoading || !role) return null;
     return query(
       collection(db, "issues"), 
       where("status", "in", ["pending", "process"]),
       orderBy("createdAt", "desc")
     );
-  }, [db, user]);
+  }, [db, user, role, isAuthLoading]);
   const { data: issues } = useCollection(issuesQuery);
 
   const customersQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || isAuthLoading) return null;
     return collection(db, "customers");
-  }, [db, user]);
+  }, [db, user, isAuthLoading]);
   const { data: customers } = useCollection(customersQuery);
 
   const filteredIssues = React.useMemo(() => {
@@ -102,6 +103,10 @@ export default function IssuesPage() {
   };
 
   const getCustomerName = (id: string) => customers?.find(c => c.id === id)?.name || "N/A";
+
+  if (isAuthLoading) {
+    return <div className="flex h-96 items-center justify-center animate-pulse">Memverifikasi Akses...</div>;
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">

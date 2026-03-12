@@ -43,9 +43,9 @@ export function useAuth() {
       if (!isUserLoading && user) {
         setUsername(user.displayName || user.email?.split('@')[0] || "User")
         
-        let userRole: UserRole = "user";
+        const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
+        let userRole: UserRole = isAgus ? "admin" : "user";
         const currentDeviceId = getDeviceId();
-        const isAgus = user.email === 'agus@mtnet.com' || user.displayName === 'agus';
 
         try {
           const userDocRef = doc(db, "users", user.uid);
@@ -53,8 +53,15 @@ export function useAuth() {
 
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            userRole = userData.role as UserRole;
+            // Jika Agus, paksa role Admin di database jika belum
+            if (isAgus && userData.role !== 'admin') {
+              await updateDoc(userDocRef, { role: 'admin' });
+              userRole = "admin";
+            } else {
+              userRole = userData.role as UserRole;
+            }
 
+            // Pengecekan Perangkat (Kecuali Agus)
             if (!isAgus) {
               if (userData.deviceId && userData.deviceId !== currentDeviceId) {
                 setDeviceError("Akun terkunci di perangkat lain. Hubungi Admin untuk reset.");
@@ -64,28 +71,24 @@ export function useAuth() {
                 await updateDoc(userDocRef, { deviceId: currentDeviceId });
               }
             }
-          }
-
-          if (isAgus || user.email?.startsWith('admin@')) {
+          } else if (isAgus || user.email?.startsWith('admin@')) {
+            // Buat dokumen admin jika belum ada
             userRole = "admin";
-            if (!userDoc.exists()) {
-              await setDoc(userDocRef, {
-                username: user.displayName || 'agus',
-                email: user.email,
-                role: 'admin',
-                createdAt: Date.now(),
-                deviceId: currentDeviceId
-              });
-            } else if (userDoc.data().role !== 'admin') {
-              await updateDoc(userDocRef, { role: 'admin' });
-            }
+            await setDoc(userDocRef, {
+              username: user.displayName || 'agus',
+              email: user.email,
+              role: 'admin',
+              createdAt: Date.now(),
+              deviceId: isAgus ? null : currentDeviceId
+            });
           }
         } catch (e) {
-          console.warn("Auth check failed", e);
+          console.warn("Auth check failed, using fallback role", e);
         }
         
         setRole(userRole);
 
+        // Proteksi Halaman Berdasarkan Role
         if (userRole === "user" && (pathname === "/settings" || pathname === "/users")) {
           router.push("/");
         }
@@ -111,7 +114,7 @@ export function useAuth() {
     
     const isAgus = cleanUsername === 'agus';
     const finalRole = isAgus ? 'admin' : userRole;
-    const email = cleanUsername.includes("@") ? cleanUsername : `${cleanUsername}@mtnet.com`
+    const email = `${cleanUsername}@mtnet.com`;
     
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
     await updateProfile(userCredential.user, { displayName: cleanUsername })
