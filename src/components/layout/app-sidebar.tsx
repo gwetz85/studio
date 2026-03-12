@@ -8,15 +8,12 @@ import {
   Package, 
   CreditCard, 
   Settings, 
-  Wifi, 
   ShieldAlert, 
   LogOut, 
-  Database, 
   Clock, 
   UserPlus, 
   UserX, 
   Wrench,
-  AlertTriangle,
   UsersRound
 } from "lucide-react"
 import Link from "next/link"
@@ -36,7 +33,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 
 const MTLogo = ({ className }: { className?: string }) => (
@@ -80,11 +76,6 @@ const navItems = [
     title: "User Nonaktif",
     url: "/inactive",
     icon: UserX,
-  },
-  {
-    title: "Laporan Gangguan",
-    url: "/issues",
-    icon: AlertTriangle,
   },
   {
     title: "Pembayaran",
@@ -161,7 +152,7 @@ export function AppSidebar() {
                   >
                     <Link href="/users" className="flex items-center gap-3 transition-all duration-300">
                       <UsersRound className={pathname === "/users" ? "scale-110 text-white" : "opacity-70"} />
-                      <span className={pathname === "/users" ? "text-white" : ""}>Manajemen User</span>
+                      <span className={pathname === "/users" ? "text-white" : "text-white/80"}>Manajemen User</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
