@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { useFirestore, useUser } from "@/firebase"
-import { collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from "firebase/firestore"
+import { collection, getDocs, doc, setDoc, deleteDoc, addDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 import { 
@@ -18,7 +18,6 @@ import {
   Sun, 
   ShieldAlert,
   Database,
-  User,
   LogOut,
   Palette,
   Check,
@@ -104,7 +103,7 @@ export default function SettingsPage() {
     setIsProcessing(true);
     try {
       const backupData = {
-        version: "2.0.1",
+        version: "2.1.0",
         timestamp: Date.now(),
         data: {
           customers: await fetchCollection("customers"),
@@ -142,24 +141,54 @@ export default function SettingsPage() {
       try {
         const content = e.target?.result as string;
         const backup = JSON.parse(content);
-        if (!backup.data) throw new Error("Format tidak valid");
+        
+        // Fleksibel menangani format baru ({data: {...}}) atau format lama ({customers: [], ...})
+        const dataToRestore = backup.data || backup;
         
         if (confirm("PENTING: Restore akan menimpa/menambahkan data ke server Cloud dan bisa dilihat oleh semua user. Lanjutkan?")) {
           setIsProcessing(true);
           
-          const collections = Object.keys(backup.data);
-          for (const colName of collections) {
-            const docs = backup.data[colName];
+          // Pemetaan koleksi lama ke koleksi baru
+          const collectionMapping: Record<string, string> = {
+            "customers": "customers",
+            "packages": "servicePackages",
+            "servicePackages": "servicePackages",
+            "payments": "invoices",
+            "invoices": "invoices",
+            "psb": "psbRequests",
+            "psbRequests": "psbRequests",
+            "issues": "issues"
+          };
+
+          for (const key in dataToRestore) {
+            const targetCol = collectionMapping[key];
+            if (!targetCol) continue;
+
+            const docs = dataToRestore[key];
+            if (!Array.isArray(docs)) continue;
+
             for (const docData of docs) {
               const { id, ...data } = docData;
-              await setDoc(doc(firestore, colName, id), data, { merge: true });
+              // Konversi ID numerik lama ke string Firestore
+              const docId = id ? String(id) : undefined;
+
+              try {
+                if (docId) {
+                  await setDoc(doc(firestore, targetCol, docId), data, { merge: true });
+                } else {
+                  await addDoc(collection(firestore, targetCol), data);
+                }
+              } catch (e) {
+                console.warn(`Gagal memulihkan dokumen di ${targetCol}:`, e);
+              }
             }
           }
 
           toast({ title: "Restore Cloud Berhasil", description: "Data telah disinkronkan ke seluruh tim." });
         }
       } catch (error) {
-        toast({ variant: "destructive", title: "Restore Gagal", description: "Format file tidak didukung." });
+        console.error("Kesalahan Restore:", error);
+        toast({ variant: "destructive", title: "Restore Gagal", description: "Format file tidak didukung atau file rusak." });
       } finally {
         setIsProcessing(false);
       }
@@ -331,7 +360,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3">
                 <Info className="h-5 w-5 text-primary" />
                 <div>
-                  <h3 className="font-bold">MTNET Cloud v2.0.1</h3>
+                  <h3 className="font-bold">MTNET Cloud v2.1.0</h3>
                   <p className="text-xs text-slate-400">Mode Sinkronisasi Real-time Aktif</p>
                 </div>
               </div>
