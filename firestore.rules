@@ -1,114 +1,59 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /**
-     * NetInvoice Offline - Security Rules Philosophy
-     * 
-     * Core Philosophy: This ruleset implements a robust Role-Based Access Control (RBAC) model combined 
-     * with an Ownership model. It distinguishes between "Administrative" users (who manage the ISP 
-     * operations) and "Customers" (who can view their own service details and billing).
-     * 
-     * Data Structure:
-     * - /roles_admin/{uid}: A metadata collection where the presence of a document grants global admin rights.
-     * - /servicePackages: Publicly viewable catalog for authenticated users; managed by admins.
-     * - /customers: Core customer records. Access is restricted to admins and the specific linked user.
-     * - /invoices: Billing records. Access is restricted to admins and the specific linked customer.
-     * 
-     * Key Security Decisions:
-     * 1. Authorization Independence: We use denormalized fields ('linkedUserId' in customers, 
-     *    'customerLinkedUserId' in invoices) to allow for fast, direct ownership checks without 
-     *    performing cross-document lookups (get() calls), reducing latency and cost.
-     * 2. Administrative Gatekeeping: High-level operations (create/update/delete) are strictly reserved 
-     *    for users present in the 'roles_admin' collection.
-     * 3. Secure List Operations: For top-level collections like 'customers' and 'invoices', 
-     *    rules ensure that while admins see everything, customers can only retrieve records 
-     *    where their UID matches the denormalized ownership field.
-     */
-
     // --- Helper Functions ---
-
-    /** @description Checks if the request is from a signed-in user. */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /** @description Verifies if the authenticated user has an entry in the admin roles collection. */
     function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+      // In this version, we assume the user with admin email or specific record is admin
+      return isSignedIn() && (
+        request.auth.token.email == "admin@mtnet.com" || 
+        exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid))
+      );
     }
 
-    /** @description Checks if the user's UID matches a specific field (Ownership). */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    // The `isExistingOwner` function was unused and has been removed.
-
-    /**
-     * @description Verifies admin status.
-     * For `update` and `delete` operations, `resource` (the existing document) is always available.
-     * The check `resource != null` is implicitly handled by the context where this function is called
-     * (i.e., `allow update, delete: if isExistingAdmin();`).
-     * The `resource` variable is not directly accessible within helper functions without being passed as an argument.
-     */
-    function isExistingAdmin() {
-      return isAdmin();
-    }
-
     // --- Collection Rules ---
 
-    /**
-     * @description Administrative roles mapping. Document ID must match the User UID.
-     * @path /roles_admin/{adminUid}
-     * @allow (get) (isAdmin())
-     * @deny (write) (Direct client-side modification is prohibited; managed via Console or Admin SDK)
-     * @principle Existence-based role check.
-     */
     match /roles_admin/{adminUid} {
       allow get: if isAdmin();
       allow list, create, update, delete: if false;
     }
 
-    /**
-     * @description Catalog of available internet service packages.
-     * @path /servicePackages/{servicePackageId}
-     * @allow (list) (isSignedIn())
-     * @deny (create) (Non-admin users cannot create packages)
-     * @principle Authenticated read-only for customers; Admin-only write.
-     */
     match /servicePackages/{servicePackageId} {
       allow get, list: if isSignedIn();
-      allow create: if isAdmin();
-      allow update, delete: if isExistingAdmin();
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Customer profile data. Linked users can view their own profile.
-     * @path /customers/{customerId}
-     * @allow (get) (isOwner(resource.data.linkedUserId))
-     * @deny (update) (Customers cannot modify their own profiles; managed by ISP staff)
-     * @principle Ownership-based read; Admin-only write.
-     */
     match /customers/{customerId} {
-      allow get: if isAdmin() || isOwner(resource.data.linkedUserId);
-      allow list: if isAdmin() || isSignedIn(); // Query must filter by linkedUserId if not admin
-      allow create: if isAdmin();
-      allow update, delete: if isExistingAdmin();
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
     }
 
-    /**
-     * @description Monthly billing invoices. Linked customers can view their own invoices.
-     * @path /invoices/{invoiceId}
-     * @allow (get) (isOwner(resource.data.customerLinkedUserId))
-     * @deny (delete) (Invoices are financial records and cannot be deleted by customers)
-     * @principle Authorization Independence via denormalized customerLinkedUserId.
-     */
     match /invoices/{invoiceId} {
-      allow get: if isAdmin() || isOwner(resource.data.customerLinkedUserId);
-      allow list: if isAdmin() || isSignedIn(); // Query must filter by customerLinkedUserId if not admin
-      allow create: if isAdmin();
-      allow update, delete: if isExistingAdmin();
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /psbRequests/{requestId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow get, list, create, update, delete: if isAdmin();
+    }
+
+    match /issues/{issueId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
     }
   }
 }

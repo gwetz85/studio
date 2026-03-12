@@ -58,6 +58,30 @@
         "createdAt": { "type": "number" }
       },
       "required": ["name", "status", "createdAt"]
+    },
+    "AppUser": {
+      "title": "AppUser",
+      "type": "object",
+      "description": "System users registered by admin.",
+      "properties": {
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "staff"] },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["username", "role"]
+    },
+    "Issue": {
+      "title": "Issue",
+      "type": "object",
+      "description": "Service interruption reports linked to customers.",
+      "properties": {
+        "customerId": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "process", "solved"] },
+        "createdAt": { "type": "number" },
+        "solvedAt": { "type": "number" }
+      },
+      "required": ["customerId", "description", "status", "createdAt"]
     }
   },
   "auth": {
@@ -79,6 +103,14 @@
     "/psbRequests/{requestId}": {
       "schema": "#/backend/entities/PSBRequest",
       "description": "New installation requests"
+    },
+    "/users/{userId}": {
+      "schema": "#/backend/entities/AppUser",
+      "description": "User account definitions"
+    },
+    "/issues/{issueId}": {
+      "schema": "#/backend/entities/Issue",
+      "description": "Trouble ticket reports"
     }
   }
 }
