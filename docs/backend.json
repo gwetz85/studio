@@ -59,22 +59,6 @@
       },
       "required": ["name", "status", "createdAt"]
     },
-    "Issue": {
-      "title": "Issue",
-      "type": "object",
-      "description": "Troubleshooting and repair records.",
-      "properties": {
-        "customerId": { "type": "string" },
-        "customerName": { "type": "string" },
-        "reportDescription": { "type": "string" },
-        "fixDescription": { "type": "string" },
-        "status": { "type": "string", "enum": ["pending", "completed"] },
-        "createdAt": { "type": "number" },
-        "solvedAt": { "type": "number" },
-        "reporter": { "type": "string" }
-      },
-      "required": ["customerId", "reportDescription", "status", "createdAt"]
-    },
     "AppUser": {
       "title": "AppUser",
       "type": "object",
@@ -107,10 +91,6 @@
     "/psbRequests/{requestId}": {
       "schema": "#/backend/entities/PSBRequest",
       "description": "New installation requests"
-    },
-    "/issues/{issueId}": {
-      "schema": "#/backend/entities/Issue",
-      "description": "Troubleshooting records"
     },
     "/users/{userId}": {
       "schema": "#/backend/entities/AppUser",

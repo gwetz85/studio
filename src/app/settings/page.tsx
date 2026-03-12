@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -110,7 +111,6 @@ export default function SettingsPage() {
           servicePackages: await fetchCollection("servicePackages"),
           invoices: await fetchCollection("invoices"),
           psbRequests: await fetchCollection("psbRequests"),
-          issues: await fetchCollection("issues"),
         }
       };
 
@@ -142,13 +142,11 @@ export default function SettingsPage() {
         const content = e.target?.result as string;
         const backup = JSON.parse(content);
         
-        // Fleksibel menangani format baru ({data: {...}}) atau format lama ({customers: [], ...})
         const dataToRestore = backup.data || backup;
         
         if (confirm("PENTING: Restore akan menimpa/menambahkan data ke server Cloud dan bisa dilihat oleh semua user. Lanjutkan?")) {
           setIsProcessing(true);
           
-          // Pemetaan koleksi lama ke koleksi baru
           const collectionMapping: Record<string, string> = {
             "customers": "customers",
             "packages": "servicePackages",
@@ -156,8 +154,7 @@ export default function SettingsPage() {
             "payments": "invoices",
             "invoices": "invoices",
             "psb": "psbRequests",
-            "psbRequests": "psbRequests",
-            "issues": "issues"
+            "psbRequests": "psbRequests"
           };
 
           for (const key in dataToRestore) {
@@ -169,7 +166,6 @@ export default function SettingsPage() {
 
             for (const docData of docs) {
               const { id, ...data } = docData;
-              // Konversi ID numerik lama ke string Firestore
               const docId = id ? String(id) : undefined;
 
               try {
@@ -201,7 +197,7 @@ export default function SettingsPage() {
     if (!user || role !== 'admin') return;
     setIsProcessing(true);
     try {
-      const collections = ["customers", "servicePackages", "invoices", "psbRequests", "issues"];
+      const collections = ["customers", "servicePackages", "invoices", "psbRequests"];
       for (const colName of collections) {
         const snapshot = await getDocs(collection(firestore, colName));
         for (const docItem of snapshot.docs) {
