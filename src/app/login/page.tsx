@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Lock, User as UserIcon, AlertCircle, UserPlus, LogIn, Smartphone } from "lucide-react"
+import { Lock, User as UserIcon, AlertCircle, UserPlus, LogIn } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -23,7 +23,7 @@ const MTLogo = ({ className }: { className?: string }) => (
 )
 
 export default function LoginPage() {
-  const { login, register, deviceError, logout } = useAuth()
+  const { login, register, logout } = useAuth()
   const { toast } = useToast()
   const [error, setError] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
@@ -60,34 +60,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false)
     }
-  }
-
-  // If there's a device error, show the block screen
-  if (deviceError) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <Card className="w-full max-w-md border-none shadow-2xl text-center">
-          <CardHeader className="bg-rose-600 p-8 text-white">
-            <Smartphone className="size-16 mx-auto mb-4 animate-bounce" />
-            <CardTitle className="text-2xl font-bold">Akses Diblokir</CardTitle>
-            <CardDescription className="text-rose-100">Keamanan Perangkat Aktif</CardDescription>
-          </CardHeader>
-          <CardContent className="p-8 space-y-4">
-            <p className="text-slate-600 text-sm leading-relaxed">
-              {deviceError}
-            </p>
-            <div className="p-4 bg-rose-50 border border-rose-100 rounded-xl text-xs text-rose-700 font-medium">
-              Satu akun hanya dapat digunakan pada satu perangkat terdaftar demi alasan keamanan data pelanggan.
-            </div>
-          </CardContent>
-          <CardFooter className="p-8 pt-0">
-            <Button variant="outline" className="w-full" onClick={logout}>
-              Kembali ke Login
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
-    )
   }
 
   return (

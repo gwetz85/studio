@@ -18,23 +18,11 @@ export function useAuth() {
   
   const [role, setRole] = useState<UserRole | null>(null)
   const [username, setUsername] = useState<string | null>(null)
-  const [deviceError, setDeviceError] = useState<string | null>(null)
-
-  const getDeviceId = () => {
-    if (typeof window === "undefined") return null;
-    let id = localStorage.getItem("mtnet_device_id");
-    if (!id) {
-      id = Math.random().toString(36).substring(2) + Date.now().toString(36);
-      localStorage.setItem("mtnet_device_id", id);
-    }
-    return id;
-  }
 
   useEffect(() => {
     if (!user) {
       setRole(null)
       setUsername(null)
-      setDeviceError(null)
     }
   }, [user])
 
@@ -47,7 +35,6 @@ export function useAuth() {
         if (isMounted) setUsername(currentUsername);
         
         const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
-        const currentDeviceId = getDeviceId();
 
         // Immediate role assignment for Agus to avoid permission errors
         if (isAgus && isMounted) {
@@ -67,23 +54,12 @@ export function useAuth() {
             if (isAgus && userData.role !== 'admin') {
               updateDoc(userDocRef, { role: 'admin' });
             }
-
-            if (!isAgus) {
-              if (userData.deviceId && userData.deviceId !== currentDeviceId) {
-                if (isMounted) setDeviceError("Akun terkunci di perangkat lain. Hubungi Admin untuk reset.");
-                return;
-              }
-              if (!userData.deviceId && currentDeviceId) {
-                updateDoc(userDocRef, { deviceId: currentDeviceId });
-              }
-            }
           } else {
             await setDoc(userDocRef, {
               username: currentUsername,
               email: user.email,
               role: finalRole,
-              createdAt: Date.now(),
-              deviceId: isAgus ? null : currentDeviceId
+              createdAt: Date.now()
             });
           }
 
@@ -126,8 +102,7 @@ export function useAuth() {
       username: cleanUsername,
       email: email,
       role: finalRole,
-      createdAt: Date.now(),
-      deviceId: isAgus ? null : getDeviceId()
+      createdAt: Date.now()
     })
 
     return userCredential.user
@@ -146,7 +121,6 @@ export function useAuth() {
     logout, 
     login,
     register,
-    deviceError,
-    isLoading: isUserLoading || (!!user && !role && !deviceError)
+    isLoading: isUserLoading || (!!user && !role)
   }
 }

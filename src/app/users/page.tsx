@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield, Unlock } from "lucide-react"
+import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -71,17 +71,6 @@ export default function UsersManagementPage() {
     }
   };
 
-  const handleResetDevice = async (userId: string, username: string) => {
-    if (confirm(`Hapus kaitan perangkat untuk ${username}?`)) {
-      try {
-        await updateDoc(doc(db, "users", userId), { deviceId: null });
-        toast({ title: "Perangkat Berhasil Di-reset" });
-      } catch (error) {
-        toast({ variant: "destructive", title: "Gagal me-reset perangkat" });
-      }
-    }
-  };
-
   const deleteUser = async (id: string) => {
     if (confirm("Hapus akses user ini?")) {
       try {
@@ -112,7 +101,7 @@ export default function UsersManagementPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Manajemen User</h1>
-          <p className="text-slate-500">Kelola akun staf dan penguncian perangkat.</p>
+          <p className="text-slate-500">Kelola akun staf dan akses sistem.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -196,7 +185,6 @@ export default function UsersManagementPage() {
               <TableRow>
                 <TableHead className="py-4 px-6">Username</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Status Device</TableHead>
                 <TableHead className="text-right px-6">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -213,20 +201,10 @@ export default function UsersManagementPage() {
                         {displayRole}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      {u.deviceId ? (
-                        <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-100">TERKUNCI</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-slate-400">TERBUKA</Badge>
-                      )}
-                    </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
                         {!isAgus && (
                           <>
-                            <Button variant="ghost" size="icon" className="text-amber-600" title="Reset Device" onClick={() => handleResetDevice(u.id!, u.username)}>
-                              <Unlock className="h-4 w-4" />
-                            </Button>
                             <Button variant="ghost" size="icon" className="text-primary" onClick={() => { setEditingUser(u); setIsRoleDialogOpen(true); }}>
                               <Edit2 className="h-4 w-4" />
                             </Button>
