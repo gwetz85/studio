@@ -22,19 +22,21 @@ export default function UsersManagementPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user: currentUser } = useFirebaseUser();
-  const { role: currentUserRole, register } = useAuth();
+  const { role: currentUserRole, register, isLoading: isAuthLoading } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [isRegistering, setIsRegistering] = React.useState(false);
 
+  // Perbaikan: Hanya jalankan kueri jika user adalah admin dan status auth sudah siap
   const usersQuery = useMemoFirebase(() => {
-    if (!currentUser) return null;
+    if (!currentUser || currentUserRole !== 'admin') return null;
     return query(collection(db, "users"), orderBy("username", "asc"));
-  }, [db, currentUser]);
-  const { data: users } = useCollection(usersQuery);
+  }, [db, currentUser, currentUserRole]);
+  
+  const { data: users, isLoading: isDataLoading } = useCollection(usersQuery);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsRegistering(true);
     const formData = new FormData(e.currentTarget);
     const rawUsername = formData.get("username") as string;
     const username = rawUsername.trim().toLowerCase();
@@ -60,7 +62,7 @@ export default function UsersManagementPage() {
         description: message
       });
     } finally {
-      setIsLoading(false);
+      setIsRegistering(false);
     }
   };
 
@@ -74,6 +76,10 @@ export default function UsersManagementPage() {
       }
     }
   };
+
+  if (isAuthLoading) {
+    return <div className="flex items-center justify-center min-h-[400px]">Memverifikasi akses...</div>;
+  }
 
   if (currentUserRole !== 'admin') {
     return (
@@ -134,8 +140,8 @@ export default function UsersManagementPage() {
                 </Select>
               </div>
               <DialogFooter className="pt-4">
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Mendaftarkan..." : "Daftarkan User Sekarang"}
+                <Button type="submit" className="w-full" disabled={isRegistering}>
+                  {isRegistering ? "Mendaftarkan..." : "Daftarkan User Sekarang"}
                 </Button>
               </DialogFooter>
             </form>
@@ -178,10 +184,17 @@ export default function UsersManagementPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {users?.length === 0 && (
+              {!isDataLoading && users?.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8 text-slate-400">
                     Belum ada user yang terdaftar.
+                  </TableCell>
+                </TableRow>
+              )}
+              {isDataLoading && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center py-8 text-slate-400">
+                    Memuat data...
                   </TableCell>
                 </TableRow>
               )}
