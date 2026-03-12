@@ -18,11 +18,23 @@ export function useAuth() {
   
   const [role, setRole] = useState<UserRole | null>(null)
   const [username, setUsername] = useState<string | null>(null)
+  const [deviceError, setDeviceError] = useState<string | null>(null)
 
-  // Reset role immediately when user object changes to prevent stale role state
+  // Helper to get or create a Device ID
+  const getDeviceId = () => {
+    if (typeof window === "undefined") return null;
+    let id = localStorage.getItem("mtnet_device_id");
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem("mtnet_device_id", id);
+    }
+    return id;
+  }
+
   useEffect(() => {
     setRole(null)
     setUsername(null)
+    setDeviceError(null)
   }, [user])
 
   useEffect(() => {
@@ -31,26 +43,41 @@ export function useAuth() {
         setUsername(user.displayName || user.email?.split('@')[0] || "User")
         
         let userRole: UserRole = "user";
+        const currentDeviceId = getDeviceId();
 
-        if (user.email === 'agus@mtnet.com' || user.email?.startsWith('admin@')) {
-          userRole = "admin";
-          try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
+        try {
+          const userDocRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            userRole = userData.role as UserRole;
+
+            // --- Device Binding Logic ---
+            // If it's a primary admin (agus), we usually allow it anywhere, 
+            // but for staff, we strictly bind to deviceId.
+            if (user.email !== 'agus@mtnet.com') {
+              if (userData.deviceId && userData.deviceId !== currentDeviceId) {
+                setDeviceError("Akun terkunci di perangkat lain. Hubungi Admin untuk reset.");
+                return;
+              }
+              
+              // If no deviceId bound yet, bind it now
+              if (!userData.deviceId && currentDeviceId) {
+                await updateDoc(userDocRef, { deviceId: currentDeviceId });
+              }
+            }
+          }
+
+          // Special hardcoded admin check for 'agus'
+          if (user.email === 'agus@mtnet.com' || user.email?.startsWith('admin@')) {
+            userRole = "admin";
             if (userDoc.exists() && userDoc.data().role !== 'admin') {
-              updateDoc(doc(db, "users", user.uid), { role: 'admin' });
+              await updateDoc(userDocRef, { role: 'admin' });
             }
-          } catch (e) {
-            console.warn("Auto-sync role failed");
           }
-        } else {
-          try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
-              userRole = userDoc.data().role as UserRole;
-            }
-          } catch (e) {
-            console.warn("Could not fetch user role from Firestore.");
-          }
+        } catch (e) {
+          console.warn("Auth check failed", e);
         }
         
         setRole(userRole)
@@ -88,7 +115,8 @@ export function useAuth() {
       username: cleanUsername,
       email: email,
       role: finalRole,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      deviceId: getDeviceId() // Bind on registration
     })
 
     return userCredential.user
@@ -107,6 +135,7 @@ export function useAuth() {
     logout, 
     login,
     register,
-    isLoading: isUserLoading || (!!user && !role) // Also loading if user exists but role is not yet determined
+    deviceError,
+    isLoading: isUserLoading || (!!user && !role && !deviceError)
   }
 }

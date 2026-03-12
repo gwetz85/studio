@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield } from "lucide-react"
+import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield, Unlock } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -28,7 +28,6 @@ export default function UsersManagementPage() {
   const [isRegistering, setIsRegistering] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState<any | null>(null);
 
-  // Strictly guard the query to only run when we are certain the user is an admin
   const usersQuery = useMemoFirebase(() => {
     if (!currentUser || currentUserRole !== 'admin') return null;
     return query(collection(db, "users"), orderBy("username", "asc"));
@@ -85,8 +84,19 @@ export default function UsersManagementPage() {
     }
   };
 
+  const handleResetDevice = async (userId: string, username: string) => {
+    if (confirm(`Hapus kaitan perangkat untuk ${username}? User akan dapat login di perangkat baru.`)) {
+      try {
+        await updateDoc(doc(db, "users", userId), { deviceId: null });
+        toast({ title: "Perangkat Berhasil Di-reset", description: `Akses perangkat ${username} kini telah terbuka.` });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Gagal me-reset perangkat" });
+      }
+    }
+  };
+
   const deleteUser = async (id: string) => {
-    if (confirm("Hapus akses user ini dari database Firestore? (Catatan: Akun Auth harus dihapus manual di Console)")) {
+    if (confirm("Hapus akses user ini dari database Firestore?")) {
       try {
         await deleteDoc(doc(db, "users", id));
         toast({ title: "Data user dihapus" });
@@ -122,7 +132,7 @@ export default function UsersManagementPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Manajemen User</h1>
-          <p className="text-slate-500">Kelola akun staf dan administrator sistem.</p>
+          <p className="text-slate-500">Kelola akun staf dan penguncian perangkat.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -141,7 +151,7 @@ export default function UsersManagementPage() {
               <Alert className="bg-amber-50 border-amber-100 text-amber-800 py-2">
                 <AlertCircle className="h-4 w-4 text-amber-600" />
                 <AlertDescription className="text-[10px]">
-                  PENTING: Menambahkan user baru akan membuat Anda otomatis LOGOUT dari sesi ini untuk memproses pendaftaran akun baru.
+                  PENTING: Menambahkan user baru akan membuat Anda otomatis LOGOUT dari sesi ini.
                 </AlertDescription>
               </Alert>
 
@@ -210,7 +220,7 @@ export default function UsersManagementPage() {
               <TableRow>
                 <TableHead className="py-4 px-6">Username</TableHead>
                 <TableHead>Role</TableHead>
-                <TableHead>Terdaftar</TableHead>
+                <TableHead>Status Device</TableHead>
                 <TableHead className="text-right px-6">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -227,13 +237,30 @@ export default function UsersManagementPage() {
                         {effectiveRole === 'admin' ? 'ADMIN' : 'STAFF'}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-xs text-slate-500">
-                      {new Date(u.createdAt).toLocaleDateString('id-ID')}
+                    <TableCell>
+                      {u.deviceId ? (
+                        <Badge variant="outline" className="text-emerald-600 bg-emerald-50 border-emerald-100">
+                          TERKUNCI
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-slate-400">
+                          TERBUKA
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
                         {!isPrimaryAdmin && (
                           <>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-amber-600 hover:bg-amber-50"
+                              title="Reset Device"
+                              onClick={() => handleResetDevice(u.id!, u.username)}
+                            >
+                              <Unlock className="h-4 w-4" />
+                            </Button>
                             <Button 
                               variant="ghost" 
                               size="icon" 

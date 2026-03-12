@@ -66,6 +66,7 @@
       "properties": {
         "username": { "type": "string" },
         "role": { "type": "string", "enum": ["admin", "staff"] },
+        "deviceId": { "type": "string", "description": "Unique ID of the bound device." },
         "createdAt": { "type": "number" }
       },
       "required": ["username", "role"]
