@@ -3,13 +3,13 @@
 
 import * as React from "react"
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
-import { collection, doc, deleteDoc, updateDoc, addDoc, query, orderBy } from "firebase/firestore"
+import { collection, doc, deleteDoc, updateDoc, addDoc, query, where, orderBy } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, AlertTriangle, CheckCircle2, Loader2, MessageSquareText, Search } from "lucide-react"
+import { Plus, Trash2, AlertTriangle, CheckCircle2, MessageSquareText, Search } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -27,9 +27,14 @@ export default function IssuesPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 
+  // Hanya menampilkan yang PENDING atau PROCESS
   const issuesQuery = useMemoFirebase(() => {
     if (!user) return null;
-    return query(collection(db, "issues"), orderBy("createdAt", "desc"));
+    return query(
+      collection(db, "issues"), 
+      where("status", "in", ["pending", "process"]),
+      orderBy("createdAt", "desc")
+    );
   }, [db, user]);
   const { data: issues } = useCollection(issuesQuery);
 
@@ -71,9 +76,14 @@ export default function IssuesPage() {
   const updateStatus = async (id: string, newStatus: string) => {
     try {
       const updateData: any = { status: newStatus };
-      if (newStatus === 'solved') updateData.solvedAt = Date.now();
+      if (newStatus === 'solved') {
+        updateData.solvedAt = Date.now();
+      }
       await updateDoc(doc(db, "issues", id), updateData);
-      toast({ title: "Status Gangguan Diperbarui" });
+      toast({ 
+        title: newStatus === 'solved' ? "Gangguan Selesai & Diarsipkan" : "Status Diperbarui",
+        description: newStatus === 'solved' ? "Laporan telah dipindahkan ke riwayat pelanggan." : undefined
+      });
     } catch (e) {
       toast({ variant: "destructive", title: "Gagal perbarui status" });
     }
@@ -97,8 +107,8 @@ export default function IssuesPage() {
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Laporan Gangguan</h1>
-          <p className="text-slate-500">Kelola tiket keluhan dan gangguan teknis pelanggan.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Antrean Gangguan</h1>
+          <p className="text-slate-500">Tiket aktif yang sedang dalam penanganan teknisi.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
@@ -184,9 +194,7 @@ export default function IssuesPage() {
                   </TableCell>
                   <TableCell>
                     <Badge className={cn(
-                      issue.status === 'solved' ? 'bg-emerald-500' : 
-                      issue.status === 'process' ? 'bg-blue-500 animate-pulse' : 
-                      'bg-rose-500'
+                      issue.status === 'process' ? 'bg-blue-500 animate-pulse' : 'bg-rose-500'
                     )}>
                       {issue.status.toUpperCase()}
                     </Badge>
@@ -218,7 +226,7 @@ export default function IssuesPage() {
                   <TableCell colSpan={5} className="text-center py-12">
                     <div className="flex flex-col items-center gap-2 opacity-30">
                       <CheckCircle2 className="h-10 w-10 text-emerald-500" />
-                      <p className="text-sm font-medium">Tidak ada laporan gangguan aktif.</p>
+                      <p className="text-sm font-medium">Tidak ada antrean gangguan aktif.</p>
                     </div>
                   </TableCell>
                 </TableRow>

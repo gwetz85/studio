@@ -3,13 +3,13 @@
 
 import * as React from "react"
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
-import { collection, doc, deleteDoc, updateDoc, addDoc, query, where } from "firebase/firestore"
+import { collection, doc, deleteDoc, updateDoc, addDoc, query, where, orderBy } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Eye } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, User, Eye, History, RotateCcw } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -18,6 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function CustomersPage() {
   const { toast } = useToast();
@@ -61,6 +62,18 @@ export default function CustomersPage() {
     );
   }, [db, viewingCustomer, user]);
   const { data: customerPayments } = useCollection(viewInvoicesQuery);
+
+  // Kueri untuk Gangguan yang sudah Selesai (Arsip)
+  const solvedIssuesQuery = useMemoFirebase(() => {
+    if (!viewingCustomer?.id || !user) return null;
+    return query(
+      collection(db, "issues"),
+      where("customerId", "==", viewingCustomer.id),
+      where("status", "==", "solved"),
+      orderBy("solvedAt", "desc")
+    );
+  }, [db, viewingCustomer, user]);
+  const { data: solvedIssues } = useCollection(solvedIssuesQuery);
 
   const filteredCustomers = React.useMemo(() => {
     if (!customersRaw) return [];
@@ -149,6 +162,23 @@ export default function CustomersPage() {
         toast({ title: "Pelanggan dihapus" });
       } catch (error) {
         toast({ variant: "destructive", title: "Gagal menghapus" });
+      }
+    }
+  };
+
+  // Fungsi Admin untuk mengembalikan tiket ke menu Laporan Gangguan
+  const handleReopenIssue = async (issueId: string) => {
+    if (role !== 'admin') return;
+    if (confirm("Kembalikan masalah ini ke antrean gangguan aktif?")) {
+      try {
+        await updateDoc(doc(db, "issues", issueId), { 
+          status: 'process',
+          solvedAt: null,
+          reopenedAt: Date.now()
+        });
+        toast({ title: "Tiket Dibuka Kembali", description: "Laporan kini muncul di menu Laporan Gangguan." });
+      } catch (e) {
+        toast({ variant: "destructive", title: "Gagal membuka tiket" });
       }
     }
   };
@@ -271,24 +301,68 @@ export default function CustomersPage() {
                     </div>
                   </div>
                 </div>
+                
                 <Separator />
-                <div className="space-y-4">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Riwayat Pembayaran (Paid)</h3>
-                  <div className="rounded-xl border overflow-hidden">
-                    <Table>
-                      <TableBody>
-                        {customerPayments?.map((p) => (
-                          <TableRow key={p.id}>
-                            <TableCell className="text-xs font-medium">{p.billingPeriod}</TableCell>
-                            <TableCell className="text-xs text-right font-semibold text-emerald-600">
-                              Rp {p.amount.toLocaleString('id-ID')}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                </div>
+
+                <Tabs defaultValue="payments" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="payments">Riwayat Pembayaran</TabsTrigger>
+                    <TabsTrigger value="issues">Riwayat Gangguan</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="payments" className="pt-4">
+                    <div className="rounded-xl border overflow-hidden">
+                      <Table>
+                        <TableBody>
+                          {customerPayments?.map((p) => (
+                            <TableRow key={p.id}>
+                              <TableCell className="text-xs font-medium">{p.billingPeriod}</TableCell>
+                              <TableCell className="text-xs text-right font-semibold text-emerald-600">
+                                Rp {p.amount.toLocaleString('id-ID')}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {customerPayments?.length === 0 && (
+                            <TableRow><TableCell className="text-center text-xs text-slate-400 py-8">Belum ada riwayat pembayaran.</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="issues" className="pt-4">
+                    <div className="rounded-xl border overflow-hidden">
+                      <Table>
+                        <TableBody>
+                          {solvedIssues?.map((issue) => (
+                            <TableRow key={issue.id}>
+                              <TableCell className="text-xs py-3">
+                                <div className="font-medium text-slate-900">{issue.description}</div>
+                                <div className="text-[10px] text-slate-500 mt-1">Selesai: {new Date(issue.solvedAt).toLocaleDateString('id-ID')}</div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                {role === 'admin' && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-8 text-[10px] text-primary"
+                                    onClick={() => handleReopenIssue(issue.id!)}
+                                  >
+                                    <RotateCcw className="h-3 w-3 mr-1" /> Re-open
+                                  </Button>
+                                )}
+                                {role !== 'admin' && <Badge variant="secondary" className="text-[9px]">SOLVED</Badge>}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                          {solvedIssues?.length === 0 && (
+                            <TableRow><TableCell className="text-center text-xs text-slate-400 py-8">Tidak ada riwayat gangguan.</TableCell></TableRow>
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
             )}
           </div>
