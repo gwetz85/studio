@@ -10,41 +10,38 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        // Absolute Admin Overrides
         request.auth.token.email == "agus@mtnet.com" ||
         request.auth.uid == "EdUhRV3odgO5TTzVMPSBAsMFaNP2" ||
-        request.auth.token.email.startsWith("admin@") ||
-        // Role check in database
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
+        request.auth.token.email.startsWith("admin@")
       );
     }
 
-    // --- Collection Rules ---
+    // --- Global Access Rules ---
 
-    match /servicePackages/{servicePackageId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+    // Pelanggan, Paket, Invoices, Issues: Read for all Staff, Write for Admin
+    match /customers/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    
+    match /servicePackages/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+    
+    match /invoices/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
 
-    match /customers/{customerId} {
-      allow get, list: if isSignedIn();
-      allow create: if isAdmin();
-      allow update: if isAdmin();
-      allow delete: if isAdmin();
+    // PSB: Create for Staff, Full for Admin
+    match /psbRequests/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
 
-    match /invoices/{invoiceId} {
-      allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /psbRequests/{requestId} {
-      allow get, list: if isSignedIn();
-      allow create, update: if isSignedIn();
-      allow delete: if isAdmin();
-    }
-
+    // Users: Self Read/Write, Admin Full
     match /users/{userId} {
       allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow list: if isAdmin();
@@ -52,10 +49,9 @@ service cloud.firestore {
       allow delete: if isAdmin() && userId != request.auth.uid;
     }
 
-    match /issues/{issueId} {
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
+    // Issues: Read/Write for Staff (except delete), Admin Full
+    match /issues/{id} {
+      allow read, create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
   }

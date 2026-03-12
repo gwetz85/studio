@@ -27,16 +27,15 @@ export default function IssuesPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 
-  // Hanya menampilkan yang PENDING atau PROCESS
-  // Penting: Tunggu hingga role terkonfirmasi sebelum kueri
+  // Only run query if auth is ready to prevent permission errors
   const issuesQuery = useMemoFirebase(() => {
-    if (!user || isAuthLoading || !role) return null;
+    if (!user || isAuthLoading) return null;
     return query(
       collection(db, "issues"), 
       where("status", "in", ["pending", "process"]),
       orderBy("createdAt", "desc")
     );
-  }, [db, user, role, isAuthLoading]);
+  }, [db, user, isAuthLoading]);
   const { data: issues } = useCollection(issuesQuery);
 
   const customersQuery = useMemoFirebase(() => {
@@ -105,14 +104,14 @@ export default function IssuesPage() {
   const getCustomerName = (id: string) => customers?.find(c => c.id === id)?.name || "N/A";
 
   if (isAuthLoading) {
-    return <div className="flex h-96 items-center justify-center animate-pulse">Memverifikasi Akses...</div>;
+    return <div className="flex h-96 items-center justify-center animate-pulse text-slate-400">Menghubungkan ke Cloud...</div>;
   }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Antrean Gangguan</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Antrean Gangguan</h1>
           <p className="text-slate-500">Tiket aktif yang sedang dalam penanganan teknisi.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -170,10 +169,10 @@ export default function IssuesPage() {
         />
       </div>
 
-      <Card className="border-none shadow-sm overflow-hidden">
+      <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
         <ScrollArea className="w-full">
           <Table>
-            <TableHeader className="bg-slate-50/50">
+            <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
               <TableRow>
                 <TableHead className="py-4 px-6">Pelanggan</TableHead>
                 <TableHead>Masalah</TableHead>
@@ -185,13 +184,13 @@ export default function IssuesPage() {
             <TableBody>
               {filteredIssues?.map((issue) => (
                 <TableRow key={issue.id} className="group hover:bg-slate-50/50 transition-colors">
-                  <TableCell className="py-4 px-6 font-bold text-slate-900">
+                  <TableCell className="py-4 px-6 font-bold text-slate-900 dark:text-white">
                     {getCustomerName(issue.customerId)}
                   </TableCell>
                   <TableCell className="max-w-xs">
                     <div className="flex items-start gap-2">
                       <MessageSquareText className="h-3.5 w-3.5 text-slate-400 mt-1 shrink-0" />
-                      <span className="text-sm text-slate-600 line-clamp-2">{issue.description}</span>
+                      <span className="text-sm text-slate-600 dark:text-slate-300 line-clamp-2">{issue.description}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-[10px] text-slate-500 font-mono">
@@ -205,7 +204,7 @@ export default function IssuesPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right px-6">
-                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-end gap-1">
                       {issue.status === 'pending' && (
                         <Button variant="outline" size="sm" className="h-8 text-xs" onClick={() => updateStatus(issue.id!, 'process')}>Proses</Button>
                       )}

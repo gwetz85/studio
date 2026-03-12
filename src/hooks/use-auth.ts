@@ -24,7 +24,6 @@ export function useAuth() {
     if (typeof window === "undefined") return null;
     let id = localStorage.getItem("mtnet_device_id");
     if (!id) {
-      // Fallback for non-secure contexts or older browsers
       id = (typeof crypto !== 'undefined' && crypto.randomUUID) 
         ? crypto.randomUUID() 
         : Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -49,6 +48,7 @@ export function useAuth() {
         const currentUsername = user.displayName || user.email?.split('@')[0] || "User";
         if (isMounted) setUsername(currentUsername);
         
+        // Agus is ALWAYS admin
         const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
         const currentDeviceId = getDeviceId();
 
@@ -56,16 +56,15 @@ export function useAuth() {
           const userDocRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userDocRef);
 
-          let finalRole: UserRole = "user";
+          let finalRole: UserRole = isAgus ? "admin" : "user";
 
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            finalRole = userData.role as UserRole;
+            // Force admin if it's Agus even if DB says otherwise
+            finalRole = isAgus ? "admin" : (userData.role as UserRole || "user");
 
-            // Force Admin for Agus if mismatch in DB
-            if (isAgus && finalRole !== 'admin') {
-              await updateDoc(userDocRef, { role: 'admin' });
-              finalRole = 'admin';
+            if (isAgus && userData.role !== 'admin') {
+              updateDoc(userDocRef, { role: 'admin' });
             }
 
             // Device Binding Check (Skip for Agus)
@@ -75,12 +74,11 @@ export function useAuth() {
                 return;
               }
               if (!userData.deviceId && currentDeviceId) {
-                await updateDoc(userDocRef, { deviceId: currentDeviceId });
+                updateDoc(userDocRef, { deviceId: currentDeviceId });
               }
             }
           } else {
             // Create user document if missing
-            finalRole = isAgus ? "admin" : "user";
             await setDoc(userDocRef, {
               username: currentUsername,
               email: user.email,
@@ -98,7 +96,8 @@ export function useAuth() {
           }
         } catch (e) {
           console.error("Auth check failed", e);
-          if (isMounted && isAgus) setRole('admin'); // Last resort fallback for Agus
+          // Fallback for Agus if network fails
+          if (isMounted && isAgus) setRole('admin');
         }
       } else if (!isUserLoading && !user && pathname !== "/login") {
         router.push("/login");
@@ -119,12 +118,9 @@ export function useAuth() {
 
   const register = async (username: string, pass: string, userRole: UserRole = "user") => {
     const cleanUsername = username.trim().toLowerCase();
-    if (!cleanUsername) throw new Error("Username tidak boleh kosong");
-    if (cleanUsername.includes(" ")) throw new Error("Username tidak boleh mengandung spasi");
-    
-    const isAgus = cleanUsername === 'agus';
-    const finalRole = isAgus ? 'admin' : userRole;
     const email = `${cleanUsername}@mtnet.com`;
+    const isAgus = cleanUsername === 'agus' || email === 'agus@mtnet.com';
+    const finalRole = isAgus ? 'admin' : userRole;
     
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
     await updateProfile(userCredential.user, { displayName: cleanUsername })
