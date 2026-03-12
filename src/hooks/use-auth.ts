@@ -20,8 +20,8 @@ export function useAuth() {
   useEffect(() => {
     if (!isUserLoading) {
       if (user) {
-        // Simple role check based on custom logic or email
-        // Menambahkan 'agus@mtnet.com' ke dalam daftar admin
+        // Simple role check based on email
+        // Menambahkan 'agus@mtnet.com' ke dalam daftar admin secara permanen
         const adminEmails = ["admin@mtnet.com", "agus@mtnet.com"];
         const userRole: UserRole = adminEmails.includes(user.email || "") ? "admin" : "user"
         setRole(userRole)
