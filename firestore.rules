@@ -9,9 +9,10 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // In this version, we assume the user with admin email or specific record is admin
+      // Menambahkan agus@mtnet.com ke dalam aturan keamanan admin
       return isSignedIn() && (
         request.auth.token.email == "admin@mtnet.com" || 
+        request.auth.token.email == "agus@mtnet.com" ||
         exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid))
       );
     }

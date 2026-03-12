@@ -21,11 +21,13 @@ export function useAuth() {
     if (!isUserLoading) {
       if (user) {
         // Simple role check based on custom logic or email
-        const userRole: UserRole = user.email === "admin@mtnet.com" ? "admin" : "user"
+        // Menambahkan 'agus@mtnet.com' ke dalam daftar admin
+        const adminEmails = ["admin@mtnet.com", "agus@mtnet.com"];
+        const userRole: UserRole = adminEmails.includes(user.email || "") ? "admin" : "user"
         setRole(userRole)
         setUsername(user.displayName || user.email)
 
-        if (userRole === "user" && pathname === "/settings") {
+        if (userRole === "user" && (pathname === "/settings" || pathname === "/users")) {
           router.push("/")
         }
       } else if (pathname !== "/login") {
