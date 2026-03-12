@@ -9,25 +9,18 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      // Admin ditentukan jika UID ada di koleksi roles_admin 
-      // atau email diawali dengan 'admin' atau merupakan akun 'agus'
       return isSignedIn() && (
         exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid)) ||
-        (request.auth.token.email != null && request.auth.token.email.startsWith("admin@")) ||
-        (request.auth.token.email != null && request.auth.token.email == "agus@mtnet.com")
+        (request.auth.token.email != null && (
+          request.auth.token.email.startsWith("admin@") || 
+          request.auth.token.email == "agus@mtnet.com"
+        )) ||
+        // Check for role directly in users collection (for real-time consistency)
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
       );
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
     // --- Collection Rules ---
-
-    match /roles_admin/{adminUid} {
-      allow get: if isAdmin();
-      allow list, create, update, delete: if false;
-    }
 
     match /servicePackages/{servicePackageId} {
       allow get, list: if isSignedIn();
@@ -50,16 +43,16 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      // Izinkan pengguna membaca data mereka sendiri untuk pengecekan role
       allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      // Izinkan list hanya jika isAdmin terkonfirmasi
       allow list: if isAdmin();
-      allow create, update, delete: if isAdmin();
+      allow create, update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow delete: if isAdmin() && userId != request.auth.uid; // Prevent self-deletion of data
     }
 
     match /issues/{issueId} {
       allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
   }
 }

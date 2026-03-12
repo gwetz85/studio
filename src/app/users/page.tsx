@@ -26,7 +26,6 @@ export default function UsersManagementPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isRegistering, setIsRegistering] = React.useState(false);
 
-  // Perbaikan: Hanya jalankan kueri jika user adalah admin dan status auth sudah siap
   const usersQuery = useMemoFirebase(() => {
     if (!currentUser || currentUserRole !== 'admin') return null;
     return query(collection(db, "users"), orderBy("username", "asc"));
@@ -161,40 +160,41 @@ export default function UsersManagementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users?.map((u) => (
-                <TableRow key={u.id}>
-                  <TableCell className="py-4 px-6 font-semibold">{u.username}</TableCell>
-                  <TableCell>
-                    <Badge variant={u.role === 'admin' ? "default" : "secondary"}>
-                      {u.role.toUpperCase()}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-xs text-slate-500">
-                    {new Date(u.createdAt).toLocaleDateString('id-ID')}
-                  </TableCell>
-                  <TableCell className="text-right px-6">
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="text-rose-600 hover:bg-rose-50"
-                      onClick={() => deleteUser(u.id!)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {users?.map((u) => {
+                // Display override for primary admin
+                const isPrimaryAdmin = u.username === 'agus' || u.email === 'agus@mtnet.com';
+                const effectiveRole = isPrimaryAdmin ? 'admin' : u.role;
+
+                return (
+                  <TableRow key={u.id}>
+                    <TableCell className="py-4 px-6 font-semibold">{u.username}</TableCell>
+                    <TableCell>
+                      <Badge variant={effectiveRole === 'admin' ? "default" : "secondary"}>
+                        {effectiveRole.toUpperCase()}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-500">
+                      {new Date(u.createdAt).toLocaleDateString('id-ID')}
+                    </TableCell>
+                    <TableCell className="text-right px-6">
+                      {!isPrimaryAdmin && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="text-rose-600 hover:bg-rose-50"
+                          onClick={() => deleteUser(u.id!)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
               {!isDataLoading && users?.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center py-8 text-slate-400">
                     Belum ada user yang terdaftar.
-                  </TableCell>
-                </TableRow>
-              )}
-              {isDataLoading && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-slate-400">
-                    Memuat data...
                   </TableCell>
                 </TableRow>
               )}
