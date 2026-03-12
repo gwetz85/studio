@@ -2,14 +2,14 @@
 "use client"
 
 import * as React from "react"
-import { useLiveQuery } from "dexie-react-hooks"
-import { db, type ServicePackage } from "@/lib/db"
+import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
+import { collection, doc, deleteDoc, updateDoc, addDoc } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Wifi, DollarSign, Zap } from "lucide-react"
+import { Plus, Trash2, Edit2, Wifi, Zap } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
@@ -17,9 +17,16 @@ import { Badge } from "@/components/ui/badge"
 
 export default function PackagesPage() {
   const { toast } = useToast();
-  const packages = useLiveQuery(() => db.packages.toArray());
+  const db = useFirestore();
+  const { user } = useUser();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
-  const [editingPackage, setEditingPackage] = React.useState<ServicePackage | null>(null);
+  const [editingPackage, setEditingPackage] = React.useState<any | null>(null);
+
+  const packagesQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(db, "servicePackages");
+  }, [db, user]);
+  const { data: packages } = useCollection(packagesQuery);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,10 +40,10 @@ export default function PackagesPage() {
 
     try {
       if (editingPackage?.id) {
-        await db.packages.update(editingPackage.id, data);
+        await updateDoc(doc(db, "servicePackages", editingPackage.id), data);
         toast({ title: "Paket diperbarui" });
       } else {
-        await db.packages.add(data);
+        await addDoc(collection(db, "servicePackages"), data);
         toast({ title: "Paket baru ditambahkan" });
       }
       setIsDialogOpen(false);
@@ -46,10 +53,10 @@ export default function PackagesPage() {
     }
   };
 
-  const deletePackage = async (id: number) => {
+  const deletePackage = async (id: string) => {
     if (confirm("Hapus paket layanan ini? Pelanggan yang menggunakan paket ini mungkin terdampak.")) {
       try {
-        await db.packages.delete(id);
+        await deleteDoc(doc(db, "servicePackages", id));
         toast({ title: "Paket telah dihapus" });
       } catch (error) {
         toast({ variant: "destructive", title: "Gagal menghapus" });
@@ -85,17 +92,11 @@ export default function PackagesPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price">Harga (Bulanan)</Label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input id="price" name="price" type="number" className="pl-9" defaultValue={editingPackage?.price} required placeholder="0" />
-                  </div>
+                  <Input id="price" name="price" type="number" defaultValue={editingPackage?.price} required placeholder="0" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="speed">Kecepatan</Label>
-                  <div className="relative">
-                    <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input id="speed" name="speed" className="pl-9" defaultValue={editingPackage?.speed} required placeholder="Contoh: 50 Mbps" />
-                  </div>
+                  <Input id="speed" name="speed" defaultValue={editingPackage?.speed} required placeholder="Contoh: 50 Mbps" />
                 </div>
               </div>
               <div className="space-y-2">
@@ -139,12 +140,9 @@ export default function PackagesPage() {
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
                         <Button 
-                          type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-slate-600 hover:text-primary" 
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={() => {
                             setEditingPackage(pkg);
                             setIsDialogOpen(true);
                           }}
@@ -152,14 +150,10 @@ export default function PackagesPage() {
                           <Edit2 className="h-4 w-4" />
                         </Button>
                         <Button 
-                          type="button"
                           variant="ghost" 
                           size="icon" 
-                          className="h-8 w-8 text-slate-600 hover:text-rose-600" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (pkg.id) deletePackage(pkg.id);
-                          }}
+                          className="text-rose-600"
+                          onClick={() => deletePackage(pkg.id!)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -167,16 +161,6 @@ export default function PackagesPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {!packages?.length && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center py-20 text-slate-400">
-                      <div className="flex flex-col items-center gap-2">
-                        <Wifi className="h-8 w-8 opacity-20" />
-                        <p>Belum ada paket yang dikonfigurasi.</p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )}
               </TableBody>
             </Table>
           </CardContent>

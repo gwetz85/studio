@@ -2,47 +2,42 @@
 "use client"
 
 import * as React from "react"
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
-import { collection, query, where, addDoc } from "firebase/firestore"
+import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
+import { collection, query, where } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Package, CreditCard, ShieldAlert, Wifi, Laptop, Smartphone, Cpu as CpuIcon, Network, HardDrive } from "lucide-react"
+import { Users, Package, CreditCard, ShieldAlert } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { useToast } from "@/hooks/use-toast"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { PieChart, Pie, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 
-const MTLogo = ({ className }: { className?: string }) => (
-  <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M6 32V10L20 22L34 10V32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M20 22V36" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 36H28" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    <circle cx="6" cy="10" r="2.5" fill="currentColor"/>
-    <circle cx="34" cy="10" r="2.5" fill="currentColor"/>
-    <circle cx="20" cy="22" r="2.5" fill="currentColor"/>
-  </svg>
-)
-
 export default function Dashboard() {
-  const { toast } = useToast();
   const db = useFirestore();
+  const { user } = useUser();
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const currentDay = new Date().getDate();
   const [showWelcome, setShowWelcome] = React.useState(false);
   const [deviceInfo, setDeviceInfo] = React.useState({ 
-    os: "Mendeteksi...", type: "Desktop", name: "PC", connection: "Checking...", storage: "...", memory: "..." 
+    os: "Mendeteksi...", type: "Desktop", connection: "Checking...", memory: "..." 
   });
 
-  const customersQuery = useMemoFirebase(() => collection(db, "customers"), [db]);
+  const customersQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(db, "customers");
+  }, [db, user]);
   const { data: customers } = useCollection(customersQuery);
 
-  const packagesQuery = useMemoFirebase(() => collection(db, "servicePackages"), [db]);
+  const packagesQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(db, "servicePackages");
+  }, [db, user]);
   const { data: packages } = useCollection(packagesQuery);
 
   const invoicesQuery = useMemoFirebase(() => {
+    if (!user) return null;
     return query(collection(db, "invoices"), where("billingPeriod", "==", currentPeriod));
-  }, [db, currentPeriod]);
+  }, [db, currentPeriod, user]);
   const { data: invoices } = useCollection(invoicesQuery);
 
   React.useEffect(() => {
@@ -52,7 +47,6 @@ export default function Dashboard() {
       sessionStorage.setItem("mtnet_welcome_shown", "true");
     }
 
-    // Mock tech detection
     const detect = async () => {
       const conn = (navigator as any).connection?.effectiveType || "Wi-Fi";
       const mem = (navigator as any).deviceMemory ? `${(navigator as any).deviceMemory}GB` : "N/A";
@@ -146,9 +140,8 @@ export default function Dashboard() {
                <Badge className="bg-green-600">CONNECTED</Badge>
             </div>
             <div className="p-3 border rounded-xl space-y-2">
-              <div className="flex justify-between text-xs"><span>OS:</span> <b>{deviceInfo.os}</b></div>
-              <div className="flex justify-between text-xs"><span>Koneksi:</span> <b>{deviceInfo.connection}</b></div>
-              <div className="flex justify-between text-xs"><span>Periode:</span> <b>{currentPeriod}</b></div>
+              <div className="flex justify-between text-xs text-slate-500"><span>Koneksi:</span> <b className="text-slate-900">{deviceInfo.connection}</b></div>
+              <div className="flex justify-between text-xs text-slate-500"><span>Periode:</span> <b className="text-slate-900">{currentPeriod}</b></div>
             </div>
           </CardContent>
         </Card>

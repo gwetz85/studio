@@ -2,25 +2,26 @@
 "use client"
 
 import * as React from "react"
-import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
 import { collection, doc, deleteDoc, updateDoc, addDoc, query, where } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Phone, MapPin, Eye, Receipt, Calendar, Cpu, ShieldAlert } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, User, Eye } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 
 export default function CustomersPage() {
   const { toast } = useToast();
   const db = useFirestore();
+  const { user } = useUser();
   const [search, setSearch] = React.useState("");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
@@ -32,26 +33,31 @@ export default function CustomersPage() {
   const isAfterCutoff = currentDay > 8;
 
   const customersQuery = useMemoFirebase(() => {
+    if (!user) return null;
     return query(collection(db, "customers"), where("status", "in", ["active", "passive"]));
-  }, [db]);
+  }, [db, user]);
   const { data: customersRaw } = useCollection(customersQuery);
 
-  const packagesQuery = useMemoFirebase(() => collection(db, "servicePackages"), [db]);
+  const packagesQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(db, "servicePackages");
+  }, [db, user]);
   const { data: packages } = useCollection(packagesQuery);
 
   const invoicesQuery = useMemoFirebase(() => {
+    if (!user) return null;
     return query(collection(db, "invoices"), where("billingPeriod", "==", currentPeriod));
-  }, [db, currentPeriod]);
+  }, [db, currentPeriod, user]);
   const { data: currentPeriodInvoices } = useCollection(invoicesQuery);
 
   const viewInvoicesQuery = useMemoFirebase(() => {
-    if (!viewingCustomer?.id) return null;
+    if (!viewingCustomer?.id || !user) return null;
     return query(
       collection(db, "invoices"), 
       where("customerId", "==", viewingCustomer.id),
       where("status", "==", "paid")
     );
-  }, [db, viewingCustomer]);
+  }, [db, viewingCustomer, user]);
   const { data: customerPayments } = useCollection(viewInvoicesQuery);
 
   const filteredCustomers = React.useMemo(() => {
@@ -250,7 +256,7 @@ export default function CustomersPage() {
                   <div className="space-y-4">
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Status</h3>
                     <div className="flex flex-wrap gap-2">
-                       <Badge className={isIsolated(viewingCustomer) ? "bg-rose-600" : "bg-emerald-600"}>
+                       <Badge className={cn(isIsolated(viewingCustomer) ? "bg-rose-600" : "bg-emerald-600")}>
                         {isIsolated(viewingCustomer) ? "TERISOLIR" : viewingCustomer.status.toUpperCase()}
                        </Badge>
                        <Badge variant="outline">{getPackageName(viewingCustomer.packageId)}</Badge>
@@ -315,7 +321,7 @@ export default function CustomersPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge className={isIsolated(customer) ? "bg-rose-600 animate-pulse" : "bg-emerald-600"}>
+                    <Badge className={cn(isIsolated(customer) ? "bg-rose-600 animate-pulse" : (customer.status === 'active' ? "bg-emerald-600" : "bg-amber-500"))}>
                       {isIsolated(customer) ? "ISOLIR" : customer.status}
                     </Badge>
                   </TableCell>

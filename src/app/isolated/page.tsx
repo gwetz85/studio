@@ -2,11 +2,11 @@
 "use client"
 
 import * as React from "react"
-import { useLiveQuery } from "dexie-react-hooks"
-import { db, type Customer, type Payment } from "@/lib/db"
+import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
+import { collection, doc, updateDoc, addDoc, query, where } from "firebase/firestore"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ShieldAlert, Phone, MapPin, CreditCard, Clock, CheckCircle2, UserX } from "lucide-react"
+import { ShieldAlert, CreditCard, CheckCircle2, UserX } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
@@ -14,45 +14,47 @@ import { useToast } from "@/hooks/use-toast"
 
 export default function IsolatedPage() {
   const { toast } = useToast();
+  const db = useFirestore();
+  const { user } = useUser();
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const currentDay = new Date().getDate();
   const isAfterCutoff = currentDay > 8;
 
-  const isolatedCustomers = useLiveQuery(async () => {
-    if (!isAfterCutoff) return [];
+  const customersQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return query(collection(db, "customers"), where("status", "==", "active"));
+  }, [db, user]);
+  const { data: allCustomers } = useCollection(customersQuery);
 
-    const allCustomers = await db.customers.where('status').equals('active').toArray();
-    const currentPayments = await db.payments.where('billingPeriod').equals(currentPeriod).toArray();
-    
+  const invoicesQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return query(collection(db, "invoices"), where("billingPeriod", "==", currentPeriod));
+  }, [db, currentPeriod, user]);
+  const { data: currentPayments } = useCollection(invoicesQuery);
+
+  const packagesQuery = useMemoFirebase(() => {
+    if (!user) return null;
+    return collection(db, "servicePackages");
+  }, [db, user]);
+  const { data: packages } = useCollection(packagesQuery);
+
+  const isolatedCustomers = React.useMemo(() => {
+    if (!isAfterCutoff || !allCustomers || !currentPayments) return [];
     return allCustomers.filter(customer => {
       const payment = currentPayments.find(p => p.customerId === customer.id);
       return !payment || payment.status !== 'paid';
     });
-  }, [currentPeriod, isAfterCutoff]);
+  }, [allCustomers, currentPayments, isAfterCutoff]);
 
-  const packages = useLiveQuery(() => db.packages.toArray());
+  const handleQuickPay = async (customer: any) => {
+    const pkg = packages?.find(p => p.id === customer.packageId);
+    const existingPayment = currentPayments?.find(p => p.customerId === customer.id);
 
-  const getPackageName = (id: number) => {
-    return packages?.find(p => p.id === id)?.name || "N/A";
-  };
-
-  const handleQuickPay = async (customer: Customer) => {
-    if (!customer.id) return;
-    
     try {
-      const pkg = packages?.find(p => p.id === customer.packageId);
-      const existingPayment = await db.payments
-        .where('[customerId+billingPeriod]')
-        .equals([customer.id, currentPeriod])
-        .first();
-
       if (existingPayment) {
-        await db.payments.update(existingPayment.id!, { 
-          status: 'paid', 
-          paymentDate: Date.now() 
-        });
+        await updateDoc(doc(db, "invoices", existingPayment.id!), { status: 'paid', paymentDate: Date.now() });
       } else {
-        await db.payments.add({
+        await addDoc(collection(db, "invoices"), {
           customerId: customer.id,
           amount: pkg?.price || 0,
           billingPeriod: currentPeriod,
@@ -60,126 +62,56 @@ export default function IsolatedPage() {
           paymentDate: Date.now()
         });
       }
-
-      toast({ 
-        title: "Pelanggan Diaktifkan", 
-        description: `${customer.name} telah melunasi tagihan dan kembali Aktif.` 
-      });
-    } catch (error) {
-      toast({ variant: "destructive", title: "Gagal memproses aktivasi" });
+      toast({ title: "Pelanggan Aktif Kembali" });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Gagal" });
     }
   };
 
-  const handleDeactivate = async (customer: Customer) => {
-    if (!customer.id) return;
-    if (confirm(`Nonaktifkan layanan untuk ${customer.name}? Pelanggan akan dipindah ke arsip Nonaktif.`)) {
+  const handleDeactivate = async (customer: any) => {
+    if (confirm("Nonaktifkan layanan?")) {
       try {
-        await db.customers.update(customer.id, { 
-          status: 'inactive',
-          deactivationDate: Date.now()
-        });
-        toast({ title: "Pelanggan Dinonaktifkan" });
-      } catch (error) {
-        toast({ variant: "destructive", title: "Gagal memproses status" });
+        await updateDoc(doc(db, "customers", customer.id), { status: 'inactive', deactivationDate: Date.now() });
+        toast({ title: "Berhasil" });
+      } catch (e) {
+        toast({ variant: "destructive", title: "Gagal" });
       }
     }
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-rose-100 dark:bg-rose-900/20 rounded-lg">
-            <ShieldAlert className="h-6 w-6 text-rose-600 dark:text-rose-400" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">User Terisolir</h1>
-        </div>
-        <p className="text-slate-500 dark:text-slate-400">
-          Daftar pelanggan aktif yang belum melunasi tagihan periode <strong>{currentPeriod}</strong> setelah melewati batas tanggal 8.
-        </p>
+      <div className="flex items-center gap-3">
+        <ShieldAlert className="h-8 w-8 text-rose-600" />
+        <h1 className="text-3xl font-bold">User Terisolir</h1>
       </div>
 
       {!isAfterCutoff ? (
-        <Card className="border-amber-100 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-900/30">
-          <CardContent className="pt-6 text-center space-y-2">
-            <Clock className="h-8 w-8 text-amber-500 mx-auto" />
-            <h3 className="font-semibold text-amber-900 dark:text-amber-100">Belum Memasuki Masa Isolasi</h3>
-            <p className="text-sm text-amber-700 dark:text-amber-300">
-              Isolasi otomatis akan aktif setelah tanggal 8 setiap bulannya. Saat ini tanggal {currentDay}.
-            </p>
-          </CardContent>
-        </Card>
+        <Card className="p-12 text-center bg-amber-50">Belum Memasuki Masa Isolasi (Setelah tanggal 8).</Card>
       ) : (
-        <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
+        <Card className="border-none shadow-sm overflow-hidden">
           <ScrollArea className="w-full">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
-                  <TableRow>
-                    <TableHead className="py-4 px-6 dark:text-slate-400">Pelanggan</TableHead>
-                    <TableHead className="dark:text-slate-400">Paket</TableHead>
-                    <TableHead className="dark:text-slate-400">Kontak</TableHead>
-                    <TableHead className="dark:text-slate-400 text-center">Status</TableHead>
-                    <TableHead className="text-right px-6 dark:text-slate-400">Ubah Status</TableHead>
+            <Table>
+              <TableHeader className="bg-slate-50/50">
+                <TableRow>
+                  <TableHead className="px-6">Pelanggan</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right px-6">Ubah Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isolatedCustomers.map((customer) => (
+                  <TableRow key={customer.id}>
+                    <TableCell className="px-6 font-semibold">{customer.name}</TableCell>
+                    <TableCell><Badge className="bg-rose-600">TERISOLIR</Badge></TableCell>
+                    <TableCell className="text-right px-6">
+                       <Button size="sm" variant="outline" onClick={() => handleQuickPay(customer)} className="mr-2">Bayar & Aktifkan</Button>
+                       <Button size="icon" variant="ghost" onClick={() => handleDeactivate(customer)} className="text-rose-500"><UserX /></Button>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isolatedCustomers?.map((customer) => (
-                    <TableRow key={customer.id} className="hover:bg-rose-50/30 dark:hover:bg-rose-900/10 transition-colors dark:border-slate-800">
-                      <TableCell className="py-4 px-6">
-                        <div className="font-semibold text-slate-900 dark:text-white">{customer.name}</div>
-                        <div className="text-xs text-slate-500 dark:text-slate-400">{customer.email}</div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          {getPackageName(customer.packageId)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">
-                          <Phone className="h-3 w-3" /> {customer.phone}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge className="bg-rose-600 animate-pulse">TERISOLIR</Badge>
-                      </TableCell>
-                      <TableCell className="text-right px-6">
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="h-8 text-[10px] border-emerald-200 text-emerald-600 hover:bg-emerald-50 dark:border-emerald-900 dark:text-emerald-400"
-                            onClick={() => handleQuickPay(customer)}
-                          >
-                            <CheckCircle2 className="mr-1 h-3 w-3" /> Bayar & Aktifkan
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 text-rose-500 hover:bg-rose-50"
-                            title="Nonaktifkan Layanan"
-                            onClick={() => handleDeactivate(customer)}
-                          >
-                            <UserX className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {isolatedCustomers && isolatedCustomers.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center py-20 text-slate-400">
-                        <div className="flex flex-col items-center gap-2">
-                          <CreditCard className="h-8 w-8 opacity-20" />
-                          <p>Tidak ada pelanggan yang terisolir untuk periode ini.</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-            <ScrollBar orientation="horizontal" />
+                ))}
+              </TableBody>
+            </Table>
           </ScrollArea>
         </Card>
       )}
