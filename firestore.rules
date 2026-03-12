@@ -10,11 +10,11 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        // Prioritas Utama: Email Admin Agus (Hardcoded untuk akses mutlak)
+        // Absolute Admin Overrides
         request.auth.token.email == "agus@mtnet.com" ||
         request.auth.uid == "EdUhRV3odgO5TTzVMPSBAsMFaNP2" ||
         request.auth.token.email.startsWith("admin@") ||
-        // Prioritas Kedua: Role di dokumen user
+        // Role check in database
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin")
       );
@@ -29,7 +29,9 @@ service cloud.firestore {
 
     match /customers/{customerId} {
       allow get, list: if isSignedIn();
-      allow create, update, delete: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
 
     match /invoices/{invoiceId} {
@@ -53,7 +55,7 @@ service cloud.firestore {
     match /issues/{issueId} {
       allow get, list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn(); // Staff/Teknisi bisa update status
+      allow update: if isSignedIn();
       allow delete: if isAdmin();
     }
   }

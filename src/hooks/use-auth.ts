@@ -24,7 +24,10 @@ export function useAuth() {
     if (typeof window === "undefined") return null;
     let id = localStorage.getItem("mtnet_device_id");
     if (!id) {
-      id = crypto.randomUUID();
+      // Fallback for non-secure contexts or older browsers
+      id = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+        ? crypto.randomUUID() 
+        : Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem("mtnet_device_id", id);
     }
     return id;
@@ -39,58 +42,63 @@ export function useAuth() {
   }, [user])
 
   useEffect(() => {
+    let isMounted = true;
+
     async function checkRole() {
       if (!isUserLoading && user) {
-        setUsername(user.displayName || user.email?.split('@')[0] || "User")
+        const currentUsername = user.displayName || user.email?.split('@')[0] || "User";
+        if (isMounted) setUsername(currentUsername);
         
         const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
-        let userRole: UserRole = isAgus ? "admin" : "user";
         const currentDeviceId = getDeviceId();
 
         try {
           const userDocRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userDocRef);
 
+          let finalRole: UserRole = "user";
+
           if (userDoc.exists()) {
             const userData = userDoc.data();
-            // Jika Agus, paksa role Admin di database jika belum
-            if (isAgus && userData.role !== 'admin') {
+            finalRole = userData.role as UserRole;
+
+            // Force Admin for Agus if mismatch in DB
+            if (isAgus && finalRole !== 'admin') {
               await updateDoc(userDocRef, { role: 'admin' });
-              userRole = "admin";
-            } else {
-              userRole = userData.role as UserRole;
+              finalRole = 'admin';
             }
 
-            // Pengecekan Perangkat (Kecuali Agus)
+            // Device Binding Check (Skip for Agus)
             if (!isAgus) {
               if (userData.deviceId && userData.deviceId !== currentDeviceId) {
-                setDeviceError("Akun terkunci di perangkat lain. Hubungi Admin untuk reset.");
+                if (isMounted) setDeviceError("Akun terkunci di perangkat lain. Hubungi Admin untuk reset.");
                 return;
               }
               if (!userData.deviceId && currentDeviceId) {
                 await updateDoc(userDocRef, { deviceId: currentDeviceId });
               }
             }
-          } else if (isAgus || user.email?.startsWith('admin@')) {
-            // Buat dokumen admin jika belum ada
-            userRole = "admin";
+          } else {
+            // Create user document if missing
+            finalRole = isAgus ? "admin" : "user";
             await setDoc(userDocRef, {
-              username: user.displayName || 'agus',
+              username: currentUsername,
               email: user.email,
-              role: 'admin',
+              role: finalRole,
               createdAt: Date.now(),
               deviceId: isAgus ? null : currentDeviceId
             });
           }
-        } catch (e) {
-          console.warn("Auth check failed, using fallback role", e);
-        }
-        
-        setRole(userRole);
 
-        // Proteksi Halaman Berdasarkan Role
-        if (userRole === "user" && (pathname === "/settings" || pathname === "/users")) {
-          router.push("/");
+          if (isMounted) setRole(finalRole);
+
+          // Route Protection
+          if (finalRole === "user" && (pathname === "/settings" || pathname === "/users")) {
+            router.push("/");
+          }
+        } catch (e) {
+          console.error("Auth check failed", e);
+          if (isMounted && isAgus) setRole('admin'); // Last resort fallback for Agus
         }
       } else if (!isUserLoading && !user && pathname !== "/login") {
         router.push("/login");
@@ -98,7 +106,9 @@ export function useAuth() {
     }
     
     checkRole();
-  }, [user, isUserLoading, pathname, router, db])
+
+    return () => { isMounted = false; };
+  }, [user, isUserLoading, pathname, router, db]);
 
   const login = async (email: string, pass: string) => {
     const cleanEmail = email.trim().toLowerCase();

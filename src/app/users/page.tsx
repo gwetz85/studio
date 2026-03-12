@@ -33,7 +33,7 @@ export default function UsersManagementPage() {
     return query(collection(db, "users"), orderBy("username", "asc"));
   }, [db, currentUser, currentUserRole]);
   
-  const { data: users, isLoading: isDataLoading } = useCollection(usersQuery);
+  const { data: users } = useCollection(usersQuery);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,7 +93,9 @@ export default function UsersManagementPage() {
     }
   };
 
-  if (isAuthLoading) return null;
+  if (isAuthLoading) {
+    return <div className="flex h-96 items-center justify-center animate-pulse">Memuat Data Keamanan...</div>;
+  }
 
   if (currentUserRole !== 'admin') {
     return (
@@ -200,15 +202,15 @@ export default function UsersManagementPage() {
             </TableHeader>
             <TableBody>
               {users?.map((u) => {
-                const isPrimaryAdmin = u.username === 'agus' || u.email === 'agus@mtnet.com';
-                const effectiveRole = isPrimaryAdmin ? 'admin' : u.role;
+                const isAgus = u.username === 'agus' || u.email === 'agus@mtnet.com' || u.id === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
+                const displayRole = isAgus ? 'ADMIN' : (u.role === 'admin' ? 'ADMIN' : 'STAFF');
 
                 return (
                   <TableRow key={u.id}>
                     <TableCell className="py-4 px-6 font-semibold text-slate-900">{u.username}</TableCell>
                     <TableCell>
-                      <Badge variant={effectiveRole === 'admin' ? "default" : "secondary"}>
-                        {effectiveRole === 'admin' ? 'ADMIN' : 'STAFF'}
+                      <Badge variant={displayRole === 'ADMIN' ? "default" : "secondary"}>
+                        {displayRole}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -220,7 +222,7 @@ export default function UsersManagementPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
-                        {!isPrimaryAdmin && (
+                        {!isAgus && (
                           <>
                             <Button variant="ghost" size="icon" className="text-amber-600" title="Reset Device" onClick={() => handleResetDevice(u.id!, u.username)}>
                               <Unlock className="h-4 w-4" />
