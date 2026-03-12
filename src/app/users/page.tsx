@@ -3,13 +3,13 @@
 
 import * as React from "react"
 import { useFirestore, useCollection, useMemoFirebase, useUser as useFirebaseUser } from "@/firebase"
-import { collection, doc, deleteDoc, addDoc, query, orderBy } from "firebase/firestore"
+import { collection, doc, deleteDoc, updateDoc, query, orderBy } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle } from "lucide-react"
+import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -24,7 +24,9 @@ export default function UsersManagementPage() {
   const { user: currentUser } = useFirebaseUser();
   const { role: currentUserRole, register, isLoading: isAuthLoading } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isRoleDialogOpen, setIsRoleDialogOpen] = React.useState(false);
   const [isRegistering, setIsRegistering] = React.useState(false);
+  const [editingUser, setEditingUser] = React.useState<any | null>(null);
 
   const usersQuery = useMemoFirebase(() => {
     if (!currentUser || currentUserRole !== 'admin') return null;
@@ -62,6 +64,23 @@ export default function UsersManagementPage() {
       });
     } finally {
       setIsRegistering(false);
+    }
+  };
+
+  const handleUpdateRole = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    
+    const formData = new FormData(e.currentTarget);
+    const newRole = formData.get("role") as UserRole;
+
+    try {
+      await updateDoc(doc(db, "users", editingUser.id), { role: newRole });
+      toast({ title: "Role Diperbarui", description: `Role ${editingUser.username} sekarang adalah ${newRole}.` });
+      setIsRoleDialogOpen(false);
+      setEditingUser(null);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Gagal memperbarui role" });
     }
   };
 
@@ -128,13 +147,13 @@ export default function UsersManagementPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role User</Label>
-                <Select name="role" defaultValue="staff">
+                <Select name="role" defaultValue="user">
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="admin">Administrator</SelectItem>
-                    <SelectItem value="staff">Staff / Teknisi</SelectItem>
+                    <SelectItem value="user">Staff / Teknisi</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -147,6 +166,34 @@ export default function UsersManagementPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <Dialog open={isRoleDialogOpen} onOpenChange={setIsRoleDialogOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
+          <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Ubah Role: {editingUser?.username}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleUpdateRole} className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="role">Pilih Role Baru</Label>
+              <Select name="role" defaultValue={editingUser?.role || "user"}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="admin">Administrator</SelectItem>
+                  <SelectItem value="user">Staff / Teknisi</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter className="pt-4">
+              <Button type="submit" className="w-full">Simpan Perubahan Role</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Card className="border-none shadow-sm overflow-hidden">
         <ScrollArea className="w-full">
@@ -161,7 +208,6 @@ export default function UsersManagementPage() {
             </TableHeader>
             <TableBody>
               {users?.map((u) => {
-                // Display override for primary admin
                 const isPrimaryAdmin = u.username === 'agus' || u.email === 'agus@mtnet.com';
                 const effectiveRole = isPrimaryAdmin ? 'admin' : u.role;
 
@@ -170,23 +216,38 @@ export default function UsersManagementPage() {
                     <TableCell className="py-4 px-6 font-semibold">{u.username}</TableCell>
                     <TableCell>
                       <Badge variant={effectiveRole === 'admin' ? "default" : "secondary"}>
-                        {effectiveRole.toUpperCase()}
+                        {effectiveRole === 'admin' ? 'ADMIN' : 'STAFF'}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-xs text-slate-500">
                       {new Date(u.createdAt).toLocaleDateString('id-ID')}
                     </TableCell>
                     <TableCell className="text-right px-6">
-                      {!isPrimaryAdmin && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="text-rose-600 hover:bg-rose-50"
-                          onClick={() => deleteUser(u.id!)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
+                      <div className="flex justify-end gap-1">
+                        {!isPrimaryAdmin && (
+                          <>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-primary hover:bg-primary/5"
+                              onClick={() => {
+                                setEditingUser(u);
+                                setIsRoleDialogOpen(true);
+                              }}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="text-rose-600 hover:bg-rose-50"
+                              onClick={() => deleteUser(u.id!)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
