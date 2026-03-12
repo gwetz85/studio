@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield } from "lucide-react"
+import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield, Unlock } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -70,6 +70,15 @@ export default function UsersManagementPage() {
       toast({ variant: "destructive", title: "Gagal memperbarui role" });
     }
   };
+
+  const resetDeviceId = async (userId: string) => {
+    try {
+      await updateDoc(doc(db, "users", userId), { deviceId: null });
+      toast({ title: "Akses Perangkat Direset", description: "User sekarang dapat login dari perangkat baru." });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Gagal reset perangkat" });
+    }
+  }
 
   const deleteUser = async (id: string) => {
     if (confirm("Hapus akses user ini?")) {
@@ -185,6 +194,7 @@ export default function UsersManagementPage() {
               <TableRow>
                 <TableHead className="py-4 px-6">Username</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Status Device</TableHead>
                 <TableHead className="text-right px-6">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -201,10 +211,24 @@ export default function UsersManagementPage() {
                         {displayRole}
                       </Badge>
                     </TableCell>
+                    <TableCell>
+                      {displayRole === 'ADMIN' ? (
+                        <span className="text-[10px] text-slate-400 italic">Bypass (No Lock)</span>
+                      ) : (
+                        <Badge variant="outline" className={u.deviceId ? "text-emerald-600 border-emerald-100" : "text-slate-400"}>
+                          {u.deviceId ? "Tertaut" : "Belum Tertaut"}
+                        </Badge>
+                      )}
+                    </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
                         {!isAgus && (
                           <>
+                            {u.deviceId && displayRole !== 'ADMIN' && (
+                              <Button variant="ghost" size="icon" className="text-emerald-600" title="Reset Device" onClick={() => resetDeviceId(u.id!)}>
+                                <Unlock className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button variant="ghost" size="icon" className="text-primary" onClick={() => { setEditingUser(u); setIsRoleDialogOpen(true); }}>
                               <Edit2 className="h-4 w-4" />
                             </Button>

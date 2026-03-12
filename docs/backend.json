@@ -82,6 +82,7 @@
       "properties": {
         "username": { "type": "string" },
         "role": { "type": "string", "enum": ["admin", "staff"] },
+        "deviceId": { "type": "string" },
         "createdAt": { "type": "number" }
       },
       "required": ["username", "role"]

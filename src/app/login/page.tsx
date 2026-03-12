@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Lock, User as UserIcon, AlertCircle, UserPlus, LogIn } from "lucide-react"
+import { Lock, User as UserIcon, AlertCircle, UserPlus, LogIn, MonitorOff } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
-import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const MTLogo = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -23,7 +23,7 @@ const MTLogo = ({ className }: { className?: string }) => (
 )
 
 export default function LoginPage() {
-  const { login, register, logout } = useAuth()
+  const { login, register, logout, deviceError } = useAuth()
   const { toast } = useToast()
   const [error, setError] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
@@ -60,6 +60,29 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (deviceError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <Card className="w-full max-w-md border-none shadow-2xl">
+          <CardHeader className="text-center space-y-4">
+            <div className="mx-auto bg-rose-100 p-4 rounded-full w-fit">
+              <MonitorOff className="h-8 w-8 text-rose-600" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-rose-600">Akses Diblokir</CardTitle>
+            <CardDescription className="text-slate-600">
+              {deviceError}
+            </CardDescription>
+          </CardHeader>
+          <CardFooter>
+            <Button onClick={logout} variant="outline" className="w-full">
+              Kembali ke Login
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    )
   }
 
   return (

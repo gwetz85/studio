@@ -9,6 +9,21 @@ import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 
 export type UserRole = "admin" | "user"
 
+// Helper function to get or create a persistent device ID
+function getDeviceId() {
+  if (typeof window === 'undefined') return null;
+  let id = localStorage.getItem('mtnet_device_id');
+  if (!id) {
+    try {
+      id = crypto.randomUUID();
+    } catch (e) {
+      id = 'dev-' + Math.random().toString(36).substring(2, 15);
+    }
+    localStorage.setItem('mtnet_device_id', id);
+  }
+  return id;
+}
+
 export function useAuth() {
   const router = useRouter()
   const pathname = usePathname()
@@ -18,11 +33,13 @@ export function useAuth() {
   
   const [role, setRole] = useState<UserRole | null>(null)
   const [username, setUsername] = useState<string | null>(null)
+  const [deviceError, setDeviceError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) {
       setRole(null)
       setUsername(null)
+      setDeviceError(null)
     }
   }, [user])
 
@@ -36,11 +53,6 @@ export function useAuth() {
         
         const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
 
-        // Immediate role assignment for Agus to avoid permission errors
-        if (isAgus && isMounted) {
-          setRole('admin');
-        }
-
         try {
           const userDocRef = doc(db, "users", user.uid);
           const userDoc = await getDoc(userDocRef);
@@ -51,26 +63,51 @@ export function useAuth() {
             const userData = userDoc.data();
             finalRole = isAgus ? "admin" : (userData.role as UserRole || "user");
 
+            // Bypass device ID check for Admin
+            if (finalRole !== 'admin') {
+              const currentDeviceId = getDeviceId();
+              if (userData.deviceId && userData.deviceId !== currentDeviceId) {
+                if (isMounted) {
+                  setDeviceError("Akun ini sudah tertaut pada perangkat lain. Silakan hubungi Admin untuk reset akses.");
+                  setRole(null);
+                }
+                return;
+              }
+
+              // Save device ID on first login for Staff
+              if (!userData.deviceId && currentDeviceId) {
+                await updateDoc(userDocRef, { deviceId: currentDeviceId });
+              }
+            }
+
             if (isAgus && userData.role !== 'admin') {
-              updateDoc(userDocRef, { role: 'admin' });
+              await updateDoc(userDocRef, { role: 'admin' });
             }
           } else {
+            // New user registration
+            const currentDeviceId = isAgus ? null : getDeviceId();
             await setDoc(userDocRef, {
               username: currentUsername,
               email: user.email,
               role: finalRole,
+              deviceId: currentDeviceId,
               createdAt: Date.now()
             });
           }
 
-          if (isMounted) setRole(finalRole);
+          if (isMounted) {
+            setRole(finalRole);
+            setDeviceError(null);
+          }
 
           if (finalRole === "user" && (pathname === "/settings" || pathname === "/users")) {
             router.push("/");
           }
         } catch (e) {
-          // If Firestore fails, but it's Agus, ensure Admin role is set anyway
-          if (isMounted && isAgus) setRole('admin');
+          if (isMounted && isAgus) {
+            setRole('admin');
+            setDeviceError(null);
+          }
         }
       } else if (!isUserLoading && !user && pathname !== "/login") {
         router.push("/login");
@@ -98,6 +135,7 @@ export function useAuth() {
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
     await updateProfile(userCredential.user, { displayName: cleanUsername })
 
+    // Device ID is not set during registration, it will be set on first login
     await setDoc(doc(db, "users", userCredential.user.uid), {
       username: cleanUsername,
       email: email,
@@ -110,6 +148,7 @@ export function useAuth() {
 
   const logout = async () => {
     setRole(null)
+    setDeviceError(null)
     await signOut(authInstance)
     router.push("/login")
   }
@@ -121,6 +160,7 @@ export function useAuth() {
     logout, 
     login,
     register,
-    isLoading: isUserLoading || (!!user && !role)
+    deviceError,
+    isLoading: isUserLoading || (!!user && !role && !deviceError)
   }
 }
