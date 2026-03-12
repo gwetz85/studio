@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { useUser, useAuth as useFirebaseAuth, useFirestore } from "@/firebase"
 import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
-import { collection, addDoc, query, where, getDocs } from "firebase/firestore"
+import { doc, getDoc, setDoc } from "firebase/firestore"
 
 export type UserRole = "admin" | "user"
 
@@ -24,23 +24,26 @@ export function useAuth() {
       if (!isUserLoading && user) {
         setUsername(user.displayName || user.email?.split('@')[0] || "User")
         
-        // Cek role dari Firestore users collection
-        const q = query(collection(db, "users"), where("email", "==", user.email));
-        const querySnapshot = await getDocs(q);
-        
         let userRole: UserRole = "user";
-        if (!querySnapshot.empty) {
-          userRole = querySnapshot.docs[0].data().role as UserRole;
+
+        // Fallback untuk akun admin utama
+        if (user.email?.startsWith('admin') || user.email === 'agus@mtnet.com') {
+          userRole = "admin";
         } else {
-          // Fallback untuk akun pertama atau jika belum terdaftar di Firestore
-          // Jika email mengandung 'admin', berikan akses admin (untuk setup awal)
-          if (user.email?.startsWith('admin')) {
-            userRole = "admin";
+          try {
+            // Ambil data user berdasarkan UID (lebih efisien dan aman)
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) {
+              userRole = userDoc.data().role as UserRole;
+            }
+          } catch (e) {
+            console.warn("Could not fetch user role from Firestore, using fallback.");
           }
         }
         
         setRole(userRole)
 
+        // Proteksi rute berdasarkan role
         if (userRole === "user" && (pathname === "/settings" || pathname === "/users")) {
           router.push("/")
         }
@@ -72,8 +75,8 @@ export function useAuth() {
     // 2. Update display name
     await updateProfile(userCredential.user, { displayName: cleanUsername })
 
-    // 3. Save role to Firestore for management visibility
-    await addDoc(collection(db, "users"), {
+    // 3. Save role to Firestore with UID as Document ID
+    await setDoc(doc(db, "users", userCredential.user.uid), {
       username: cleanUsername,
       email: email,
       role: userRole,
