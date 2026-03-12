@@ -14,7 +14,8 @@ import {
   UserPlus, 
   UserX, 
   Wrench,
-  UsersRound
+  UsersRound,
+  AlertCircle
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -51,6 +52,11 @@ const navItems = [
     title: "Dashboard",
     url: "/",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Laporan Gangguan",
+    url: "/issues",
+    icon: AlertCircle,
   },
   {
     title: "Paket Layanan",
