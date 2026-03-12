@@ -20,27 +20,42 @@ export function useAuth() {
   const [username, setUsername] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isUserLoading) {
-      if (user) {
-        // Simple role check based on email
-        const adminEmails = ["admin@mtnet.com", "agus@mtnet.com"];
-        const userEmail = (user.email || "").toLowerCase().trim();
-        const userRole: UserRole = adminEmails.includes(userEmail) ? "admin" : "user"
-        setRole(userRole)
+    async function checkRole() {
+      if (!isUserLoading && user) {
         setUsername(user.displayName || user.email?.split('@')[0] || "User")
+        
+        // Cek role dari Firestore users collection
+        const q = query(collection(db, "users"), where("email", "==", user.email));
+        const querySnapshot = await getDocs(q);
+        
+        let userRole: UserRole = "user";
+        if (!querySnapshot.empty) {
+          userRole = querySnapshot.docs[0].data().role as UserRole;
+        } else {
+          // Fallback untuk akun pertama atau jika belum terdaftar di Firestore
+          // Jika email mengandung 'admin', berikan akses admin (untuk setup awal)
+          if (user.email?.startsWith('admin')) {
+            userRole = "admin";
+          }
+        }
+        
+        setRole(userRole)
 
         if (userRole === "user" && (pathname === "/settings" || pathname === "/users")) {
           router.push("/")
         }
-      } else if (pathname !== "/login") {
+      } else if (!isUserLoading && !user && pathname !== "/login") {
         router.push("/login")
       }
     }
-  }, [user, isUserLoading, pathname, router])
+    
+    checkRole();
+  }, [user, isUserLoading, pathname, router, db])
 
   const login = async (email: string, pass: string) => {
     const cleanEmail = email.trim().toLowerCase();
-    await signInWithEmailAndPassword(authInstance, cleanEmail, pass)
+    const finalEmail = cleanEmail.includes("@") ? cleanEmail : `${cleanEmail}@mtnet.com`;
+    await signInWithEmailAndPassword(authInstance, finalEmail, pass)
     router.push("/")
   }
 
@@ -49,7 +64,6 @@ export function useAuth() {
     if (!cleanUsername) throw new Error("Username tidak boleh kosong");
     if (cleanUsername.includes(" ")) throw new Error("Username tidak boleh mengandung spasi");
     
-    // Pastikan format email valid, hindari double domain jika user mengetik email lengkap
     const email = cleanUsername.includes("@") ? cleanUsername : `${cleanUsername}@mtnet.com`
     
     // 1. Create user in Firebase Auth
