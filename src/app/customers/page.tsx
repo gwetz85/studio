@@ -31,9 +31,15 @@ export default function CustomersPage() {
   const [editingCustomer, setEditingCustomer] = React.useState<any | null>(null);
   const [viewingCustomer, setViewingCustomer] = React.useState<any | null>(null);
 
-  const currentPeriod = new Date().toISOString().slice(0, 7);
-  const currentDay = new Date().getDate();
-  const isAfterCutoff = currentDay > 8;
+  // States for hydration-safe date info
+  const [currentPeriod, setCurrentPeriod] = React.useState("");
+  const [isAfterCutoff, setIsAfterCutoff] = React.useState(false);
+
+  React.useEffect(() => {
+    const now = new Date();
+    setCurrentPeriod(now.toISOString().slice(0, 7));
+    setIsAfterCutoff(now.getDate() > 8);
+  }, []);
 
   const customersQuery = useMemoFirebase(() => {
     if (!user) return null;
@@ -48,7 +54,7 @@ export default function CustomersPage() {
   const { data: packages } = useCollection(packagesQuery);
 
   const invoicesQuery = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || !currentPeriod) return null;
     return query(collection(db, "invoices"), where("billingPeriod", "==", currentPeriod));
   }, [db, currentPeriod, user]);
   const { data: currentPeriodInvoices } = useCollection(invoicesQuery);
@@ -63,7 +69,6 @@ export default function CustomersPage() {
   }, [db, viewingCustomer, user]);
   const { data: customerPayments } = useCollection(viewInvoicesQuery);
 
-  // Kueri untuk Gangguan yang sudah Selesai (Arsip)
   const solvedIssuesQuery = useMemoFirebase(() => {
     if (!viewingCustomer?.id || !user) return null;
     return query(
@@ -82,13 +87,13 @@ export default function CustomersPage() {
     return customersRaw.filter(c => 
       c.name?.toLowerCase().includes(s) || 
       c.email?.toLowerCase().includes(s) ||
-      c.phone?.includes(s) ||
+      c.phone?.toLowerCase().includes(s) ||
       c.modemSnMac?.toLowerCase().includes(s)
     );
   }, [customersRaw, search]);
 
   const isIsolated = (customer: any) => {
-    if (customer.status !== 'active') return false;
+    if (!customer || customer.status !== 'active') return false;
     if (!isAfterCutoff) return false;
     const invoice = currentPeriodInvoices?.find(i => i.customerId === customer.id);
     return !invoice || invoice.status !== 'paid';
@@ -166,7 +171,6 @@ export default function CustomersPage() {
     }
   };
 
-  // Fungsi Admin untuk mengembalikan tiket ke menu Laporan Gangguan
   const handleReopenIssue = async (issueId: string) => {
     if (role !== 'admin') return;
     if (confirm("Kembalikan masalah ini ke antrean gangguan aktif?")) {
@@ -286,8 +290,8 @@ export default function CustomersPage() {
                     <div className="flex items-start gap-3">
                       <User className="h-4 w-4 text-primary mt-1" />
                       <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.name}</p>
-                        <p className="text-xs text-slate-500">{viewingCustomer.email}</p>
+                        <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.name || "N/A"}</p>
+                        <p className="text-xs text-slate-500">{viewingCustomer.email || "No Email"}</p>
                       </div>
                     </div>
                   </div>
@@ -295,7 +299,7 @@ export default function CustomersPage() {
                     <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Status</h3>
                     <div className="flex flex-wrap gap-2">
                        <Badge className={cn(isIsolated(viewingCustomer) ? "bg-rose-600" : "bg-emerald-600")}>
-                        {isIsolated(viewingCustomer) ? "TERISOLIR" : viewingCustomer.status.toUpperCase()}
+                        {isIsolated(viewingCustomer) ? "TERISOLIR" : (viewingCustomer.status?.toUpperCase() || "N/A")}
                        </Badge>
                        <Badge variant="outline">{getPackageName(viewingCustomer.packageId)}</Badge>
                     </div>
@@ -316,9 +320,9 @@ export default function CustomersPage() {
                         <TableBody>
                           {customerPayments?.map((p) => (
                             <TableRow key={p.id}>
-                              <TableCell className="text-xs font-medium">{p.billingPeriod}</TableCell>
+                              <TableCell className="text-xs font-medium">{p.billingPeriod || "N/A"}</TableCell>
                               <TableCell className="text-xs text-right font-semibold text-emerald-600">
-                                Rp {p.amount.toLocaleString('id-ID')}
+                                Rp {(p.amount || 0).toLocaleString('id-ID')}
                               </TableCell>
                             </TableRow>
                           ))}
@@ -337,8 +341,10 @@ export default function CustomersPage() {
                           {solvedIssues?.map((issue) => (
                             <TableRow key={issue.id}>
                               <TableCell className="text-xs py-3">
-                                <div className="font-medium text-slate-900">{issue.description}</div>
-                                <div className="text-[10px] text-slate-500 mt-1">Selesai: {new Date(issue.solvedAt).toLocaleDateString('id-ID')}</div>
+                                <div className="font-medium text-slate-900">{issue.description || "Tanpa deskripsi"}</div>
+                                <div className="text-[10px] text-slate-500 mt-1">
+                                  Selesai: {issue.solvedAt ? new Date(issue.solvedAt).toLocaleDateString('id-ID') : "N/A"}
+                                </div>
                               </TableCell>
                               <TableCell className="text-right">
                                 {role === 'admin' && (
@@ -394,8 +400,8 @@ export default function CustomersPage() {
               {filteredCustomers?.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="py-3 px-6">
-                    <div className="font-semibold text-slate-900 dark:text-white">{customer.name}</div>
-                    <div className="text-[10px] text-slate-500">{customer.email}</div>
+                    <div className="font-semibold text-slate-900 dark:text-white">{customer.name || "N/A"}</div>
+                    <div className="text-[10px] text-slate-500">{customer.email || "No Email"}</div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="secondary" className="text-[10px]">
@@ -404,7 +410,7 @@ export default function CustomersPage() {
                   </TableCell>
                   <TableCell>
                     <Badge className={cn(isIsolated(customer) ? "bg-rose-600 animate-pulse" : (customer.status === 'active' ? "bg-emerald-600" : "bg-amber-500"))}>
-                      {isIsolated(customer) ? "ISOLIR" : customer.status}
+                      {isIsolated(customer) ? "ISOLIR" : (customer.status || "N/A")}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right px-6">
