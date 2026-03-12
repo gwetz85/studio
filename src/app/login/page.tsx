@@ -11,7 +11,6 @@ import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
-// Custom MTnet Logo Component
 const MTLogo = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
     <path d="M6 32V10L20 22L34 10V32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -38,18 +37,14 @@ export default function LoginPage() {
     const username = formData.get("username") as string
     const password = formData.get("password") as string
 
-    // Admin Credentials
-    if (username === "admin" && password === "@Agustus2") {
-      login("admin", "Admin MTNET")
-      toast({ title: "Selamat Datang, Admin", description: "Anda memiliki akses penuh ke sistem." })
-    } 
-    // User Credentials
-    else if (username === "user" && password === "user") {
-      login("user", "Staff User")
-      toast({ title: "Login Berhasil", description: "Selamat bekerja." })
-    } 
-    else {
-      setError("Username atau password salah. Silakan coba lagi.")
+    try {
+      // Mapping local admin to a predictable firebase email for this MVP
+      const email = username === "admin" ? "admin@mtnet.com" : `${username}@mtnet.com`
+      await login(email, password)
+      toast({ title: "Login Berhasil", description: "Selamat datang di MTNET Online." })
+    } catch (err: any) {
+      setError("Username atau password salah. Pastikan akun sudah terdaftar di Firebase.")
+    } finally {
       setIsLoading(false)
     }
   }
@@ -62,7 +57,7 @@ export default function LoginPage() {
             <MTLogo className="size-8" />
           </div>
           <CardTitle className="text-2xl font-bold">MTNET SYSTEM</CardTitle>
-          <CardDescription className="text-primary-foreground/80">Sistem Manajemen Internet Luring</CardDescription>
+          <CardDescription className="text-primary-foreground/80">Sistem Manajemen Online Real-time</CardDescription>
         </div>
         
         <form onSubmit={handleSubmit}>
@@ -95,7 +90,7 @@ export default function LoginPage() {
               {isLoading ? "Memproses..." : "Masuk ke Sistem"}
             </Button>
             <p className="text-center text-xs text-slate-400">
-              Lupa password? Hubungi administrator teknis.
+              Akses sinkronisasi real-time cloud aktif.
             </p>
           </CardFooter>
         </form>

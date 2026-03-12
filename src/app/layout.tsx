@@ -1,3 +1,4 @@
+
 "use client"
 
 import './globals.css';
@@ -7,18 +8,59 @@ import { Toaster } from "@/components/ui/toaster";
 import { useAuth } from "@/hooks/use-auth";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { db } from "@/lib/db";
+import { FirebaseClientProvider } from "@/firebase/client-provider";
+
+function MainLayoutContent({ children }: { children: React.ReactNode }) {
+  const { isLoggedIn, isLoading } = useAuth();
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login";
+
+  if (isLoading) {
+    return (
+      <div className="bg-slate-50 flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div 
+        className="fixed inset-0 z-[-1] bg-cover bg-center bg-no-repeat bg-fixed opacity-10 dark:opacity-20 pointer-events-none"
+        style={{ backgroundImage: "url('https://picsum.photos/seed/net1/1920/1080')" }}
+        data-ai-hint="network technology"
+      />
+      
+      {isLoginPage ? (
+        children
+      ) : (
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
+            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white/60 backdrop-blur-xl dark:bg-slate-900/60 sticky top-0 z-10">
+              <SidebarTrigger className="-ml-1" />
+              <div className="flex-1" />
+              <div className="flex items-center gap-2">
+                <div className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Online" />
+                <span className="text-xs font-medium text-muted-foreground dark:text-slate-300">Mode Real-time</span>
+              </div>
+            </header>
+            <main className="flex-1 p-6 md:p-8">
+              {children}
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
+      )}
+      <Toaster />
+    </>
+  );
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { isLoggedIn, isLoading } = useAuth();
-  const pathname = usePathname();
-
-  const isLoginPage = pathname === "/login";
-
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const savedSidebarColor = localStorage.getItem("sidebar_color") || "blue";
@@ -30,46 +72,7 @@ export default function RootLayout({
     }
 
     document.documentElement.setAttribute("data-sidebar-color", savedSidebarColor);
-
-    if (!isLoggedIn) return;
-
-    const performMaintenanceTasks = async () => {
-      try {
-        const customers = await db.customers.toArray();
-        const packages = await db.packages.toArray();
-        const payments = await db.payments.toArray();
-        
-        const backupData = {
-          version: "2.0.1",
-          timestamp: Date.now(),
-          data: { customers, packages, payments }
-        };
-
-        localStorage.setItem("mtnet_auto_backup", JSON.stringify(backupData));
-        localStorage.setItem("mtnet_last_backup_time", backupData.timestamp.toString());
-        
-        window.dispatchEvent(new Event('mtnet-backup-updated'));
-        
-        console.log("Maintenance performed at:", new Date().toLocaleTimeString());
-      } catch (error) {
-        console.error("Maintenance tasks failed:", error);
-      }
-    };
-
-    performMaintenanceTasks();
-    const interval = setInterval(performMaintenanceTasks, 10 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [isLoggedIn]);
-
-  if (isLoading) {
-    return (
-      <html lang="id">
-        <body className="bg-slate-50 flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-        </body>
-      </html>
-    );
-  }
+  }, []);
 
   return (
     <html lang="id">
@@ -80,34 +83,11 @@ export default function RootLayout({
         <title>MTNET SYSTEM</title>
       </head>
       <body className="antialiased transition-colors duration-300 relative min-h-screen">
-        {/* Background Image for Glass Effect */}
-        <div 
-          className="fixed inset-0 z-[-1] bg-cover bg-center bg-no-repeat bg-fixed opacity-10 dark:opacity-20 pointer-events-none"
-          style={{ backgroundImage: "url('https://picsum.photos/seed/net1/1920/1080')" }}
-          data-ai-hint="network technology"
-        />
-        
-        {isLoginPage ? (
-          children
-        ) : (
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
-              <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white/60 backdrop-blur-xl dark:bg-slate-900/60 sticky top-0 z-10">
-                <SidebarTrigger className="-ml-1" />
-                <div className="flex-1" />
-                <div className="flex items-center gap-2">
-                  <div className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Siap Luring" />
-                  <span className="text-xs font-medium text-muted-foreground dark:text-slate-300">Mode Lokal</span>
-                </div>
-              </header>
-              <main className="flex-1 p-6 md:p-8">
-                {children}
-              </main>
-            </SidebarInset>
-          </SidebarProvider>
-        )}
-        <Toaster />
+        <FirebaseClientProvider>
+          <MainLayoutContent>
+            {children}
+          </MainLayoutContent>
+        </FirebaseClientProvider>
       </body>
     </html>
   );

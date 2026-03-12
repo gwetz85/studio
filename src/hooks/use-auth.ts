@@ -1,54 +1,55 @@
+
 "use client"
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
+import { useUser, useAuth as useFirebaseAuth } from "@/firebase"
+import { signInWithEmailAndPassword, signOut } from "firebase/auth"
 
 export type UserRole = "admin" | "user"
-
-interface AuthState {
-  isLoggedIn: boolean
-  role: UserRole | null
-  username: string | null
-}
 
 export function useAuth() {
   const router = useRouter()
   const pathname = usePathname()
-  const [auth, setAuth] = useState<AuthState>({
-    isLoggedIn: false,
-    role: null,
-    username: null,
-  })
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, isUserLoading } = useUser()
+  const authInstance = useFirebaseAuth()
+  
+  const [role, setRole] = useState<UserRole | null>(null)
+  const [username, setUsername] = useState<string | null>(null)
 
   useEffect(() => {
-    const storedAuth = localStorage.getItem("mtnet_auth")
-    if (storedAuth) {
-      const parsed = JSON.parse(storedAuth)
-      setAuth(parsed)
-      
-      // Redirect if user tries to access settings but is not admin
-      if (parsed.role === "user" && pathname === "/settings") {
-        router.push("/")
-      }
-    } else if (pathname !== "/login") {
-      router.push("/login")
-    }
-    setIsLoading(false)
-  }, [pathname, router])
+    if (!isUserLoading) {
+      if (user) {
+        // Simple role check based on custom logic or email
+        const userRole: UserRole = user.email === "admin@mtnet.com" ? "admin" : "user"
+        setRole(userRole)
+        setUsername(user.displayName || user.email)
 
-  const login = (role: UserRole, username: string) => {
-    const newState = { isLoggedIn: true, role, username }
-    localStorage.setItem("mtnet_auth", JSON.stringify(newState))
-    setAuth(newState)
+        if (userRole === "user" && pathname === "/settings") {
+          router.push("/")
+        }
+      } else if (pathname !== "/login") {
+        router.push("/login")
+      }
+    }
+  }, [user, isUserLoading, pathname, router])
+
+  const login = async (email: string, pass: string) => {
+    await signInWithEmailAndPassword(authInstance, email, pass)
     router.push("/")
   }
 
-  const logout = () => {
-    localStorage.removeItem("mtnet_auth")
-    setAuth({ isLoggedIn: false, role: null, username: null })
+  const logout = async () => {
+    await signOut(authInstance)
     router.push("/login")
   }
 
-  return { ...auth, login, logout, isLoading }
+  return { 
+    isLoggedIn: !!user, 
+    role, 
+    username, 
+    logout, 
+    login,
+    isLoading: isUserLoading 
+  }
 }

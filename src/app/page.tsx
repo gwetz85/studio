@@ -2,35 +2,17 @@
 "use client"
 
 import * as React from "react"
+import { useFirestore, useCollection, useMemoFirebase } from "@/firebase"
+import { collection, query, where, addDoc } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Package, CreditCard, ShieldAlert, Wifi, Sparkles, PieChart as PieChartIcon, Laptop, Smartphone, Info, HardDrive, Cpu as CpuIcon, Network } from "lucide-react"
-import { db } from "@/lib/db"
-import { useLiveQuery } from "dexie-react-hooks"
+import { Users, Package, CreditCard, ShieldAlert, Wifi, Laptop, Smartphone, Cpu as CpuIcon, Network, HardDrive } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { 
-  PieChart, 
-  Pie, 
-  Cell, 
-} from "recharts"
-import { 
-  ChartContainer, 
-  ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
-  type ChartConfig 
-} from "@/components/ui/chart"
+import { PieChart, Pie, Cell } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 
-// Custom MTnet Logo Component
 const MTLogo = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
     <path d="M6 32V10L20 22L34 10V32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -44,206 +26,61 @@ const MTLogo = ({ className }: { className?: string }) => (
 
 export default function Dashboard() {
   const { toast } = useToast();
+  const db = useFirestore();
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const currentDay = new Date().getDate();
-  const [isProcessingAutoBill, setIsProcessingAutoBill] = React.useState(false);
   const [showWelcome, setShowWelcome] = React.useState(false);
   const [deviceInfo, setDeviceInfo] = React.useState({ 
-    os: "Mendeteksi...", 
-    type: "Desktop",
-    name: "Perangkat Generik",
-    connection: "Mendeteksi...",
-    storage: "Mendeteksi...",
-    memory: "Mendeteksi..."
+    os: "Mendeteksi...", type: "Desktop", name: "PC", connection: "Checking...", storage: "...", memory: "..." 
   });
+
+  const customersQuery = useMemoFirebase(() => collection(db, "customers"), [db]);
+  const { data: customers } = useCollection(customersQuery);
+
+  const packagesQuery = useMemoFirebase(() => collection(db, "servicePackages"), [db]);
+  const { data: packages } = useCollection(packagesQuery);
+
+  const invoicesQuery = useMemoFirebase(() => {
+    return query(collection(db, "invoices"), where("billingPeriod", "==", currentPeriod));
+  }, [db, currentPeriod]);
+  const { data: invoices } = useCollection(invoicesQuery);
 
   React.useEffect(() => {
     const welcomeShown = sessionStorage.getItem("mtnet_welcome_shown");
     if (!welcomeShown) {
-      const timer = setTimeout(() => {
-        setShowWelcome(true);
-        sessionStorage.setItem("mtnet_welcome_shown", "true");
-      }, 500);
-      return () => clearTimeout(timer);
+      setShowWelcome(true);
+      sessionStorage.setItem("mtnet_welcome_shown", "true");
     }
 
-    const detectDevice = async () => {
-      const ua = window.navigator.userAgent;
-      let os = "OS Tidak Diketahui";
-      let type = "Desktop";
-      let name = "PC / Laptop";
-
-      // OS Detection
-      if (/Android/.test(ua)) { 
-        os = "Android"; type = "Smartphone"; name = "Perangkat Android"; 
-      }
-      else if (/iPhone|iPad|iPod/.test(ua)) { 
-        os = "iOS"; type = "Smartphone"; name = "Perangkat Apple"; 
-      }
-      else if (/Windows NT 10.0/.test(ua)) { 
-        os = "Windows 10/11"; name = "Windows PC"; 
-      }
-      else if (/Macintosh/.test(ua)) { 
-        os = "macOS"; name = "Apple Mac"; 
-      }
-      else if (/Linux/.test(ua)) { 
-        os = "Linux"; name = "Linux PC"; 
-      }
-
-      // Real-time Connection Detection
-      let connectionType = "Tidak Diketahui";
-      const conn = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection;
-      
-      if (conn) {
-        if (conn.type) {
-          switch(conn.type) {
-            case 'wifi': connectionType = "Wi-Fi"; break;
-            case 'ethernet': connectionType = "Ethernet (Kabel)"; break;
-            case 'cellular': connectionType = "Data Seluler"; break;
-            case 'none': connectionType = "Terputus"; break;
-            default: connectionType = conn.type.charAt(0).toUpperCase() + conn.type.slice(1);
-          }
-        } else if (conn.effectiveType) {
-          connectionType = `Seluler (${conn.effectiveType.toUpperCase()})`;
-        }
-      } else {
-        connectionType = "Wi-Fi / Ethernet";
-      }
-
-      // Memory Detection
-      let memory = "N/A";
-      if ((navigator as any).deviceMemory) {
-        memory = `${(navigator as any).deviceMemory} GB RAM`;
-      }
-
-      // Storage Detection
-      let storage = "N/A";
-      if (navigator.storage && navigator.storage.estimate) {
-        const estimate = await navigator.storage.estimate();
-        if (estimate.quota) {
-          const quotaGB = Math.round(estimate.quota / (1024 * 1024 * 1024));
-          storage = `~${quotaGB} GB Total`;
-        }
-      }
-
-      setDeviceInfo({ os, type, name, connection: connectionType, memory, storage });
+    // Mock tech detection
+    const detect = async () => {
+      const conn = (navigator as any).connection?.effectiveType || "Wi-Fi";
+      const mem = (navigator as any).deviceMemory ? `${(navigator as any).deviceMemory}GB` : "N/A";
+      setDeviceInfo(prev => ({ ...prev, connection: conn, memory: mem }));
     };
-
-    detectDevice();
+    detect();
   }, []);
 
-  React.useEffect(() => {
-    const generateMonthlyBills = async () => {
-      if (isProcessingAutoBill) return;
-      
-      try {
-        setIsProcessingAutoBill(true);
-        const activeCustomers = await db.customers.where('status').equals('active').toArray();
-        const allPackages = await db.packages.toArray();
-        const currentPayments = await db.payments.where('billingPeriod').equals(currentPeriod).toArray();
-        
-        const existingCustomerIds = new Set(currentPayments.map(p => p.customerId));
-        let generatedCount = 0;
+  const stats = React.useMemo(() => {
+    if (!customers || !invoices) return null;
+    const active = customers.filter(c => c.status === 'active');
+    const isolated = currentDay > 8 ? active.filter(c => {
+      const inv = invoices.find(i => i.customerId === c.id);
+      return !inv || inv.status !== 'paid';
+    }).length : 0;
 
-        for (const customer of activeCustomers) {
-          if (!existingCustomerIds.has(customer.id!)) {
-            const pkg = allPackages.find(p => p.id === customer.packageId);
-            if (pkg) {
-              await db.payments.add({
-                customerId: customer.id!,
-                amount: pkg.price,
-                billingPeriod: currentPeriod,
-                status: 'pending',
-              });
-              generatedCount++;
-            }
-          }
-        }
-
-        if (generatedCount > 0) {
-          toast({
-            title: "Tagihan Otomatis Diterbitkan",
-            description: `${generatedCount} invoice baru untuk periode ${currentPeriod} telah berhasil dibuat secara otomatis.`,
-          });
-        }
-      } catch (error) {
-        console.error("Gagal melakukan auto-billing:", error);
-      } finally {
-        setIsProcessingAutoBill(false);
-      }
-    };
-
-    generateMonthlyBills();
-  }, [currentPeriod, toast, isProcessingAutoBill]);
-
-  const stats = useLiveQuery(async () => {
-    const totalCount = await db.customers.count();
-    const activeCount = await db.customers.where('status').equals('active').count();
-    const passiveCount = await db.customers.where('status').equals('passive').count();
-    const inactiveCount = await db.customers.where('status').equals('inactive').count();
-    
-    const packageCount = await db.packages.count();
-    const pendingPayments = await db.payments.where('status').equals('pending').count();
-    
-    let isolatedCount = 0;
-    if (currentDay > 8) {
-      const activeCustomers = await db.customers.where('status').equals('active').toArray();
-      const currentPaidPayments = await db.payments
-        .where('billingPeriod').equals(currentPeriod)
-        .and(p => p.status === 'paid')
-        .toArray();
-      
-      const paidCustomerIds = new Set(currentPaidPayments.map(p => p.customerId));
-      isolatedCount = activeCustomers.filter(c => !paidCustomerIds.has(c.id!)).length;
-    }
-    
     return {
-      total: totalCount,
-      active: activeCount,
-      passive: passiveCount,
-      inactive: inactiveCount,
-      packages: packageCount,
-      pending: pendingPayments,
-      isolated: isolatedCount,
-    }
-  }, [currentDay, currentPeriod]);
+      total: customers.length,
+      active: active.length,
+      passive: customers.filter(c => c.status === 'passive').length,
+      inactive: customers.filter(c => c.status === 'inactive').length,
+      packages: packages?.length || 0,
+      pending: invoices.filter(i => i.status !== 'paid').length,
+      isolated,
+    };
+  }, [customers, invoices, packages, currentDay]);
 
-  if (!stats) return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-    </div>
-  );
-
-  const dashboardItems = [
-    {
-      title: "Total Pelanggan",
-      value: stats.total,
-      icon: Users,
-      color: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-100/50 dark:bg-blue-900/30",
-    },
-    {
-      title: "Paket Aktif",
-      value: stats.packages,
-      icon: Package,
-      color: "text-cyan-600 dark:text-cyan-400",
-      bg: "bg-cyan-100/50 dark:bg-cyan-900/30",
-    },
-    {
-      title: "Pembayaran Menunggu",
-      value: stats.pending,
-      icon: CreditCard,
-      color: "text-amber-600 dark:text-amber-400",
-      bg: "bg-amber-100/50 dark:bg-amber-900/30",
-    },
-    {
-      title: "User Terisolir",
-      value: stats.isolated,
-      icon: ShieldAlert,
-      color: "text-rose-600 dark:text-rose-400",
-      bg: "bg-rose-100/50 dark:bg-rose-900/30",
-    },
-  ];
+  if (!stats) return <div className="flex h-96 items-center justify-center animate-pulse">Memuat Data Cloud...</div>;
 
   const chartData = [
     { name: "Aktif", value: stats.active, fill: "hsl(var(--primary))" },
@@ -251,186 +88,67 @@ export default function Dashboard() {
     { name: "Non-Aktif", value: stats.inactive, fill: "hsl(var(--destructive))" },
   ];
 
-  const chartConfig = {
-    value: { label: "Jumlah" },
-    Aktif: { label: "Aktif", color: "hsl(var(--primary))" },
-    Pasif: { label: "Pasif", color: "hsl(var(--accent))" },
-    "Non-Aktif": { label: "Non-Aktif", color: "hsl(var(--destructive))" },
-  } satisfies ChartConfig;
-
   return (
-    <div className="space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-700">
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="sm:max-w-md p-0 border-none shadow-2xl bg-white dark:bg-slate-900 overflow-hidden">
-          <DialogHeader className="bg-primary p-6 md:p-8 text-white text-center space-y-4">
-            <div className="inline-flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md shadow-xl border border-white/20 mx-auto">
-              <MTLogo className="h-10 w-10 md:h-12 md:w-12 text-white" />
-            </div>
-            <div className="space-y-2 text-center">
-              <DialogTitle className="text-xl md:text-2xl font-black uppercase tracking-tighter text-white">SELAMAT DATANG DI MTNET SYSTEM</DialogTitle>
-              <DialogDescription className="text-sm text-primary-foreground/90 font-medium">
-                Sistem Manajemen Penagihan & Layanan Internet
-              </DialogDescription>
-            </div>
+        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+          <DialogHeader className="bg-primary p-6 text-white text-center">
+            <DialogTitle className="text-xl font-black">MTNET ONLINE</DialogTitle>
+            <DialogDescription className="text-white/80">Sistem Manajemen Real-time Cloud</DialogDescription>
           </DialogHeader>
-          <div className="p-5 md:p-6 space-y-4">
-            <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl border border-slate-100 dark:border-slate-700 shadow-inner">
-               <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Dikembangkan oleh:</p>
-               <p className="font-bold text-lg text-slate-900 dark:text-white mb-3">AGUS SURIYADI</p>
-               <div className="grid grid-cols-2 gap-2 text-[10px] font-bold uppercase text-slate-500 dark:text-slate-400">
-                 <div className="flex items-center gap-1.5"><div className="h-1 w-1 bg-primary rounded-full" /> Data Pelanggan</div>
-                 <div className="flex items-center gap-1.5"><div className="h-1 w-1 bg-primary rounded-full" /> Billing System</div>
-                 <div className="flex items-center gap-1.5"><div className="h-1 w-1 bg-primary rounded-full" /> Isolir & Nonaktif</div>
-                 <div className="flex items-center gap-1.5"><div className="h-1 w-1 bg-primary rounded-full" /> Menu Teknisi</div>
-               </div>
-            </div>
-            <Button onClick={() => setShowWelcome(false)} className="w-full h-12 font-bold tracking-tight shadow-lg transition-all hover:scale-[1.01] active:scale-[0.99]">
-                MASUK KE DASHBOARD
-            </Button>
+          <div className="p-6">
+            <p className="text-sm text-center mb-4 italic">Akses database online aktif. Semua perubahan akan disinkronkan ke seluruh tim.</p>
+            <Button onClick={() => setShowWelcome(false)} className="w-full">Masuk</Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Dashboard</h1>
-        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Ringkasan operasional layanan internet hari ini.</p>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {dashboardItems.map((item) => (
-          <Card key={item.title} className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm hover:shadow-lg transition-all duration-300 rounded-2xl group border border-white/20">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-xs md:text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-primary transition-colors">{item.title}</CardTitle>
-              <div className={`${item.bg} ${item.color} p-2 rounded-xl transition-transform group-hover:scale-110`}>
-                <item.icon className="h-4 w-4" />
-              </div>
+        {[
+          { title: "Total Pelanggan", val: stats.total, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+          { title: "Paket Layanan", val: stats.packages, icon: Package, color: "text-cyan-600", bg: "bg-cyan-50" },
+          { title: "Tagihan Pending", val: stats.pending, icon: CreditCard, color: "text-amber-600", bg: "bg-amber-50" },
+          { title: "User Terisolir", val: stats.isolated, icon: ShieldAlert, color: "text-rose-600", bg: "bg-rose-50" },
+        ].map((item) => (
+          <Card key={item.title} className="border-none shadow-sm hover:shadow-md transition-all">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-xs font-medium">{item.title}</CardTitle>
+              <div className={`${item.bg} ${item.color} p-2 rounded-lg`}><item.icon className="h-4 w-4" /></div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{item.value}</div>
-            </CardContent>
+            <CardContent><div className="text-2xl font-bold">{item.val}</div></CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
-          <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
-            <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
-              <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Statistik Status Pelanggan</CardTitle>
-              <PieChartIcon className="h-5 w-5 text-primary opacity-50" />
-            </CardHeader>
-            <CardContent className="p-2 md:p-6">
-              <div className="h-[300px] md:h-[350px] w-full">
-                <ChartContainer config={chartConfig} className="h-full w-full">
-                  <PieChart>
-                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                    <Pie
-                      data={chartData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={90}
-                      paddingAngle={5}
-                      dataKey="value"
-                      labelLine={false}
-                    >
-                      {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} stroke="transparent" />
-                      ))}
-                    </Pie>
-                    <ChartLegend content={<ChartLegendContent />} className="flex-wrap gap-x-6 gap-y-2 pt-4" />
-                  </PieChart>
-                </ChartContainer>
-              </div>
-            </CardContent>
-          </Card>
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2 border-none shadow-sm">
+          <CardHeader><CardTitle className="text-lg">Statistik Status</CardTitle></CardHeader>
+          <CardContent>
+            <div className="h-[300px]">
+              <ChartContainer config={{}} className="h-full w-full">
+                <PieChart>
+                  <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                    {chartData.map((e, i) => <Cell key={i} fill={e.fill} />)}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <ChartLegend content={<ChartLegendContent />} />
+                </PieChart>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* Device Identity Card */}
-          <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
-            <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50 flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Identitas Perangkat</CardTitle>
-                <CardDescription className="text-xs">Deteksi teknis perangkat akses sistem.</CardDescription>
-              </div>
-              {deviceInfo.type === "Desktop" ? <Laptop className="h-5 w-5 text-primary opacity-50" /> : <Smartphone className="h-5 w-5 text-primary opacity-50" />}
-            </CardHeader>
-            <CardContent className="p-4 md:p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Laptop className="h-3 w-3" /> Nama Perangkat</span>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.name}</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">OS / Platform</span>
-                    <Badge variant="secondary" className="w-fit bg-primary/10 text-primary border-primary/20 text-[10px]">{deviceInfo.os} ({deviceInfo.type})</Badge>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><Network className="h-3 w-3" /> Koneksi Via</span>
-                    <Badge variant="outline" className="w-fit border-green-200 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 text-xs px-2 py-0">
-                      {deviceInfo.connection}
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><CpuIcon className="h-3 w-3" /> Memory Perangkat</span>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.memory}</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5"><HardDrive className="h-3 w-3" /> Total Penyimpanan</span>
-                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{deviceInfo.storage}</span>
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status Akses</span>
-                    <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-2 text-[10px] w-fit">TEROTORISASI</Badge>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-6 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30">
-                <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-relaxed font-medium italic">
-                  * Informasi koneksi dan perangkat keras diakses melalui API standar peramban. Beberapa data sensitif dibatasi oleh kebijakan keamanan demi privasi.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <Card className="border-none bg-white/45 dark:bg-slate-900/45 backdrop-blur-md shadow-sm overflow-hidden rounded-2xl border border-white/20">
-          <CardHeader className="bg-white/40 dark:bg-slate-800/40 border-b border-slate-100 dark:border-slate-800/50">
-            <CardTitle className="text-base md:text-lg text-slate-900 dark:text-white">Status Sistem</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 md:p-6">
-            <div className="space-y-4 md:space-y-6">
-              <div className="flex items-center justify-between p-3 md:p-4 rounded-2xl bg-green-50/50 dark:bg-green-900/20 border border-green-100 dark:border-green-900/30">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-xs md:text-sm font-bold text-green-900 dark:text-green-300 uppercase tracking-tight">Database Lokal</span>
-                </div>
-                <Badge className="bg-green-600 dark:bg-green-500 rounded-lg px-2 md:px-3 py-0.5 md:py-1 text-[10px] md:text-xs">AKTIF</Badge>
-              </div>
-              
-              <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 md:gap-4">
-                <div className="p-3 md:p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center">
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-widest">Periode</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-xl md:text-2xl">{currentPeriod}</p>
-                </div>
-                <div className="p-3 md:p-4 rounded-2xl border border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/30 text-center">
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mb-1 uppercase font-bold tracking-widest">Hari Ini</p>
-                  <p className="font-bold text-slate-900 dark:text-white text-xl md:text-2xl">{currentDay}</p>
-                </div>
-              </div>
-              
-              <div className="p-3 md:p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30">
-                <div className="flex items-center gap-2 mb-2">
-                  <Wifi className="h-4 w-4 text-primary" />
-                  <span className="text-[10px] font-bold uppercase text-primary tracking-wider">Info Billing</span>
-                </div>
-                <p className="text-[10px] md:text-xs text-blue-700 dark:text-blue-300 leading-relaxed font-medium">
-                  Tagihan terbit otomatis setiap tanggal 1. Masa isolasi dimulai setelah tanggal 8.
-                </p>
-              </div>
+        <Card className="border-none shadow-sm">
+          <CardHeader><CardTitle className="text-lg">Info Sistem</CardTitle></CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-green-50 border border-green-100">
+               <span className="text-xs font-bold text-green-700">CLOUD DATABASE</span>
+               <Badge className="bg-green-600">CONNECTED</Badge>
+            </div>
+            <div className="p-3 border rounded-xl space-y-2">
+              <div className="flex justify-between text-xs"><span>OS:</span> <b>{deviceInfo.os}</b></div>
+              <div className="flex justify-between text-xs"><span>Koneksi:</span> <b>{deviceInfo.connection}</b></div>
+              <div className="flex justify-between text-xs"><span>Periode:</span> <b>{currentPeriod}</b></div>
             </div>
           </CardContent>
         </Card>
