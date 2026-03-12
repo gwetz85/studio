@@ -3,7 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- Helper Functions ---
+    // --- Fungsi Pembantu ---
     function isSignedIn() {
       return request.auth != null;
     }
@@ -11,14 +11,18 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email == "agus@mtnet.com" ||
-        request.auth.uid == "EdUhRV3odgO5TTzVMPSBAsMFaNP2" ||
-        (request.auth.token.email != null && request.auth.token.email.startsWith("admin@"))
+        request.auth.uid == "EdUhRV3odgO5TTzVMPSBAsMFaNP2"
       );
     }
 
-    // --- Global Access Rules ---
+    // --- Aturan Koleksi ---
 
-    // Pelanggan, Paket, Invoices: Read for all Staff, Write for Admin
+    // Permintaan User: Koleksi Issues dapat dibaca dan ditulis oleh semua yang login
+    match /issues/{document=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Pelanggan, Paket, & Invoices: Read untuk Staff, Write hanya Admin
     match /customers/{id} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
@@ -34,24 +38,16 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // PSB: Create for Staff, Full for Admin
+    // PSB: Read/Create untuk Staff, Update/Delete hanya Admin
     match /psbRequests/{id} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
+      allow read, create: if isSignedIn();
       allow update, delete: if isAdmin();
     }
 
-    // Users: Self Read/Write, Admin Full
+    // Users: Akses mandiri atau Admin penuh
     match /users/{userId} {
       allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
       allow write: if isAdmin();
-    }
-
-    // Issues: Read/Write for Staff, Full for Admin
-    match /issues/{id} {
-      allow read: if isSignedIn();
-      allow create, update: if isSignedIn();
-      allow delete: if isAdmin();
     }
   }
 }
