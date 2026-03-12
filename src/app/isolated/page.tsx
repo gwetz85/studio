@@ -11,11 +11,13 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/hooks/use-toast"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function IsolatedPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
+  const { role } = useAuth();
   const currentPeriod = new Date().toISOString().slice(0, 7);
   const currentDay = new Date().getDate();
   const isAfterCutoff = currentDay > 8;
@@ -47,6 +49,7 @@ export default function IsolatedPage() {
   }, [allCustomers, currentPayments, isAfterCutoff]);
 
   const handleQuickPay = async (customer: any) => {
+    if (role !== 'admin') return;
     const pkg = packages?.find(p => p.id === customer.packageId);
     const existingPayment = currentPayments?.find(p => p.customerId === customer.id);
 
@@ -69,6 +72,7 @@ export default function IsolatedPage() {
   };
 
   const handleDeactivate = async (customer: any) => {
+    if (role !== 'admin') return;
     if (confirm("Nonaktifkan layanan?")) {
       try {
         await updateDoc(doc(db, "customers", customer.id), { status: 'inactive', deactivationDate: Date.now() });
@@ -105,8 +109,12 @@ export default function IsolatedPage() {
                     <TableCell className="px-6 font-semibold">{customer.name}</TableCell>
                     <TableCell><Badge className="bg-rose-600">TERISOLIR</Badge></TableCell>
                     <TableCell className="text-right px-6">
-                       <Button size="sm" variant="outline" onClick={() => handleQuickPay(customer)} className="mr-2">Bayar & Aktifkan</Button>
-                       <Button size="icon" variant="ghost" onClick={() => handleDeactivate(customer)} className="text-rose-500"><UserX /></Button>
+                       {role === 'admin' && (
+                         <>
+                          <Button size="sm" variant="outline" onClick={() => handleQuickPay(customer)} className="mr-2">Bayar & Aktifkan</Button>
+                          <Button size="icon" variant="ghost" onClick={() => handleDeactivate(customer)} className="text-rose-500"><UserX /></Button>
+                         </>
+                       )}
                     </TableCell>
                   </TableRow>
                 ))}

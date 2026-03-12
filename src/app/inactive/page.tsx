@@ -13,11 +13,13 @@ import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function InactiveUsersPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
+  const { role } = useAuth();
   const [search, setSearch] = React.useState("");
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
   const [viewingCustomer, setViewingCustomer] = React.useState<any | null>(null);
@@ -46,6 +48,7 @@ export default function InactiveUsersPage() {
   }, [inactiveCustomersRaw, search]);
 
   const handleRestore = async (customer: any) => {
+    if (role !== 'admin') return;
     try {
       await updateDoc(doc(db, "customers", customer.id), { status: 'active', deactivationDate: null });
       toast({ title: "User Diaktifkan Kembali" });
@@ -53,6 +56,18 @@ export default function InactiveUsersPage() {
       toast({ variant: "destructive", title: "Gagal" });
     }
   };
+
+  const handleDelete = async (id: string) => {
+    if (role !== 'admin') return;
+    if (confirm("Hapus pelanggan ini secara permanen dari arsip?")) {
+      try {
+        await deleteDoc(doc(db, "customers", id));
+        toast({ title: "Arsip Dihapus" });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Gagal menghapus" });
+      }
+    }
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
@@ -74,18 +89,20 @@ export default function InactiveUsersPage() {
             <TableHeader className="bg-slate-50/50">
               <TableRow>
                 <TableHead className="px-6">Identitas</TableHead>
-                <TableHead>Aksi</TableHead>
+                <TableHead className="text-right px-6">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredInactive.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="px-6 font-semibold">{customer.name}</TableCell>
-                  <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => handleRestore(customer)} className="mr-2"><RotateCcw className="mr-1 h-3 w-3" /> Aktifkan</Button>
-                    <Button variant="ghost" size="icon" className="text-rose-600" onClick={async () => {
-                       if(confirm("Hapus Permanen?")) await deleteDoc(doc(db, "customers", customer.id));
-                    }}><Trash2 className="h-4 w-4" /></Button>
+                  <TableCell className="text-right px-6">
+                    {role === 'admin' && (
+                      <>
+                        <Button variant="outline" size="sm" onClick={() => handleRestore(customer)} className="mr-2"><RotateCcw className="mr-1 h-3 w-3" /> Aktifkan</Button>
+                        <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => handleDelete(customer.id)}><Trash2 className="h-4 w-4" /></Button>
+                      </>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

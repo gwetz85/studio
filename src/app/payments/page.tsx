@@ -16,11 +16,13 @@ import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { generatePaymentReminder } from "@/ai/flows/generate-payment-reminder"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function PaymentsPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
+  const { role } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [reminderDialogOpen, setReminderDialogOpen] = React.useState(false);
   const [activePayment, setActivePayment] = React.useState<any | null>(null);
@@ -53,6 +55,7 @@ export default function PaymentsPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (role !== 'admin') return;
     const formData = new FormData(e.currentTarget);
     const customerId = formData.get("customerId") as string;
     const customer = customers?.find(c => c.id === customerId);
@@ -82,6 +85,7 @@ export default function PaymentsPage() {
   };
 
   const updateStatus = async (id: string, status: string) => {
+    if (role !== 'admin') return;
     try {
       await updateDoc(doc(db, "invoices", id), { 
         status, 
@@ -95,6 +99,7 @@ export default function PaymentsPage() {
   };
 
   const handleGenerateReminder = async (payment: any) => {
+    if (role !== 'admin') return;
     const customer = customers?.find(c => c.id === payment.customerId);
     if (!customer) return;
     setActivePayment(payment);
@@ -115,6 +120,7 @@ export default function PaymentsPage() {
   };
 
   const handleWhatsAppDirect = (payment: any) => {
+    if (role !== 'admin') return;
     const customer = customers?.find(c => c.id === payment.customerId);
     if (!customer) return;
     const message = `Halo ${customer.name}, tagihan internet Rp ${payment.amount.toLocaleString('id-ID')} periode ${payment.billingPeriod} belum lunas. Mohon segera dibayar. Terima kasih.`;
@@ -130,7 +136,9 @@ export default function PaymentsPage() {
           <h1 className="text-3xl font-bold">Tagihan & Pembayaran</h1>
           <p className="text-slate-500">Sinkronisasi Real-time dengan Cloud Database.</p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}><Plus className="mr-2 h-4 w-4" /> Buat Tagihan</Button>
+        {role === 'admin' && (
+          <Button onClick={() => setIsDialogOpen(true)}><Plus className="mr-2 h-4 w-4" /> Buat Tagihan</Button>
+        )}
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -187,14 +195,14 @@ export default function PaymentsPage() {
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex justify-end gap-1">
-                      {payment.status !== 'paid' && (
+                      {role === 'admin' && payment.status !== 'paid' && (
                         <>
                           <Button variant="outline" size="sm" onClick={() => updateStatus(payment.id!, 'paid')}>Lunas</Button>
                           <Button variant="ghost" size="icon" onClick={() => handleWhatsAppDirect(payment)}><MessageCircle className="h-4 w-4 text-green-600" /></Button>
                           <Button variant="ghost" size="icon" onClick={() => handleGenerateReminder(payment)}><Sparkles className="h-4 w-4 text-primary" /></Button>
                         </>
                       )}
-                      {payment.status === 'paid' && (
+                      {role === 'admin' && payment.status === 'paid' && (
                         <Button variant="ghost" size="icon" onClick={() => updateStatus(payment.id!, 'pending')}><Undo2 className="h-4 w-4" /></Button>
                       )}
                     </div>

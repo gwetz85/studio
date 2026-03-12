@@ -18,11 +18,13 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { format } from "date-fns"
 import { id as localeId } from "date-fns/locale"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function PSBPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
+  const { role } = useAuth();
   const [search, setSearch] = React.useState("");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = React.useState(false);
@@ -74,6 +76,10 @@ export default function PSBPage() {
 
     try {
       if (status === 'aktif') {
+        if (role !== 'admin') {
+          toast({ variant: "destructive", title: "Hanya Admin yang dapat melakukan Aktivasi" });
+          return;
+        }
         const customerData = {
           name: data.name,
           email: data.email,
@@ -101,9 +107,14 @@ export default function PSBPage() {
         setTimeout(() => setShowContract(true), 500);
       } else {
         if (editingPSB?.id) {
+          if (role !== 'admin') {
+            toast({ variant: "destructive", title: "Hanya Admin yang dapat mengubah data" });
+            return;
+          }
           await updateDoc(doc(db, "psbRequests", editingPSB.id), data);
         } else {
           await addDoc(collection(db, "psbRequests"), { ...data, createdAt: Date.now() });
+          toast({ title: "Permintaan PSB Berhasil Dikirim" });
         }
         setIsDialogOpen(false);
       }
@@ -154,7 +165,7 @@ export default function PSBPage() {
                     {packages?.map(p => <SelectItem key={p.id} value={p.id!}>{p.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
-                <Select name="status" defaultValue={editingPSB?.status || "pasif"}>
+                <Select name="status" defaultValue={editingPSB?.status || "pasif"} disabled={role !== 'admin'}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="pasif">Pasif</SelectItem>
@@ -167,7 +178,6 @@ export default function PSBPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Contract Dialog & Table follow same pattern as before but using Firestore Data */}
       <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
         <ScrollArea className="w-full">
           <Table>
@@ -189,14 +199,18 @@ export default function PSBPage() {
                   <TableCell><Badge variant="outline">{getPackageName(request.packageId)}</Badge></TableCell>
                   <TableCell><Badge className="bg-amber-100 text-amber-700">PASIF</Badge></TableCell>
                   <TableCell className="text-right px-6">
-                    <Button variant="ghost" size="icon" onClick={() => { setEditingPSB(request); setIsDialogOpen(true); }}>
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-rose-600" onClick={async () => {
-                      if(confirm("Hapus?")) await deleteDoc(doc(db, "psbRequests", request.id));
-                    }}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    {role === 'admin' && (
+                      <>
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingPSB(request); setIsDialogOpen(true); }}>
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="text-rose-600" onClick={async () => {
+                          if(confirm("Hapus?")) await deleteDoc(doc(db, "psbRequests", request.id));
+                        }}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -204,7 +218,7 @@ export default function PSBPage() {
           </Table>
         </ScrollArea>
       </Card>
-      {/* Hidden Contract Area for Printing */}
+
       <Dialog open={showContract} onOpenChange={setShowContract}>
         <DialogContent className="max-w-4xl p-0">
           <DialogHeader className="p-4 bg-slate-100 flex flex-row justify-between no-print">

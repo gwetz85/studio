@@ -17,11 +17,13 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function CustomersPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
+  const { role } = useAuth();
   const [search, setSearch] = React.useState("");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
@@ -80,11 +82,13 @@ export default function CustomersPage() {
   };
 
   const handleOpenAddDialog = () => {
+    if (role !== 'admin') return;
     setEditingCustomer(null);
     setIsDialogOpen(true);
   };
 
   const handleOpenEditDialog = (customer: any) => {
+    if (role !== 'admin') return;
     setEditingCustomer(customer);
     setIsDialogOpen(true);
   };
@@ -96,6 +100,7 @@ export default function CustomersPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (role !== 'admin') return;
     const formData = new FormData(e.currentTarget);
     const newStatus = formData.get("status") as string;
     
@@ -137,6 +142,7 @@ export default function CustomersPage() {
   };
 
   const deleteCustomer = async (id: string) => {
+    if (role !== 'admin') return;
     if (confirm("Hapus pelanggan ini secara permanen?")) {
       try {
         await deleteDoc(doc(db, "customers", id));
@@ -158,9 +164,11 @@ export default function CustomersPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Daftar Pelanggan</h1>
           <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Kelola data pelanggan online real-time.</p>
         </div>
-        <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
-          <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
-        </Button>
+        {role === 'admin' && (
+          <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
+            <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
+          </Button>
+        )}
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -330,12 +338,16 @@ export default function CustomersPage() {
                       <Button variant="ghost" size="icon" onClick={() => handleOpenPreview(customer)}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)}>
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => deleteCustomer(customer.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {role === 'admin' && (
+                        <>
+                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)}>
+                            <Edit2 className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => deleteCustomer(customer.id)}>
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

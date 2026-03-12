@@ -17,11 +17,13 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/use-auth"
 
 export default function IssuesPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
+  const { role } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 
@@ -78,6 +80,7 @@ export default function IssuesPage() {
   };
 
   const deleteIssue = async (id: string) => {
+    if (role !== 'admin') return;
     if (confirm("Hapus laporan gangguan ini?")) {
       try {
         await deleteDoc(doc(db, "issues", id));
@@ -196,14 +199,16 @@ export default function IssuesPage() {
                       {issue.status === 'process' && (
                         <Button variant="outline" size="sm" className="h-8 text-xs bg-emerald-50 text-emerald-600 border-emerald-100" onClick={() => updateStatus(issue.id!, 'solved')}>Selesai</Button>
                       )}
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-8 w-8 text-rose-600"
-                        onClick={() => deleteIssue(issue.id!)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      {role === 'admin' && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-rose-600"
+                          onClick={() => deleteIssue(issue.id!)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>
