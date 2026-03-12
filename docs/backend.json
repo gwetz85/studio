@@ -1,0 +1,225 @@
+{
+  "entities": {
+    "Customer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Customer",
+      "type": "object",
+      "description": "Represents a customer of the internet service, storing their personal details, contact information, and assigned service package.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Customer entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the customer."
+        },
+        "address": {
+          "type": "string",
+          "description": "The physical address of the customer."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The contact phone number of the customer."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the customer.",
+          "format": "email"
+        },
+        "servicePackageId": {
+          "type": "string",
+          "description": "Reference to the ServicePackage entity. (Relationship: ServicePackage 1:N Customer)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the customer record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the customer record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address",
+        "phoneNumber",
+        "servicePackageId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ServicePackage": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ServicePackage",
+      "type": "object",
+      "description": "Defines the different internet service packages offered, including their names, prices, and features.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ServicePackage entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the service package (e.g., 'Basic Fiber 20Mbps')."
+        },
+        "price": {
+          "type": "number",
+          "description": "The monthly price of the service package."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the features included in the service package."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "A flag indicating whether the service package is currently active and available for new customers."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the service package record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the service package record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "price",
+        "description",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Invoice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Invoice",
+      "type": "object",
+      "description": "Records monthly invoices generated for customers and tracks their payment status, amount due, and payment dates.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Invoice entity."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to the Customer entity for whom this invoice was generated. (Relationship: Customer 1:N Invoice)"
+        },
+        "invoiceDate": {
+          "type": "string",
+          "description": "The date when the invoice was generated.",
+          "format": "date-time"
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "The date by which the invoice payment is due.",
+          "format": "date-time"
+        },
+        "amountDue": {
+          "type": "number",
+          "description": "The total amount of money owed for this invoice."
+        },
+        "paymentDate": {
+          "type": "string",
+          "description": "The date when the payment for this invoice was received (if paid).",
+          "format": "date-time"
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "The current status of the invoice payment (e.g., 'pending', 'paid', 'overdue')."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Any additional notes or remarks about the invoice or payment."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the invoice record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp indicating when the invoice record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "customerId",
+        "invoiceDate",
+        "dueDate",
+        "amountDue",
+        "paymentStatus",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/servicePackages/{servicePackageId}",
+        "definition": {
+          "entityName": "ServicePackage",
+          "schema": {
+            "$ref": "#/backend/entities/ServicePackage"
+          },
+          "description": "Stores definitions of internet service packages, including names, prices, and features. Accessed by authenticated users (read) and administrators (read/write).",
+          "params": [
+            {
+              "name": "servicePackageId",
+              "description": "Unique identifier for a specific service package."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Contains detailed information about each customer. Includes denormalized 'linkedUserId' for authorization independence, linking to a Firebase user's UID for self-service access. Admins have full access; linked users can read their own record.",
+          "params": [
+            {
+              "name": "customerId",
+              "description": "Unique identifier for a specific customer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/invoices/{invoiceId}",
+        "definition": {
+          "entityName": "Invoice",
+          "schema": {
+            "$ref": "#/backend/entities/Invoice"
+          },
+          "description": "Records monthly invoices generated for customers. Includes denormalized 'customerLinkedUserId' for authorization independence, allowing linked customer users to read their own invoices directly. Admins have full access; linked users can read their own invoices.",
+          "params": [
+            {
+              "name": "invoiceId",
+              "description": "Unique identifier for a specific invoice."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The \"NetInvoice Offline\" application requires a robust Firestore structure to manage customer data, service packages, and invoices, while supporting both administrative staff access and potential future customer self-service. Given the 'offline-first' nature with IndexedDB and the need for 'realtime' online synchronization, the design prioritizes scalability, security, and ease of debugging. \n\n1.  **Authorization Independence via Denormalization (CRITICAL):**\n    *   To eliminate the need for costly and complex `get()` calls in Firestore Security Rules and ensure atomic operations, authorization context is denormalized. \n    *   For the `Customer` entity, a `linkedUserId` field (nullable string) will be added. This field will store the Firebase `uid` of the user account associated with that customer. This enables direct `request.auth.uid == resource.data.linkedUserId` checks in rules for self-service access.\n    *   For the `Invoice` entity, in addition to `customerId`, a `customerLinkedUserId` field (nullable string) will be denormalized from the `Customer`'s `linkedUserId`. This allows security rules on invoices to directly verify `request.auth.uid == resource.data.customerLinkedUserId` without needing to fetch the parent `Customer` document, ensuring Authorization Independence.\n\n2.  **Structural Segregation & QAPs (Query As You Pay):**\n    *   All core entities (`ServicePackage`, `Customer`, `Invoice`) will reside in dedicated top-level collections: `/servicePackages`, `/customers`, and `/invoices`. This ensures a homogeneous security posture within each collection, simplifying security rules and enabling efficient queries.\n    *   **`/servicePackages/{servicePackageId}`:** All documents here will share read access for authenticated users (both staff and customers to view package details) and write access restricted to administrators. This allows for simple QAP-compliant `list` operations.\n    *   **`/customers/{customerId}`:** Administrators can `list` all customer records. For self-service, customers can efficiently query their own record using `customers.where('linkedUserId', '==', request.auth.uid)`. The `linkedUserId` field is essential for this QAP-compliant query and rule enforcement.\n    *   **`/invoices/{invoiceId}`:** Administrators can `list` all invoice records. For self-service, customers can efficiently query their own invoices using `invoices.where('customerLinkedUserId', '==', request.auth.uid)`. The `customerLinkedUserId` field facilitates this QAP-compliant query and rule enforcement without cross-document reads.\n\n3.  **Database Access Control (DBAC):**\n    *   Administrative roles will be managed using a dedicated collection, e.g., `/roles_admin/{adminUid}`. The existence of a document at this path for `request.auth.uid` will grant administrative privileges, following the \"Existence over Content\" principle for clear and simple role-based access control. This collection is a meta-entity for authorization and not included in the primary entity paths below.\n\nThis structure ensures that the application's real-time and online database components are secure, performant, and maintainable, fully supporting the required features while adhering to best practices for Firestore security and scalability."
+  }
+}
