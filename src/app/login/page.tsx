@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Lock, User as UserIcon, AlertCircle } from "lucide-react"
+import { Lock, User as UserIcon, AlertCircle, UserPlus, LogIn } from "lucide-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -23,10 +23,11 @@ const MTLogo = ({ className }: { className?: string }) => (
 )
 
 export default function LoginPage() {
-  const { login } = useAuth()
+  const { login, register } = useAuth()
   const { toast } = useToast()
   const [error, setError] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
+  const [isRegisterMode, setIsRegisterMode] = React.useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -38,12 +39,21 @@ export default function LoginPage() {
     const password = formData.get("password") as string
 
     try {
-      // Mapping local admin to a predictable firebase email for this MVP
-      const email = username === "admin" ? "admin@mtnet.com" : `${username}@mtnet.com`
-      await login(email, password)
-      toast({ title: "Login Berhasil", description: "Selamat datang di MTNET Online." })
+      if (isRegisterMode) {
+        await register(username, password, "user")
+        toast({ title: "Registrasi Berhasil", description: "Akun Anda telah dibuat dan Anda telah masuk." })
+      } else {
+        const email = username.includes("@") ? username : `${username}@mtnet.com`
+        await login(email, password)
+        toast({ title: "Login Berhasil", description: "Selamat datang di MTNET Online." })
+      }
     } catch (err: any) {
-      setError("Username atau password salah. Pastikan akun sudah terdaftar di Firebase.")
+      console.error(err)
+      if (isRegisterMode) {
+        setError("Gagal mendaftar. Username mungkin sudah ada atau password terlalu lemah.")
+      } else {
+        setError("Username atau password salah. Pastikan akun sudah terdaftar.")
+      }
     } finally {
       setIsLoading(false)
     }
@@ -57,7 +67,9 @@ export default function LoginPage() {
             <MTLogo className="size-8" />
           </div>
           <CardTitle className="text-2xl font-bold">MTNET SYSTEM</CardTitle>
-          <CardDescription className="text-primary-foreground/80">Sistem Manajemen Online Real-time</CardDescription>
+          <CardDescription className="text-primary-foreground/80">
+            {isRegisterMode ? "Pendaftaran Akun Baru" : "Sistem Manajemen Online Real-time"}
+          </CardDescription>
         </div>
         
         <form onSubmit={handleSubmit}>
@@ -87,9 +99,23 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="p-8 pt-0 flex flex-col gap-4">
             <Button type="submit" className="w-full h-11 font-semibold" disabled={isLoading}>
-              {isLoading ? "Memproses..." : "Masuk ke Sistem"}
+              {isLoading ? "Memproses..." : (isRegisterMode ? "Daftar Sekarang" : "Masuk ke Sistem")}
             </Button>
-            <p className="text-center text-xs text-slate-400">
+            
+            <Button 
+              type="button" 
+              variant="ghost" 
+              className="text-xs text-slate-500" 
+              onClick={() => setIsRegisterMode(!isRegisterMode)}
+            >
+              {isRegisterMode ? (
+                <><LogIn className="mr-2 h-3 w-3" /> Sudah punya akun? Masuk</>
+              ) : (
+                <><UserPlus className="mr-2 h-3 w-3" /> Belum punya akun? Daftar</>
+              )}
+            </Button>
+
+            <p className="text-center text-[10px] text-slate-400">
               Akses sinkronisasi real-time cloud aktif.
             </p>
           </CardFooter>

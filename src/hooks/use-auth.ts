@@ -3,14 +3,16 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
-import { useUser, useAuth as useFirebaseAuth } from "@/firebase"
-import { signInWithEmailAndPassword, signOut } from "firebase/auth"
+import { useUser, useAuth as useFirebaseAuth, useFirestore } from "@/firebase"
+import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
+import { collection, addDoc, query, where, getDocs } from "firebase/firestore"
 
 export type UserRole = "admin" | "user"
 
 export function useAuth() {
   const router = useRouter()
   const pathname = usePathname()
+  const db = useFirestore()
   const { user, isUserLoading } = useUser()
   const authInstance = useFirebaseAuth()
   
@@ -21,11 +23,10 @@ export function useAuth() {
     if (!isUserLoading) {
       if (user) {
         // Simple role check based on email
-        // Menambahkan 'agus@mtnet.com' ke dalam daftar admin secara permanen
         const adminEmails = ["admin@mtnet.com", "agus@mtnet.com"];
         const userRole: UserRole = adminEmails.includes(user.email || "") ? "admin" : "user"
         setRole(userRole)
-        setUsername(user.displayName || user.email)
+        setUsername(user.displayName || user.email?.split('@')[0] || "User")
 
         if (userRole === "user" && (pathname === "/settings" || pathname === "/users")) {
           router.push("/")
@@ -41,6 +42,25 @@ export function useAuth() {
     router.push("/")
   }
 
+  const register = async (username: string, pass: string, userRole: UserRole = "user") => {
+    const email = `${username}@mtnet.com`
+    // 1. Create user in Firebase Auth
+    const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
+    
+    // 2. Update display name
+    await updateProfile(userCredential.user, { displayName: username })
+
+    // 3. Save role to Firestore for management visibility
+    await addDoc(collection(db, "users"), {
+      username: username,
+      email: email,
+      role: userRole,
+      createdAt: Date.now()
+    })
+
+    return userCredential.user
+  }
+
   const logout = async () => {
     await signOut(authInstance)
     router.push("/login")
@@ -52,6 +72,7 @@ export function useAuth() {
     username, 
     logout, 
     login,
+    register,
     isLoading: isUserLoading 
   }
 }

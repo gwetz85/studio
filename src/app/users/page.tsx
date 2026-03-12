@@ -9,20 +9,22 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck } from "lucide-react"
+import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useAuth } from "@/hooks/use-auth"
+import { useAuth, UserRole } from "@/hooks/use-auth"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function UsersManagementPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user: currentUser } = useFirebaseUser();
-  const { role: currentUserRole } = useAuth();
+  const { role: currentUserRole, register } = useAuth();
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const usersQuery = useMemoFirebase(() => {
     if (!currentUser) return null;
@@ -32,35 +34,36 @@ export default function UsersManagementPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
     const formData = new FormData(e.currentTarget);
     const username = formData.get("username") as string;
-    const role = formData.get("role") as string;
+    const password = formData.get("password") as string;
+    const role = formData.get("role") as UserRole;
     
-    // Note: This only creates a record in Firestore for role mapping.
-    // In a real app, you'd use a cloud function to create the actual Auth user.
-    const data = {
-      username,
-      role,
-      createdAt: Date.now()
-    };
-
     try {
-      await addDoc(collection(db, "users"), data);
+      await register(username, password, role);
       toast({ 
-        title: "User Berhasil Ditambahkan", 
-        description: `Akun ${username} siap digunakan dengan role ${role}.` 
+        title: "User Berhasil Didaftarkan", 
+        description: `Akun ${username} telah dibuat di sistem Auth.` 
       });
       setIsDialogOpen(false);
-    } catch (error) {
-      toast({ variant: "destructive", title: "Gagal menyimpan user" });
+    } catch (error: any) {
+      console.error(error);
+      toast({ 
+        variant: "destructive", 
+        title: "Gagal mendaftarkan user",
+        description: "Pastikan password minimal 6 karakter atau username belum terdaftar."
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const deleteUser = async (id: string) => {
-    if (confirm("Hapus akses user ini secara permanen?")) {
+    if (confirm("Hapus akses user ini dari database Firestore? (Catatan: Akun Auth harus dihapus manual di Console)")) {
       try {
         await deleteDoc(doc(db, "users", id));
-        toast({ title: "User dihapus" });
+        toast({ title: "Data user dihapus" });
       } catch (error) {
         toast({ variant: "destructive", title: "Gagal menghapus" });
       }
@@ -94,18 +97,24 @@ export default function UsersManagementPage() {
             <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
               <DialogTitle className="flex items-center gap-2">
                 <UsersRound className="h-5 w-5 text-primary" />
-                Registrasi Akun Staf
+                Registrasi Akun Staf (Auth Online)
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
+              <Alert className="bg-amber-50 border-amber-100 text-amber-800 py-2">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <AlertDescription className="text-[10px]">
+                  PENTING: Menambahkan user baru akan membuat Anda otomatis LOGOUT dari sesi ini untuk memproses pendaftaran akun baru.
+                </AlertDescription>
+              </Alert>
+
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
                 <Input id="username" name="username" required placeholder="Contoh: agus_teknisi" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Katasandi</Label>
-                <Input id="password" name="password" type="password" required placeholder="••••••••" />
-                <p className="text-[10px] text-slate-400">Gunakan kombinasi huruf dan angka.</p>
+                <Input id="password" name="password" type="password" required placeholder="Min. 6 Karakter" minLength={6} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Role User</Label>
@@ -120,7 +129,9 @@ export default function UsersManagementPage() {
                 </Select>
               </div>
               <DialogFooter className="pt-4">
-                <Button type="submit" className="w-full">Daftarkan User</Button>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "Mendaftarkan..." : "Daftarkan User Sekarang"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
