@@ -24,9 +24,7 @@ export function useAuth() {
     if (typeof window === "undefined") return null;
     let id = localStorage.getItem("mtnet_device_id");
     if (!id) {
-      id = (typeof crypto !== 'undefined' && crypto.randomUUID) 
-        ? crypto.randomUUID() 
-        : Math.random().toString(36).substring(2) + Date.now().toString(36);
+      id = Math.random().toString(36).substring(2) + Date.now().toString(36);
       localStorage.setItem("mtnet_device_id", id);
     }
     return id;
@@ -51,8 +49,10 @@ export function useAuth() {
         const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
         const currentDeviceId = getDeviceId();
 
-        // Immediate role assignment for Agus to avoid race conditions
-        if (isAgus && isMounted) setRole('admin');
+        // Immediate role assignment for Agus to avoid permission errors
+        if (isAgus && isMounted) {
+          setRole('admin');
+        }
 
         try {
           const userDocRef = doc(db, "users", user.uid);
@@ -93,6 +93,7 @@ export function useAuth() {
             router.push("/");
           }
         } catch (e) {
+          // If Firestore fails, but it's Agus, ensure Admin role is set anyway
           if (isMounted && isAgus) setRole('admin');
         }
       } else if (!isUserLoading && !user && pathname !== "/login") {

@@ -27,21 +27,21 @@ export default function IssuesPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 
-  // Only run query if auth is ready to prevent permission errors
+  // Only run query if auth is ready and role is determined to prevent permission errors
   const issuesQuery = useMemoFirebase(() => {
-    if (!user || isAuthLoading) return null;
+    if (!user || isAuthLoading || !role) return null;
     return query(
       collection(db, "issues"), 
       where("status", "in", ["pending", "process"]),
       orderBy("createdAt", "desc")
     );
-  }, [db, user, isAuthLoading]);
+  }, [db, user, isAuthLoading, role]);
   const { data: issues } = useCollection(issuesQuery);
 
   const customersQuery = useMemoFirebase(() => {
-    if (!user || isAuthLoading) return null;
+    if (!user || isAuthLoading || !role) return null;
     return collection(db, "customers");
-  }, [db, user, isAuthLoading]);
+  }, [db, user, isAuthLoading, role]);
   const { data: customers } = useCollection(customersQuery);
 
   const filteredIssues = React.useMemo(() => {
@@ -103,7 +103,7 @@ export default function IssuesPage() {
 
   const getCustomerName = (id: string) => customers?.find(c => c.id === id)?.name || "N/A";
 
-  if (isAuthLoading) {
+  if (isAuthLoading || !role) {
     return <div className="flex h-96 items-center justify-center animate-pulse text-slate-400">Menghubungkan ke Cloud...</div>;
   }
 
