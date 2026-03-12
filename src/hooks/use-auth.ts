@@ -19,19 +19,21 @@ export function useAuth() {
   const [role, setRole] = useState<UserRole | null>(null)
   const [username, setUsername] = useState<string | null>(null)
 
+  // Reset role immediately when user object changes to prevent stale role state
+  useEffect(() => {
+    setRole(null)
+    setUsername(null)
+  }, [user])
+
   useEffect(() => {
     async function checkRole() {
       if (!isUserLoading && user) {
         setUsername(user.displayName || user.email?.split('@')[0] || "User")
         
-        // Default role
         let userRole: UserRole = "user";
 
-        // Hardcoded ADMIN override for owner account
         if (user.email === 'agus@mtnet.com' || user.email?.startsWith('admin@')) {
           userRole = "admin";
-          
-          // Sync database role if it's currently 'user'
           try {
             const userDoc = await getDoc(doc(db, "users", user.uid));
             if (userDoc.exists() && userDoc.data().role !== 'admin') {
@@ -76,9 +78,7 @@ export function useAuth() {
     if (!cleanUsername) throw new Error("Username tidak boleh kosong");
     if (cleanUsername.includes(" ")) throw new Error("Username tidak boleh mengandung spasi");
     
-    // Force admin role for 'agus' during registration
     const finalRole = cleanUsername === 'agus' ? 'admin' : userRole;
-    
     const email = cleanUsername.includes("@") ? cleanUsername : `${cleanUsername}@mtnet.com`
     
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
@@ -95,6 +95,7 @@ export function useAuth() {
   }
 
   const logout = async () => {
+    setRole(null)
     await signOut(authInstance)
     router.push("/login")
   }
@@ -106,6 +107,6 @@ export function useAuth() {
     logout, 
     login,
     register,
-    isLoading: isUserLoading 
+    isLoading: isUserLoading || (!!user && !role) // Also loading if user exists but role is not yet determined
   }
 }

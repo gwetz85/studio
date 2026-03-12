@@ -28,6 +28,7 @@ export default function UsersManagementPage() {
   const [isRegistering, setIsRegistering] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState<any | null>(null);
 
+  // Strictly guard the query to only run when we are certain the user is an admin
   const usersQuery = useMemoFirebase(() => {
     if (!currentUser || currentUserRole !== 'admin') return null;
     return query(collection(db, "users"), orderBy("username", "asc"));
@@ -96,7 +97,14 @@ export default function UsersManagementPage() {
   };
 
   if (isAuthLoading) {
-    return <div className="flex items-center justify-center min-h-[400px]">Memverifikasi akses...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-2">
+           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+           <p className="text-xs text-slate-500 font-medium">Memverifikasi akses...</p>
+        </div>
+      </div>
+    );
   }
 
   if (currentUserRole !== 'admin') {
