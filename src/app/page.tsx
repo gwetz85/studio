@@ -108,14 +108,16 @@ export default function Dashboard() {
   return (
     <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700">
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent className="sm:max-w-md p-0 overflow-hidden">
-          <DialogHeader className="bg-primary p-4 md:p-6 text-white text-center">
-            <DialogTitle className="text-base md:text-xl font-black uppercase">MTNET SYSTEM</DialogTitle>
+        <DialogContent className="w-[90vw] sm:max-w-md p-0 overflow-hidden rounded-2xl">
+          <DialogHeader className="bg-primary p-6 md:p-8 text-white text-center">
+            <DialogTitle className="text-base sm:text-lg md:text-xl font-black uppercase tracking-tight">MTNET SYSTEM APLIKASI</DialogTitle>
             <DialogDescription className="text-white/80 text-[10px] md:text-xs">Sistem Manajemen Real-time Cloud</DialogDescription>
           </DialogHeader>
-          <div className="p-6">
-            <p className="text-xs text-center mb-4 italic">Akses database online aktif. Semua perubahan akan disinkronkan ke seluruh tim.</p>
-            <Button onClick={() => setShowWelcome(false)} className="w-full h-10 text-xs">Masuk</Button>
+          <div className="p-6 md:p-8">
+            <p className="text-[10px] sm:text-xs text-center mb-6 italic text-slate-500 leading-relaxed">
+              Akses database online aktif. Semua perubahan yang Anda buat akan langsung disinkronkan ke seluruh tim lapangan secara real-time.
+            </p>
+            <Button onClick={() => setShowWelcome(false)} className="w-full h-11 text-xs sm:text-sm font-bold shadow-lg">Masuk Ke Dasbor</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -129,10 +131,10 @@ export default function Dashboard() {
         ].map((item) => (
           <Card key={item.title} className="border-none shadow-sm hover:shadow-md transition-all">
             <CardHeader className="flex flex-row items-center justify-between pb-1 p-3">
-              <CardTitle className="text-[10px] font-bold text-slate-500 uppercase">{item.title}</CardTitle>
-              <div className={`${item.bg} ${item.color} p-1.5 rounded-md`}><item.icon className="h-3 w-3" /></div>
+              <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase">{item.title}</CardTitle>
+              <div className={`${item.bg} ${item.color} p-1 sm:p-1.5 rounded-md`}><item.icon className="h-3 w-3" /></div>
             </CardHeader>
-            <CardContent className="p-3 pt-0"><div className="text-lg md:text-2xl font-black">{item.val}</div></CardContent>
+            <CardContent className="p-3 pt-0"><div className="text-base sm:text-lg md:text-2xl font-black">{item.val}</div></CardContent>
           </Card>
         ))}
       </div>
@@ -141,10 +143,10 @@ export default function Dashboard() {
         <Card className="lg:col-span-2 border-none shadow-sm">
           <CardHeader className="p-4"><CardTitle className="text-sm md:text-lg">Statistik Status</CardTitle></CardHeader>
           <CardContent className="p-4 pt-0">
-            <div className="h-[200px] md:h-[300px]">
+            <div className="h-[180px] sm:h-[200px] md:h-[300px]">
               <ChartContainer config={{}} className="h-full w-full">
                 <PieChart>
-                  <Pie data={chartData} cx="50%" cy="50%" innerRadius={50} outerRadius={70} paddingAngle={5} dataKey="value">
+                  <Pie data={chartData} cx="50%" cy="50%" innerRadius={40} outerRadius={60} paddingAngle={5} dataKey="value">
                     {chartData.map((e, i) => <Cell key={i} fill={e.fill} />)}
                   </Pie>
                   <ChartTooltip content={<ChartTooltipContent />} />
@@ -176,7 +178,7 @@ export default function Dashboard() {
               </div>
               {serverTime ? (
                 <>
-                  <div className="text-xl md:text-2xl font-black font-mono tracking-tighter tabular-nums text-primary">
+                  <div className="text-lg md:text-2xl font-black font-mono tracking-tighter tabular-nums text-primary">
                     {serverTime.time}
                   </div>
                   <div className="text-[8px] md:text-[10px] font-medium text-slate-400">

@@ -70,18 +70,18 @@ export default function LoginPage() {
   if (deviceError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-        <Card className="w-full max-w-md border-none shadow-2xl">
+        <Card className="w-full max-w-sm border-none shadow-2xl">
           <CardHeader className="text-center space-y-4">
             <div className="mx-auto bg-rose-100 p-4 rounded-full w-fit">
               <MonitorOff className="h-8 w-8 text-rose-600" />
             </div>
-            <CardTitle className="text-2xl font-bold text-rose-600">Akses Diblokir</CardTitle>
-            <CardDescription className="text-slate-600">
+            <CardTitle className="text-xl md:text-2xl font-bold text-rose-600">Akses Diblokir</CardTitle>
+            <CardDescription className="text-xs md:text-sm text-slate-600">
               {deviceError}
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button onClick={logout} variant="outline" className="w-full">
+            <Button onClick={logout} variant="outline" className="w-full text-xs">
               Kembali ke Login
             </Button>
           </CardFooter>
@@ -91,52 +91,52 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <Card className="w-full max-w-md border-none shadow-2xl overflow-hidden">
-        <div className="bg-primary p-8 text-white text-center space-y-2">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm mb-2">
-            <MTLogo className="size-8" />
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 sm:p-6">
+      <Card className="w-full max-w-sm border-none shadow-2xl overflow-hidden">
+        <div className="bg-primary p-6 sm:p-8 text-white text-center space-y-2">
+          <div className="inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm mb-2">
+            <MTLogo className="size-6 sm:size-8" />
           </div>
-          <CardTitle className="text-2xl font-bold">MTNET SYSTEM APLIKASI</CardTitle>
-          <CardDescription className="text-primary-foreground/80">
+          <CardTitle className="text-lg sm:text-2xl font-bold uppercase tracking-tight">MTNET SYSTEM APLIKASI</CardTitle>
+          <CardDescription className="text-primary-foreground/80 text-[10px] sm:text-sm">
             {isRegisterMode ? "Pendaftaran Akun Baru" : "Sistem Manajemen Online Real-time"}
           </CardDescription>
         </div>
         
         <form onSubmit={handleSubmit}>
-          <CardContent className="p-8 space-y-4">
+          <CardContent className="p-6 sm:p-8 space-y-4">
             {error && (
-              <Alert variant="destructive" className="bg-rose-50 border-rose-100 text-rose-600">
+              <Alert variant="destructive" className="bg-rose-50 border-rose-100 text-rose-600 py-2">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{error}</AlertDescription>
+                <AlertDescription className="text-[10px] sm:text-xs">{error}</AlertDescription>
               </Alert>
             )}
             
-            <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="username" className="text-xs sm:text-sm">Username</Label>
               <div className="relative">
                 <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input id="username" name="username" placeholder="Masukkan username" className="pl-10" required />
+                <Input id="username" name="username" placeholder="Masukkan username" className="pl-10 h-10 text-xs sm:text-sm" required />
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+            <div className="space-y-1.5 sm:space-y-2">
+              <Label htmlFor="password" className="text-xs sm:text-sm">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <Input id="password" name="password" type="password" placeholder="••••••••" className="pl-10" required />
+                <Input id="password" name="password" type="password" placeholder="••••••••" className="pl-10 h-10 text-xs sm:text-sm" required />
               </div>
             </div>
           </CardContent>
-          <CardFooter className="p-8 pt-0 flex flex-col gap-4">
-            <Button type="submit" className="w-full h-11 font-semibold" disabled={isLoading}>
+          <CardFooter className="p-6 sm:p-8 pt-0 flex flex-col gap-4">
+            <Button type="submit" className="w-full h-10 sm:h-11 font-semibold text-xs sm:text-sm" disabled={isLoading}>
               {isLoading ? "Memproses..." : (isRegisterMode ? "Daftar Sekarang" : "Masuk ke Sistem")}
             </Button>
             
             <Button 
               type="button" 
               variant="ghost" 
-              className="text-xs text-slate-500" 
+              className="text-[10px] sm:text-xs text-slate-500 h-8" 
               onClick={() => setIsRegisterMode(!isRegisterMode)}
             >
               {isRegisterMode ? (
@@ -146,7 +146,7 @@ export default function LoginPage() {
               )}
             </Button>
 
-            <p className="text-center text-[10px] text-slate-400">
+            <p className="text-center text-[8px] sm:text-[10px] text-slate-400">
               Akses sinkronisasi real-time cloud aktif.
             </p>
           </CardFooter>
