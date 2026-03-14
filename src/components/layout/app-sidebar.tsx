@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -13,7 +12,8 @@ import {
   UserPlus, 
   UserX, 
   Wrench,
-  UsersRound
+  UsersRound,
+  AlertCircle
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -82,7 +82,7 @@ const navItems = [
   {
     title: "Laporan Gangguan",
     url: "/issues",
-    icon: ShieldAlert,
+    icon: AlertCircle,
   },
   {
     title: "Menu Teknisi",
@@ -100,12 +100,12 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="border-b border-white/10 bg-black/10 backdrop-blur-md p-6">
-        <div className="flex flex-col items-center justify-center gap-3">
-          <div className="flex aspect-square size-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-xl border border-white/20 text-white">
+        <div className="flex flex-col items-center justify-center gap-3 w-full text-center">
+          <div className="flex aspect-square size-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-xl border border-white/20 text-white mx-auto">
             <MTLogo className="size-8" />
           </div>
-          <div className="flex flex-col items-center gap-0.5 leading-none overflow-hidden">
-            <span className="font-black text-2xl tracking-tighter uppercase text-white">MTNET</span>
+          <div className="flex flex-col items-center gap-0.5 leading-none overflow-hidden mx-auto">
+            <span className="font-black text-xl tracking-tighter uppercase text-white whitespace-pre-wrap">MTNET SYSTEM APLIKASI</span>
             <span className="text-[10px] font-bold text-white/40 tracking-[0.2em] uppercase">Online System</span>
           </div>
         </div>
@@ -116,20 +116,30 @@ export function AppSidebar() {
           <SidebarGroupLabel className="text-white/40 mb-2">Navigasi Utama</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.url}
-                    tooltip={item.title}
-                  >
-                    <Link href={item.url} className="flex items-center gap-3 transition-all duration-300">
-                      <item.icon className={pathname === item.url ? "scale-110 text-white" : "opacity-70"} />
-                      <span className={pathname === item.url ? "text-white" : ""}>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navItems.map((item) => {
+                // Check permissions
+                const isAllowed = 
+                  role === 'admin' || 
+                  (role === 'staff' && item.url !== '/technician' && item.url !== '/users') ||
+                  (role === 'teknisi' && (item.url === '/' || item.url === '/customers' || item.url === '/technician' || item.url === '/issues'));
+
+                if (!isAllowed) return null;
+
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.url}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.url} className="flex items-center gap-3 transition-all duration-300">
+                        <item.icon className={pathname === item.url ? "scale-110 text-white" : "opacity-70"} />
+                        <span className={pathname === item.url ? "text-white" : ""}>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
               
               {role === 'admin' && (
                 <SidebarMenuItem>

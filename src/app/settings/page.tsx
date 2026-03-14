@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -356,7 +355,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3">
                 <Info className="h-5 w-5 text-primary" />
                 <div>
-                  <h3 className="font-bold">MTNET Cloud v2.1.0</h3>
+                  <h3 className="font-bold">MTNET SYSTEM APLIKASI v2.1.0</h3>
                   <p className="text-xs text-slate-400">Mode Sinkronisasi Real-time Aktif</p>
                 </div>
               </div>

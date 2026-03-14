@@ -1,4 +1,3 @@
-
 "use client"
 
 import './globals.css';
@@ -80,7 +79,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-        <title>MTNET SYSTEM</title>
+        <title>MTNET SYSTEM APLIKASI</title>
       </head>
       <body className="antialiased transition-colors duration-300 relative min-h-screen">
         <FirebaseClientProvider>

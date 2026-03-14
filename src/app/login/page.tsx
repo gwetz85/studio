@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -92,7 +91,7 @@ export default function LoginPage() {
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm mb-2">
             <MTLogo className="size-8" />
           </div>
-          <CardTitle className="text-2xl font-bold">MTNET SYSTEM</CardTitle>
+          <CardTitle className="text-2xl font-bold">MTNET SYSTEM APLIKASI</CardTitle>
           <CardDescription className="text-primary-foreground/80">
             {isRegisterMode ? "Pendaftaran Akun Baru" : "Sistem Manajemen Online Real-time"}
           </CardDescription>

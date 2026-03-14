@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -111,7 +110,7 @@ export default function Dashboard() {
       <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
         <DialogContent className="sm:max-w-md p-0 overflow-hidden">
           <DialogHeader className="bg-primary p-6 text-white text-center">
-            <DialogTitle className="text-xl font-black">MTNET ONLINE</DialogTitle>
+            <DialogTitle className="text-xl font-black">MTNET SYSTEM APLIKASI</DialogTitle>
             <DialogDescription className="text-white/80">Sistem Manajemen Real-time Cloud</DialogDescription>
           </DialogHeader>
           <div className="p-6">
