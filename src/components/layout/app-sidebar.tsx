@@ -12,8 +12,7 @@ import {
   UserPlus, 
   UserX, 
   Wrench,
-  UsersRound,
-  AlertCircle
+  UsersRound
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -86,11 +85,6 @@ const navItems = [
     icon: CreditCard,
   },
   {
-    title: "Laporan Gangguan",
-    url: "/issues",
-    icon: AlertCircle,
-  },
-  {
     title: "Menu Teknisi",
     url: "/technician",
     icon: Wrench,
@@ -127,7 +121,7 @@ export function AppSidebar() {
                 const isAllowed = 
                   role === 'admin' || 
                   (role === 'staff' && item.url !== '/technician' && item.url !== '/users') ||
-                  (role === 'teknisi' && (item.url === '/' || item.url === '/customers' || item.url === '/technician' || item.url === '/issues'));
+                  (role === 'teknisi' && (item.url === '/' || item.url === '/customers' || item.url === '/technician'));
 
                 if (!isAllowed) return null;
 
