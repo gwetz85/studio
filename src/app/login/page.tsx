@@ -12,12 +12,18 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 const MTLogo = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-    <path d="M6 32V10L20 22L34 10V32" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M20 22V36" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M12 36H28" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
-    <circle cx="6" cy="10" r="2.5" fill="currentColor"/>
-    <circle cx="34" cy="10" r="2.5" fill="currentColor"/>
-    <circle cx="20" cy="22" r="2.5" fill="currentColor"/>
+    {/* Base 3D Hexagon Shape */}
+    <path d="M20 2L38 11V29L20 38L2 29V11L20 2Z" fill="currentColor" fillOpacity="0.1" />
+    {/* Top Face */}
+    <path d="M20 2L38 11L20 20L2 11L20 2Z" fill="currentColor" fillOpacity="0.9" />
+    {/* Left Face */}
+    <path d="M2 11V29L20 38V20L2 11Z" fill="currentColor" fillOpacity="0.7" />
+    {/* Right Face */}
+    <path d="M38 11V29L20 38V20L38 11Z" fill="currentColor" fillOpacity="0.5" />
+    {/* Inner 3D Detail (M-shape stylization) */}
+    <path d="M12 18V28L20 32V22L12 18Z" fill="white" fillOpacity="0.8" />
+    <path d="M28 18V28L20 32V22L28 18Z" fill="white" fillOpacity="0.6" />
+    <path d="M20 14L30 19V21L20 16L10 21V19L20 14Z" fill="white" />
   </svg>
 )
 
