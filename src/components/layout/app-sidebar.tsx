@@ -104,9 +104,9 @@ export function AppSidebar() {
           <div className="flex aspect-square size-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-xl border border-white/20 text-white mx-auto">
             <MTLogo className="size-8" />
           </div>
-          <div className="flex flex-col items-center gap-0.5 leading-none overflow-hidden mx-auto">
-            <span className="font-black text-xl tracking-tighter uppercase text-white whitespace-pre-wrap">MTNET SYSTEM APLIKASI</span>
-            <span className="text-[10px] font-bold text-white/40 tracking-[0.2em] uppercase">Online System</span>
+          <div className="flex flex-col items-center gap-0.5 leading-none overflow-hidden mx-auto w-full">
+            <span className="font-black text-[15px] sm:text-[16px] tracking-tighter uppercase text-white whitespace-nowrap w-full">MTNET SYSTEM APLIKASI</span>
+            <span className="text-[9px] font-bold text-white/40 tracking-[0.2em] uppercase">Online System</span>
           </div>
         </div>
       </SidebarHeader>
