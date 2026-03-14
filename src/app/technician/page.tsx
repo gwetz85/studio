@@ -4,11 +4,12 @@
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Wifi, Gauge, Cpu, Globe, ExternalLink, Info, Terminal as TerminalIcon, Settings2, Play, Trash2, ChevronRight } from "lucide-react"
+import { Wifi, Gauge, Cpu, Globe, ExternalLink, Info, Terminal as TerminalIcon, Settings2, Play, Trash2, ChevronRight, Share2, Link as LinkIcon, Lock } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useToast } from "@/hooks/use-toast"
 
 const commonGatewayIps = [
   { label: "Modem Umum (192.168.1.1)", ip: "http://192.168.1.1" },
@@ -18,7 +19,9 @@ const commonGatewayIps = [
 ];
 
 export default function TechnicianPage() {
+  const { toast } = useToast();
   const [deviceInfo, setDeviceInfo] = React.useState({ os: "Unknown", type: "Desktop" });
+  const [remoteUrl, setRemoteUrl] = React.useState("");
   const [terminalLines, setTerminalLines] = React.useState<string[]>([
     "MTNET System [Version 2.0.1]",
     "(c) 2024 MTNET Corporation. All rights reserved.",
@@ -30,7 +33,6 @@ export default function TechnicianPage() {
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    // Detect Device Info for "Real Data" Feel
     const ua = window.navigator.userAgent;
     let os = "Windows";
     let type = "Desktop";
@@ -141,18 +143,67 @@ export default function TechnicianPage() {
   };
 
   const openExternal = (url: string) => {
-    window.open(url, '_blank');
+    const formattedUrl = url.startsWith('http') ? url : `http://${url}`;
+    window.open(formattedUrl, '_blank');
+  };
+
+  const handleOpenRemote = () => {
+    if (!remoteUrl) return;
+    openExternal(remoteUrl);
+    toast({ title: "Membuka Mikrotik Remote", description: "Mengarahkan ke WebFig..." });
   };
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Menu Teknisi</h1>
-        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Alat bantu lapangan untuk pengecekan jaringan dan konfigurasi modem.</p>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white uppercase">Menu Teknisi</h1>
+        <p className="text-[10px] md:text-base text-slate-500 dark:text-slate-400 font-medium">Remote VPN & Alat Bantu Lapangan Real-time.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
+          {/* Mikrotik Remote Portal Card */}
+          <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b border-primary/10 p-4 md:p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                  <Share2 className="h-5 w-5 md:h-6 md:w-6" />
+                </div>
+                <div>
+                  <CardTitle className="text-base md:text-lg dark:text-white">Mikrotik Remote Portal</CardTitle>
+                  <CardDescription className="text-[10px] md:text-sm dark:text-slate-400 uppercase font-bold tracking-tighter">Akses WebFig via VPN Tunnel</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6 space-y-4">
+              <div className="flex flex-col gap-3">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">URL VPN Remote / Hostname</span>
+                  <div className="relative">
+                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                    <Input 
+                      placeholder="contoh: id-1.mikrotik.id:8080" 
+                      className="pl-10 h-10 text-xs md:text-sm font-mono"
+                      value={remoteUrl}
+                      onChange={(e) => setRemoteUrl(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <Button 
+                  className="w-full h-10 md:h-11 shadow-lg bg-primary hover:bg-primary/90 font-bold"
+                  onClick={handleOpenRemote}
+                  disabled={!remoteUrl}
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" /> BUKA REMOTE WEBFIG
+                </Button>
+                <div className="flex items-center gap-2 text-[8px] md:text-[10px] text-slate-500 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg">
+                  <Lock className="h-3 w-3" />
+                  <span>Gunakan port WebFig (default 80 atau 8080) pada settingan tunnel Anda.</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           <Card className="border-none shadow-2xl bg-[#0c0c0c] text-[#00ff00] font-mono overflow-hidden rounded-2xl ring-1 ring-slate-800">
             <CardHeader className="bg-[#1a1a1a] border-b border-[#333] py-3 px-4 flex flex-row items-center justify-between space-y-0">
               <div className="flex items-center gap-2">
@@ -207,7 +258,9 @@ export default function TechnicianPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
 
+        <div className="space-y-6">
           <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
             <CardHeader className="border-b border-slate-100 dark:border-slate-800 p-4 md:p-6">
               <div className="flex items-center gap-3">
@@ -215,25 +268,25 @@ export default function TechnicianPage() {
                   <Settings2 className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <CardTitle className="text-base md:text-lg dark:text-white">Konfigurasi Modem</CardTitle>
-                  <CardDescription className="text-xs md:text-sm dark:text-slate-400">Akses cepat ke halaman admin perangkat pelanggan.</CardDescription>
+                  <CardTitle className="text-base md:text-lg dark:text-white">Gerbang Modem Lokal</CardTitle>
+                  <CardDescription className="text-xs md:text-sm dark:text-slate-400">Akses cepat admin perangkat pelanggan.</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-4 md:p-6">
-              <div className="grid gap-3 md:gap-4 sm:grid-cols-2">
+              <div className="grid gap-3">
                 {commonGatewayIps.map((item) => (
                   <div 
                     key={item.ip} 
-                    className="flex flex-col p-3 md:p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    className="flex flex-col p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   >
-                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 md:mb-2">{item.label}</span>
+                    <span className="text-[9px] md:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">{item.label}</span>
                     <div className="flex items-center justify-between">
                       <code className="text-xs md:text-sm font-mono text-primary font-bold">{item.ip.replace('http://', '')}</code>
                       <Button 
                         variant="ghost" 
                         size="sm" 
-                        className="h-7 md:h-8 text-primary hover:bg-primary/5 text-xs" 
+                        className="h-7 md:h-8 text-primary hover:bg-primary/5 text-[10px]" 
                         onClick={() => openExternal(item.ip)}
                       >
                         Buka <ExternalLink className="ml-1.5 h-3 w-3" />
@@ -244,48 +297,46 @@ export default function TechnicianPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
 
-        <div className="space-y-6">
           <Card className="border-none shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group dark:bg-slate-900/40">
             <CardHeader className="bg-primary p-5 md:p-6 text-white">
               <div className="flex items-center justify-between">
                 <div className="p-2 bg-white/20 rounded-lg">
                   <Gauge className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
-                <Badge className="bg-white/20 text-white border-none text-[10px]">External Tool</Badge>
+                <Badge className="bg-white/20 text-white border-none text-[10px]">Alat Eksternal</Badge>
               </div>
               <CardTitle className="mt-4 text-lg md:text-xl">Uji Kecepatan</CardTitle>
-              <CardDescription className="text-xs md:text-sm text-primary-foreground/80">Cek kualitas bandwidth pelanggan.</CardDescription>
+              <CardDescription className="text-xs md:text-sm text-primary-foreground/80">Cek kualitas bandwidth lapangan.</CardDescription>
             </CardHeader>
             <CardContent className="p-5 md:p-6">
-              <p className="text-xs md:text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+              <p className="text-[10px] md:text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed uppercase font-bold italic opacity-60">
                 Gunakan layanan Speedtest resmi Centralnet untuk memastikan pelanggan mendapatkan kecepatan sesuai paket.
               </p>
               <Button 
-                className="w-full group-hover:scale-[1.02] transition-transform shadow-lg h-10 md:h-11 text-sm" 
+                className="w-full group-hover:scale-[1.02] transition-transform shadow-lg h-10 md:h-11 text-xs md:text-sm font-bold" 
                 onClick={() => openExternal('https://centralnet.speedtestcustom.com/')}
               >
-                Buka Speedtest <ExternalLink className="ml-2 h-4 w-4" />
+                MULAI SPEEDTEST <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>
           </Card>
 
           <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
             <CardHeader className="p-4 md:p-6">
-              <CardTitle className="text-xs md:text-sm flex items-center gap-2 dark:text-white">
+              <CardTitle className="text-[10px] md:text-sm flex items-center gap-2 dark:text-white uppercase font-black">
                 <div className="h-4 w-4 rounded-full bg-amber-500/10 flex items-center justify-center">
                   <Info className="h-3 w-3 text-amber-500" />
                 </div>
-                Tips Teknisi
+                Petunjuk Teknis
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4 md:px-6 md:pb-6 space-y-4">
-              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-[10px] md:text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
-                <strong>Ping Stabil:</strong> Latensi di bawah 30ms adalah ideal untuk game online. Jika di atas 100ms, periksa redaman kabel fiber.
+              <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-[9px] md:text-xs text-amber-700 dark:text-amber-400 leading-relaxed font-medium">
+                <strong>VPN Remote:</strong> Fitur ini hanya mengarahkan Anda ke port manajemen Mikrotik. Pastikan layanan Tunnel Anda aktif dan port WebFig sudah sesuai.
               </div>
-              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-[10px] md:text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
-                <strong>Info Perangkat:</strong> Terminal secara otomatis mendeteksi bahwa Anda menggunakan <strong>{deviceInfo.os}</strong> ({deviceInfo.type}).
+              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-[9px] md:text-xs text-blue-700 dark:text-blue-400 leading-relaxed font-medium">
+                <strong>Ping Stabil:</strong> Latensi di bawah 30ms adalah ideal. Jika di atas 100ms, periksa redaman kabel fiber (dBm).
               </div>
             </CardContent>
           </Card>
