@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -96,7 +97,7 @@ export default function CustomersPage() {
   };
 
   const handleOpenEditDialog = (customer: any) => {
-    if (role !== 'admin' && role !== 'staff' && role !== 'teknisi') return;
+    if (role !== 'admin' && role !== 'staff') return;
     setEditingCustomer(customer);
     setIsDialogOpen(true);
   };
@@ -107,7 +108,7 @@ export default function CustomersPage() {
   };
 
   const handleOpenNoteDialog = (customer: any) => {
-    if (role !== 'admin' && role !== 'teknisi') return;
+    if (role !== 'admin') return;
     setNotingCustomer(customer);
     setIsNoteDialogOpen(true);
   };
@@ -157,7 +158,7 @@ export default function CustomersPage() {
 
   const handleQuickSaveNote = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (role !== 'admin' && role !== 'teknisi') return;
+    if (role !== 'admin') return;
     const formData = new FormData(e.currentTarget);
     const newNoteText = formData.get("newNote") as string;
     
@@ -270,9 +271,9 @@ export default function CustomersPage() {
                 </p>
               </div>
 
-              {/* Quick Action Overlay (Hanya Admin & Teknisi) - Sembunyikan di mobile agar tidak crowded, akses via Detail */}
+              {/* Quick Action Overlay (Hanya Admin & Staff) */}
               <div className="hidden md:flex absolute -top-2 -right-2 flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                 {(role === 'admin' || role === 'teknisi') && (
+                 {role === 'admin' && (
                     <Button 
                       variant="destructive" 
                       size="icon" 
@@ -285,7 +286,7 @@ export default function CustomersPage() {
                       <AlertCircle className="h-3.5 w-3.5" />
                     </Button>
                  )}
-                 {(role === 'admin' || role === 'staff' || role === 'teknisi') && (
+                 {(role === 'admin' || role === 'staff') && (
                     <Button 
                       variant="secondary" 
                       size="icon" 
@@ -325,27 +326,27 @@ export default function CustomersPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 pb-4">
                 <div className="space-y-1 md:space-y-2 sm:col-span-2">
                   <Label htmlFor="name" className="text-xs">Nama Lengkap</Label>
-                  <Input id="name" name="name" defaultValue={editingCustomer?.name} required disabled={role === 'teknisi'} className="h-9 text-xs" />
+                  <Input id="name" name="name" defaultValue={editingCustomer?.name} required className="h-9 text-xs" />
                 </div>
                 <div className="space-y-1 md:space-y-2">
                   <Label htmlFor="email" className="text-xs">Email</Label>
-                  <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} required disabled={role === 'teknisi'} className="h-9 text-xs" />
+                  <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} required className="h-9 text-xs" />
                 </div>
                 <div className="space-y-1 md:space-y-2">
                   <Label htmlFor="phone" className="text-xs">Telepon</Label>
-                  <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} required disabled={role === 'teknisi'} className="h-9 text-xs" />
+                  <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} required className="h-9 text-xs" />
                 </div>
                 <div className="space-y-1 md:space-y-2 sm:col-span-2">
                   <Label htmlFor="modemSnMac" className="text-xs">SN / MAC Modem</Label>
-                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} disabled={role === 'teknisi'} className="h-9 text-xs" />
+                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} className="h-9 text-xs" />
                 </div>
                 <div className="space-y-1 md:space-y-2 sm:col-span-2">
                   <Label htmlFor="address" className="text-xs">Alamat Lengkap</Label>
-                  <Input id="address" name="address" defaultValue={editingCustomer?.address} required disabled={role === 'teknisi'} className="h-9 text-xs" />
+                  <Input id="address" name="address" defaultValue={editingCustomer?.address} required className="h-9 text-xs" />
                 </div>
                 <div className="space-y-1 md:space-y-2">
                   <Label htmlFor="packageId" className="text-xs">Paket</Label>
-                  <Select name="packageId" defaultValue={editingCustomer?.packageId} disabled={role === 'teknisi'}>
+                  <Select name="packageId" defaultValue={editingCustomer?.packageId}>
                     <SelectTrigger className="h-9 text-xs">
                       <SelectValue placeholder="Pilih paket" />
                     </SelectTrigger>
@@ -360,7 +361,7 @@ export default function CustomersPage() {
                 </div>
                 <div className="space-y-1 md:space-y-2">
                   <Label htmlFor="status" className="text-xs">Status Layanan</Label>
-                  <Select name="status" defaultValue={editingCustomer?.status || "active"} disabled={role === 'teknisi'}>
+                  <Select name="status" defaultValue={editingCustomer?.status || "active"}>
                     <SelectTrigger className="h-9 text-xs">
                       <SelectValue />
                     </SelectTrigger>
@@ -383,7 +384,6 @@ export default function CustomersPage() {
                     defaultValue={editingCustomer?.issueNotes}
                     placeholder="Riwayat gangguan teknis..."
                     className="min-h-[100px] font-mono text-[10px] bg-slate-50 dark:bg-slate-900"
-                    disabled={role === 'staff'}
                   />
                 </div>
               </div>
@@ -541,12 +541,12 @@ export default function CustomersPage() {
                     </Card>
 
                     <div className="flex flex-col gap-2">
-                       {(role === 'admin' || role === 'teknisi') && (
+                       {role === 'admin' && (
                          <Button variant="outline" className="w-full text-xs h-9" onClick={() => { setIsPreviewOpen(false); handleOpenNoteDialog(viewingCustomer); }}>
                            <AlertCircle className="mr-2 h-4 w-4 text-rose-500" /> Catat Gangguan
                          </Button>
                        )}
-                       {(role === 'admin' || role === 'staff' || role === 'teknisi') && (
+                       {(role === 'admin' || role === 'staff') && (
                          <Button variant="outline" className="w-full text-xs h-9" onClick={() => { setIsPreviewOpen(false); handleOpenEditDialog(viewingCustomer); }}>
                            <Edit2 className="mr-2 h-4 w-4" /> Edit Profil
                          </Button>

@@ -7,7 +7,7 @@ import { useUser, useAuth as useFirebaseAuth, useFirestore } from "@/firebase"
 import { signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore"
 
-export type UserRole = "admin" | "user"
+export type UserRole = "admin" | "staff" | "teknisi" | "user"
 
 // Helper function to get or create a persistent device ID
 function getDeviceId() {
@@ -74,7 +74,7 @@ export function useAuth() {
                 return;
               }
 
-              // Save device ID on first login for Staff
+              // Save device ID on first login for Staff/Technician
               if (!userData.deviceId && currentDeviceId) {
                 await updateDoc(userDocRef, { deviceId: currentDeviceId });
               }
@@ -100,6 +100,7 @@ export function useAuth() {
             setDeviceError(null);
           }
 
+          // Restrict standard 'user' role from admin-only pages
           if (finalRole === "user" && (pathname === "/settings" || pathname === "/users")) {
             router.push("/");
           }
