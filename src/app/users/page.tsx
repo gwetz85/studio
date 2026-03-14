@@ -167,7 +167,6 @@ export default function UsersManagementPage() {
         </Dialog>
       </div>
 
-      {/* DIALOG EDIT USER (USERNAME & ROLE) */}
       <Dialog open={isEditUserDialogOpen} onOpenChange={setIsEditUserDialogOpen}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-none shadow-2xl">
           <DialogHeader className="p-6 bg-slate-50 border-b border-slate-100">
@@ -215,14 +214,16 @@ export default function UsersManagementPage() {
             </TableHeader>
             <TableBody>
               {users?.map((u) => {
-                const isAgus = u.username === 'agus' || u.email === 'agus@mtnet.com' || u.id === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
+                // Hanya proteksi UID Root Utama, bukan lagi proteksi berdasarkan string nama 'agus'
+                // Ini memungkinkan penghapusan user bernama 'agus' yang berperan sebagai 'USER'
+                const isRootAccount = u.id === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
                 const currentRole = (u.role as string).toUpperCase();
 
                 return (
                   <TableRow key={u.id} className="hover:bg-slate-50/40 transition-colors">
                     <TableCell className="py-4 px-6 font-semibold text-slate-900">
                       <div className="flex items-center gap-2">
-                        {isAgus && <Shield className="h-3 w-3 text-amber-500 fill-amber-500" />}
+                        {isRootAccount && <Shield className="h-3 w-3 text-amber-500 fill-amber-500" />}
                         {u.username}
                       </div>
                     </TableCell>
@@ -245,7 +246,7 @@ export default function UsersManagementPage() {
                     </TableCell>
                     <TableCell className="text-right px-6">
                       <div className="flex justify-end gap-1">
-                        {!isAgus && (
+                        {!isRootAccount && (
                           <>
                             {u.deviceId && currentRole !== 'ADMIN' && (
                               <Button variant="ghost" size="icon" className="text-emerald-600 hover:bg-emerald-50" title="Reset Tautan Perangkat" onClick={() => resetDeviceId(u.id!)}>
@@ -260,7 +261,7 @@ export default function UsersManagementPage() {
                             </Button>
                           </>
                         )}
-                        {isAgus && <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest px-3">System Root</span>}
+                        {isRootAccount && <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest px-3">System Root</span>}
                       </div>
                     </TableCell>
                   </TableRow>
