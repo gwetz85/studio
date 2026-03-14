@@ -4,7 +4,7 @@
 import * as React from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Wifi, Gauge, Cpu, Globe, ExternalLink, Info, Terminal as TerminalIcon, Settings2, Play, Trash2, ChevronRight, Share2, Link as LinkIcon, Lock } from "lucide-react"
+import { Wifi, Gauge, Cpu, Globe, ExternalLink, Info, Terminal as TerminalIcon, Settings2, Play, Trash2, ChevronRight, Share2, Link as LinkIcon, Lock, Copy, Check } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Input } from "@/components/ui/input"
@@ -22,6 +22,7 @@ export default function TechnicianPage() {
   const { toast } = useToast();
   const [deviceInfo, setDeviceInfo] = React.useState({ os: "Unknown", type: "Desktop" });
   const [remoteUrl, setRemoteUrl] = React.useState("");
+  const [copiedField, setCopiedField] = React.useState<string | null>(null);
   const [terminalLines, setTerminalLines] = React.useState<string[]>([
     "MTNET System [Version 2.0.1]",
     "(c) 2024 MTNET Corporation. All rights reserved.",
@@ -53,6 +54,13 @@ export default function TechnicianPage() {
 
   const addLine = (line: string) => {
     setTerminalLines(prev => [...prev, line]);
+  };
+
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    toast({ title: "Berhasil disalin", description: `${field} telah disalin ke clipboard.` });
+    setTimeout(() => setCopiedField(null), 2000);
   };
 
   const simulatePing = async (host: string) => {
@@ -162,23 +170,72 @@ export default function TechnicianPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
+          {/* WebFig Central Card */}
+          <Card className="border-none shadow-sm bg-primary/10 border border-primary/20 overflow-hidden">
+            <CardHeader className="bg-primary p-4 md:p-6 text-white">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/20 rounded-lg">
+                    <Globe className="h-5 w-5 md:h-6 md:w-6" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base md:text-lg">WebFig Central Remote</CardTitle>
+                    <CardDescription className="text-[10px] md:text-sm text-white/70 uppercase font-bold">Akses Mikrotik Utama</CardDescription>
+                  </div>
+                </div>
+                <Badge variant="outline" className="text-white border-white/40 text-[9px] uppercase">Official Hub</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-3 mb-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-9 text-[10px] md:text-xs font-bold bg-white/50 border-primary/20 text-primary hover:bg-white"
+                  onClick={() => handleCopy('webfig', 'Username')}
+                >
+                  {copiedField === 'Username' ? <Check className="mr-2 h-3.5 w-3.5" /> : <Copy className="mr-2 h-3.5 w-3.5" />}
+                  SALIN USER
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-9 text-[10px] md:text-xs font-bold bg-white/50 border-primary/20 text-primary hover:bg-white"
+                  onClick={() => handleCopy('123456', 'Password')}
+                >
+                  {copiedField === 'Password' ? <Check className="mr-2 h-3.5 w-3.5" /> : <Copy className="mr-2 h-3.5 w-3.5" />}
+                  SALIN PASS
+                </Button>
+              </div>
+              <Button 
+                className="w-full h-11 shadow-lg bg-primary hover:bg-primary/90 font-black text-xs md:text-sm tracking-widest"
+                onClick={() => openExternal('http://remote5.vpnmurahjogja.my.id:1659/')}
+              >
+                <ExternalLink className="mr-2 h-4 w-4" /> BUKA WEBFIG UTAMA
+              </Button>
+              <p className="text-[9px] text-center text-slate-500 italic font-medium uppercase tracking-tighter">
+                *Salin user & pass terlebih dahulu sebelum membuka link.
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Mikrotik Remote Portal Card */}
           <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <CardHeader className="bg-primary/5 border-b border-primary/10 p-4 md:p-6">
+            <CardHeader className="bg-slate-50 border-b border-slate-100 dark:bg-slate-800/50 p-4 md:p-6">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                <div className="p-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300">
                   <Share2 className="h-5 w-5 md:h-6 md:w-6" />
                 </div>
                 <div>
-                  <CardTitle className="text-base md:text-lg dark:text-white">Mikrotik Remote Portal</CardTitle>
-                  <CardDescription className="text-[10px] md:text-sm dark:text-slate-400 uppercase font-bold tracking-tighter">Akses WebFig via VPN Tunnel</CardDescription>
+                  <CardTitle className="text-base md:text-lg dark:text-white">Remote Portal Lainnya</CardTitle>
+                  <CardDescription className="text-[10px] md:text-sm dark:text-slate-400 uppercase font-bold tracking-tighter">Input VPN Tunnel Lapangan</CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="p-4 md:p-6 space-y-4">
               <div className="flex flex-col gap-3">
                 <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">URL VPN Remote / Hostname</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">URL / Hostname Tunnel</span>
                   <div className="relative">
                     <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                     <Input 
@@ -190,16 +247,12 @@ export default function TechnicianPage() {
                   </div>
                 </div>
                 <Button 
-                  className="w-full h-10 md:h-11 shadow-lg bg-primary hover:bg-primary/90 font-bold"
+                  className="w-full h-10 md:h-11 shadow-md variant-outline font-bold text-xs"
                   onClick={handleOpenRemote}
                   disabled={!remoteUrl}
                 >
-                  <ExternalLink className="mr-2 h-4 w-4" /> BUKA REMOTE WEBFIG
+                  <ExternalLink className="mr-2 h-4 w-4" /> BUKA REMOTE PORTAL
                 </Button>
-                <div className="flex items-center gap-2 text-[8px] md:text-[10px] text-slate-500 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg">
-                  <Lock className="h-3 w-3" />
-                  <span>Gunakan port WebFig (default 80 atau 8080) pada settingan tunnel Anda.</span>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -333,10 +386,10 @@ export default function TechnicianPage() {
             </CardHeader>
             <CardContent className="px-4 pb-4 md:px-6 md:pb-6 space-y-4">
               <div className="p-3 rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/30 text-[9px] md:text-xs text-amber-700 dark:text-amber-400 leading-relaxed font-medium">
-                <strong>VPN Remote:</strong> Fitur ini hanya mengarahkan Anda ke port manajemen Mikrotik. Pastikan layanan Tunnel Anda aktif dan port WebFig sudah sesuai.
+                <strong>WebFig Utama:</strong> Gunakan tombol "Salin" untuk memudahkan pengisian formulir login di portal Mikrotik.
               </div>
               <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-[9px] md:text-xs text-blue-700 dark:text-blue-400 leading-relaxed font-medium">
-                <strong>Ping Stabil:</strong> Latensi di bawah 30ms adalah ideal. Jika di atas 100ms, periksa redaman kabel fiber (dBm).
+                <strong>VPN Remote:</strong> Fitur ini hanya mengarahkan ke IP WebFig. Jika link tidak bisa terbuka, pastikan tunnel di Mikrotik pelanggan sudah 'UP'.
               </div>
             </CardContent>
           </Card>
