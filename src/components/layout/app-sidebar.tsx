@@ -10,7 +10,6 @@ import {
   Settings, 
   ShieldAlert, 
   LogOut, 
-  Clock, 
   UserPlus, 
   UserX, 
   Wrench,
@@ -19,8 +18,6 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
-import { format } from "date-fns"
-import { id as localeId } from "date-fns/locale"
 
 import {
   Sidebar,
@@ -83,6 +80,11 @@ const navItems = [
     icon: CreditCard,
   },
   {
+    title: "Laporan Gangguan",
+    url: "/issues",
+    icon: ShieldAlert,
+  },
+  {
     title: "Menu Teknisi",
     url: "/technician",
     icon: Wrench,
@@ -92,33 +94,19 @@ const navItems = [
 export function AppSidebar() {
   const pathname = usePathname()
   const { role, username, logout } = useAuth()
-  const [currentTime, setCurrentTime] = React.useState<string | null>(null)
-
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(format(new Date(), "HH:mm:ss", { locale: localeId }))
-    }, 1000)
-    setCurrentTime(format(new Date(), "HH:mm:ss", { locale: localeId }))
-    return () => clearInterval(timer)
-  }, [])
 
   if (pathname === "/login") return null
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b border-white/10 bg-black/10 backdrop-blur-md p-4">
-        <div className="flex items-center gap-3 px-2 py-1">
-          <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 text-white">
-            <MTLogo className="size-7" />
+      <SidebarHeader className="border-b border-white/10 bg-black/10 backdrop-blur-md p-6">
+        <div className="flex flex-col items-center justify-center gap-3">
+          <div className="flex aspect-square size-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-xl border border-white/20 text-white">
+            <MTLogo className="size-8" />
           </div>
-          <div className="flex flex-col gap-1 leading-none overflow-hidden">
-            <span className="font-extrabold text-xl truncate tracking-tight uppercase">MTNET</span>
-            {currentTime && (
-              <div className="flex items-center gap-1.5 text-[10px] text-white/70 font-mono">
-                <Clock className="size-3 shrink-0" />
-                <span className="truncate">{currentTime}</span>
-              </div>
-            )}
+          <div className="flex flex-col items-center gap-0.5 leading-none overflow-hidden">
+            <span className="font-black text-2xl tracking-tighter uppercase text-white">MTNET</span>
+            <span className="text-[10px] font-bold text-white/40 tracking-[0.2em] uppercase">Online System</span>
           </div>
         </div>
       </SidebarHeader>
@@ -169,7 +157,7 @@ export function AppSidebar() {
             <span className="text-[10px] font-bold uppercase tracking-widest text-white/50">Mode Online Aktif</span>
           </div>
           <div className="text-sm font-bold truncate text-white">{username}</div>
-          <div className="text-[10px] font-medium text-white/60 uppercase">{role === 'admin' ? 'Administrator' : 'Staff'}</div>
+          <div className="text-[10px] font-medium text-white/60 uppercase">{role === 'admin' ? 'Administrator' : (role === 'staff' ? 'Staff' : 'Teknisi')}</div>
         </div>
         
         <SidebarMenu>
