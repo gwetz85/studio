@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -21,7 +20,6 @@ const commonGatewayIps = [
 export default function TechnicianPage() {
   const { toast } = useToast();
   const [deviceInfo, setDeviceInfo] = React.useState({ os: "Unknown", type: "Desktop" });
-  const [remoteUrl, setRemoteUrl] = React.useState("");
   const [copiedField, setCopiedField] = React.useState<string | null>(null);
   const [terminalLines, setTerminalLines] = React.useState<string[]>([
     "MTNET System [Version 2.0.1]",
@@ -155,12 +153,6 @@ export default function TechnicianPage() {
     window.open(formattedUrl, '_blank');
   };
 
-  const handleOpenRemote = () => {
-    if (!remoteUrl) return;
-    openExternal(remoteUrl);
-    toast({ title: "Membuka Mikrotik Remote", description: "Mengarahkan ke WebFig..." });
-  };
-
   return (
     <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1">
@@ -216,44 +208,6 @@ export default function TechnicianPage() {
               <p className="text-[9px] text-center text-slate-500 italic font-medium uppercase tracking-tighter">
                 *Salin user & pass terlebih dahulu sebelum membuka link.
               </p>
-            </CardContent>
-          </Card>
-
-          {/* Mikrotik Remote Portal Card */}
-          <Card className="border-none shadow-sm dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 overflow-hidden">
-            <CardHeader className="bg-slate-50 border-b border-slate-100 dark:bg-slate-800/50 p-4 md:p-6">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-slate-200 dark:bg-slate-700 rounded-lg text-slate-600 dark:text-slate-300">
-                  <Share2 className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <div>
-                  <CardTitle className="text-base md:text-lg dark:text-white">Remote Portal Lainnya</CardTitle>
-                  <CardDescription className="text-[10px] md:text-sm dark:text-slate-400 uppercase font-bold tracking-tighter">Input VPN Tunnel Lapangan</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 md:p-6 space-y-4">
-              <div className="flex flex-col gap-3">
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">URL / Hostname Tunnel</span>
-                  <div className="relative">
-                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                    <Input 
-                      placeholder="contoh: id-1.mikrotik.id:8080" 
-                      className="pl-10 h-10 text-xs md:text-sm font-mono"
-                      value={remoteUrl}
-                      onChange={(e) => setRemoteUrl(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <Button 
-                  className="w-full h-10 md:h-11 shadow-md variant-outline font-bold text-xs"
-                  onClick={handleOpenRemote}
-                  disabled={!remoteUrl}
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" /> BUKA REMOTE PORTAL
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
@@ -389,7 +343,7 @@ export default function TechnicianPage() {
                 <strong>WebFig Utama:</strong> Gunakan tombol "Salin" untuk memudahkan pengisian formulir login di portal Mikrotik.
               </div>
               <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-[9px] md:text-xs text-blue-700 dark:text-blue-400 leading-relaxed font-medium">
-                <strong>VPN Remote:</strong> Fitur ini hanya mengarahkan ke IP WebFig. Jika link tidak bisa terbuka, pastikan tunnel di Mikrotik pelanggan sudah 'UP'.
+                <strong>WebFig Remote:</strong> Akses ini langsung mengarah ke server pusat. Pastikan koneksi internet stabil saat melakukan konfigurasi jarak jauh.
               </div>
             </CardContent>
           </Card>
