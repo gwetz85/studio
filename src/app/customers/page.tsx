@@ -25,7 +25,7 @@ export default function CustomersPage() {
   const { toast } = useToast();
   const db = useFirestore();
   const { user } = useUser();
-  const { role } = useAuth();
+  const { role, username } = useAuth();
   const [search, setSearch] = React.useState("");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
@@ -34,7 +34,6 @@ export default function CustomersPage() {
   const [viewingCustomer, setViewingCustomer] = React.useState<any | null>(null);
   const [notingCustomer, setNotingCustomer] = React.useState<any | null>(null);
 
-  // States for hydration-safe date info
   const [currentPeriod, setCurrentPeriod] = React.useState("");
   const [isAfterCutoff, setIsAfterCutoff] = React.useState(false);
 
@@ -97,7 +96,7 @@ export default function CustomersPage() {
   };
 
   const handleOpenEditDialog = (customer: any) => {
-    if (role !== 'admin' && role !== 'staff') return;
+    if (role !== 'admin' && role !== 'staff' && role !== 'teknisi') return;
     setEditingCustomer(customer);
     setIsDialogOpen(true);
   };
@@ -115,7 +114,6 @@ export default function CustomersPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (role !== 'admin' && role !== 'staff') return;
     const formData = new FormData(e.currentTarget);
     const newStatus = formData.get("status") as string;
     
@@ -126,7 +124,7 @@ export default function CustomersPage() {
       deactivationDate = null;
     }
 
-    const data = {
+    const data: any = {
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
@@ -134,6 +132,7 @@ export default function CustomersPage() {
       modemSnMac: formData.get("modemSnMac") as string,
       packageId: formData.get("packageId") as string,
       status: newStatus,
+      issueNotes: formData.get("issueNotes") as string || "",
       updatedAt: Date.now(),
       deactivationDate: deactivationDate
     };
@@ -141,11 +140,10 @@ export default function CustomersPage() {
     try {
       if (editingCustomer?.id) {
         await updateDoc(doc(db, "customers", editingCustomer.id), data);
-        toast({ title: "Profil diperbarui" });
+        toast({ title: "Data berhasil diperbarui" });
       } else {
         await addDoc(collection(db, "customers"), {
           ...data,
-          issueNotes: "",
           createdAt: Date.now()
         });
         toast({ title: "Pelanggan baru terdaftar" });
@@ -157,24 +155,32 @@ export default function CustomersPage() {
     }
   };
 
-  const handleSaveNote = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleQuickSaveNote = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (role !== 'admin' && role !== 'teknisi') return;
     const formData = new FormData(e.currentTarget);
-    const issueNotes = formData.get("issueNotes") as string;
+    const newNoteText = formData.get("newNote") as string;
+    
+    const timestamp = format(new Date(), "dd/MM/yyyy HH:mm", { locale: localeId });
+    const formattedNote = `[${timestamp}] ${username}: ${newNoteText}`;
+    
+    const currentNotes = notingCustomer?.issueNotes || "";
+    const updatedNotes = currentNotes 
+      ? `${formattedNote}\n---\n${currentNotes}` 
+      : formattedNote;
 
     try {
       if (notingCustomer?.id) {
         await updateDoc(doc(db, "customers", notingCustomer.id), {
-          issueNotes,
+          issueNotes: updatedNotes,
           updatedAt: Date.now()
         });
-        toast({ title: "Catatan Gangguan Disimpan" });
+        toast({ title: "Gangguan berhasil dicatat" });
         setIsNoteDialogOpen(false);
         setNotingCustomer(null);
       }
     } catch (error) {
-      toast({ variant: "destructive", title: "Gagal menyimpan catatan" });
+      toast({ variant: "destructive", title: "Gagal mencatat gangguan" });
     }
   };
 
@@ -213,41 +219,41 @@ export default function CustomersPage() {
         )}
       </div>
 
-      {/* Dialog Registrasi/Edit */}
+      {/* Dialog Registrasi/Edit Profil & Notes */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-xl p-0">
+        <DialogContent className="max-w-2xl p-0">
           <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b">
             <DialogTitle className="text-xl flex items-center gap-2 dark:text-white">
               <User className="h-5 w-5 text-primary" />
-              {editingCustomer ? "Edit Profil Pelanggan" : "Registrasi Pelanggan Baru"}
+              {editingCustomer ? "Edit Profil & Catatan Pelanggan" : "Registrasi Pelanggan Baru"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
-            <ScrollArea className="max-h-[60vh] md:max-h-none">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <ScrollArea className="max-h-[70vh]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="name">Nama Lengkap</Label>
-                  <Input id="name" name="name" defaultValue={editingCustomer?.name} required />
+                  <Input id="name" name="name" defaultValue={editingCustomer?.name} required disabled={role === 'teknisi'} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Alamat Email</Label>
-                  <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} required />
+                  <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} required disabled={role === 'teknisi'} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Nomor Telepon</Label>
-                  <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} required />
+                  <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} required disabled={role === 'teknisi'} />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="modemSnMac">SN / MAC Modem</Label>
-                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} />
+                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} disabled={role === 'teknisi'} />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="address">Alamat Lengkap</Label>
-                  <Input id="address" name="address" defaultValue={editingCustomer?.address} required />
+                  <Input id="address" name="address" defaultValue={editingCustomer?.address} required disabled={role === 'teknisi'} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="packageId">Pilih Paket</Label>
-                  <Select name="packageId" defaultValue={editingCustomer?.packageId}>
+                  <Select name="packageId" defaultValue={editingCustomer?.packageId} disabled={role === 'teknisi'}>
                     <SelectTrigger>
                       <SelectValue placeholder="Pilih paket" />
                     </SelectTrigger>
@@ -262,7 +268,7 @@ export default function CustomersPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="status">Status Layanan</Label>
-                  <Select name="status" defaultValue={editingCustomer?.status || "active"}>
+                  <Select name="status" defaultValue={editingCustomer?.status || "active"} disabled={role === 'teknisi'}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -273,34 +279,52 @@ export default function CustomersPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                
+                {/* Bagian Catatan Gangguan di Menu Edit */}
+                <div className="space-y-2 sm:col-span-2 border-t pt-4 mt-2">
+                  <Label htmlFor="issueNotes" className="flex items-center gap-2">
+                    <Wrench className="h-4 w-4 text-rose-500" />
+                    Arsip Catatan Gangguan (Hanya Admin & Teknisi)
+                  </Label>
+                  <Textarea 
+                    id="issueNotes" 
+                    name="issueNotes" 
+                    defaultValue={editingCustomer?.issueNotes}
+                    placeholder="Riwayat gangguan teknis pelanggan..."
+                    className="min-h-[150px] font-mono text-xs bg-slate-50 dark:bg-slate-900"
+                    disabled={role === 'staff'}
+                  />
+                  <p className="text-[10px] text-slate-500 italic">
+                    *Catatan disusun secara kronologis untuk memudahkan tracking perbaikan.
+                  </p>
+                </div>
               </div>
             </ScrollArea>
             <DialogFooter className="pt-4">
               <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-              <Button type="submit">Simpan</Button>
+              <Button type="submit">Simpan Perubahan</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog Catatan Gangguan */}
+      {/* Dialog Input Cepat Gangguan Baru */}
       <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
         <DialogContent className="max-w-md p-0">
           <DialogHeader className="p-6 bg-rose-50 dark:bg-rose-900/20 border-b">
             <DialogTitle className="text-xl flex items-center gap-2 text-rose-600">
               <AlertCircle className="h-5 w-5" />
-              Catatan Gangguan: {notingCustomer?.name}
+              Catat Gangguan Baru: {notingCustomer?.name}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSaveNote} className="p-6 space-y-4">
+          <form onSubmit={handleQuickSaveNote} className="p-6 space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="issueNotes">Keterangan Gangguan / Trouble</Label>
+              <Label htmlFor="newNote">Detail Keluhan / Gangguan Hari Ini</Label>
               <Textarea 
-                id="issueNotes" 
-                name="issueNotes" 
-                placeholder="Masukkan detail gangguan yang dialami pelanggan..."
-                defaultValue={notingCustomer?.issueNotes}
-                className="min-h-[150px] resize-none"
+                id="newNote" 
+                name="newNote" 
+                placeholder="Contoh: Lampu LOS Merah, kabel putus di tiang nomor 5..."
+                className="min-h-[120px] resize-none"
                 required
               />
             </div>
@@ -370,13 +394,17 @@ export default function CustomersPage() {
                     {/* CATATAN GANGGUAN SECTION */}
                     <section className="space-y-4">
                       <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Wrench className="h-3 w-3" /> Catatan Gangguan / Troubleshooting
+                        <Wrench className="h-3 w-3" /> Riwayat Gangguan Teknis (Kronologis)
                       </h3>
-                      <div className="p-4 rounded-xl border border-rose-100 bg-rose-50/30 dark:bg-rose-900/10 dark:border-rose-900/30">
+                      <div className="p-4 rounded-xl border border-rose-100 bg-rose-50/30 dark:bg-rose-900/10 dark:border-rose-900/30 min-h-[100px]">
                         {viewingCustomer.issueNotes ? (
-                          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
-                            {viewingCustomer.issueNotes}
-                          </p>
+                          <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-mono whitespace-pre-wrap divide-y divide-rose-100">
+                            {viewingCustomer.issueNotes.split('---').map((note, idx) => (
+                              <div key={idx} className="py-2 first:pt-0 last:pb-0">
+                                {note.trim()}
+                              </div>
+                            ))}
+                          </div>
                         ) : (
                           <p className="text-xs text-slate-400 italic">Belum ada riwayat catatan gangguan teknis untuk pelanggan ini.</p>
                         )}
@@ -455,7 +483,7 @@ export default function CustomersPage() {
                     <div className="p-4 rounded-xl border border-primary/10 bg-primary/5 space-y-2">
                        <h4 className="text-[10px] font-black text-primary uppercase">Catatan Sistem</h4>
                        <p className="text-[10px] text-slate-600 leading-relaxed italic">
-                        Data ini disinkronkan secara real-time dari cloud database MTNET. Perubahan status akan mempengaruhi hak akses jaringan pelanggan secara otomatis.
+                        Setiap gangguan yang dicatat teknisi akan tersimpan dalam arsip permanen pelanggan sebagai bahan evaluasi kualitas jaringan.
                        </p>
                     </div>
                   </div>
@@ -509,25 +537,25 @@ export default function CustomersPage() {
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex justify-end gap-1">
-                      {/* Tombol Catatan Gangguan (Admin & Teknisi) */}
+                      {/* Tombol Catat Gangguan Baru (Admin & Teknisi) */}
                       {(role === 'admin' || role === 'teknisi') && (
-                        <Button variant="ghost" size="icon" className="text-rose-600 hover:text-rose-700 hover:bg-rose-50" title="Catatan Gangguan" onClick={() => handleOpenNoteDialog(customer)}>
+                        <Button variant="ghost" size="icon" className="text-rose-600 hover:text-rose-700 hover:bg-rose-50" title="Catat Gangguan Baru" onClick={() => handleOpenNoteDialog(customer)}>
                           <AlertCircle className="h-4 w-4" />
                         </Button>
                       )}
                       
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenPreview(customer)} title="Lihat Detail">
+                      <Button variant="ghost" size="icon" onClick={() => handleOpenPreview(customer)} title="Lihat Detail Lengkap">
                         <Eye className="h-4 w-4" />
                       </Button>
 
-                      {(role === 'admin' || role === 'staff') && (
-                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)} title="Edit Profil">
+                      {(role === 'admin' || role === 'staff' || role === 'teknisi') && (
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)} title="Edit Profil / Riwayat Gangguan">
                           <Edit2 className="h-4 w-4" />
                         </Button>
                       )}
                       
                       {role === 'admin' && (
-                        <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => deleteCustomer(customer.id)} title="Hapus">
+                        <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => deleteCustomer(customer.id)} title="Hapus Permanen">
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       )}
