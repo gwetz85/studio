@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Eye, Phone, MapPin, Cpu, Calendar, CreditCard, Clock, Wrench, AlertCircle } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, User, Eye, Phone, MapPin, Cpu, Calendar, CreditCard, Clock, Wrench, AlertCircle, UserCircle2, ShieldAlert } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -216,6 +216,98 @@ export default function CustomersPage() {
           <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
             <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
           </Button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md p-2 rounded-2xl border">
+        <Search className="h-4 w-4 text-slate-400 ml-3" />
+        <Input 
+          placeholder="Cari pelanggan..." 
+          className="border-none shadow-none focus-visible:ring-0" 
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
+      {/* Grid View of Icons */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+        {filteredCustomers?.map((customer) => {
+          const isUserIsolated = isIsolated(customer);
+          return (
+            <div key={customer.id} className="group relative flex flex-col items-center gap-3">
+              <button
+                onClick={() => handleOpenPreview(customer)}
+                className={cn(
+                  "relative h-24 w-24 md:h-28 md:w-28 rounded-3xl flex items-center justify-center transition-all duration-300 shadow-lg group-hover:scale-110",
+                  isUserIsolated 
+                    ? "bg-rose-100 text-rose-600 ring-4 ring-rose-500/20" 
+                    : (customer.status === 'active' 
+                        ? "bg-primary/10 text-primary ring-4 ring-primary/10" 
+                        : "bg-amber-100 text-amber-600 ring-4 ring-amber-500/20")
+                )}
+              >
+                {isUserIsolated ? (
+                  <ShieldAlert className="h-12 w-12 animate-pulse" />
+                ) : (
+                  <UserCircle2 className="h-12 w-12" />
+                )}
+                
+                {/* Floating Status Indicator */}
+                <div className={cn(
+                  "absolute -top-1 -right-1 h-6 w-6 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm",
+                  isUserIsolated ? "bg-rose-500" : (customer.status === 'active' ? "bg-emerald-500" : "bg-amber-500")
+                )}>
+                  <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                </div>
+              </button>
+              
+              <div className="text-center w-full px-2">
+                <p className="text-xs md:text-sm font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-primary transition-colors">
+                  {customer.name || "N/A"}
+                </p>
+                <p className="text-[10px] text-slate-500 font-medium truncate">
+                  {getPackageName(customer.packageId)}
+                </p>
+              </div>
+
+              {/* Quick Action Overlay (Hanya Admin & Teknisi) */}
+              <div className="absolute -top-2 -right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                 {(role === 'admin' || role === 'teknisi') && (
+                    <Button 
+                      variant="destructive" 
+                      size="icon" 
+                      className="h-7 w-7 rounded-full shadow-lg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenNoteDialog(customer);
+                      }}
+                    >
+                      <AlertCircle className="h-3.5 w-3.5" />
+                    </Button>
+                 )}
+                 {(role === 'admin' || role === 'staff' || role === 'teknisi') && (
+                    <Button 
+                      variant="secondary" 
+                      size="icon" 
+                      className="h-7 w-7 rounded-full shadow-lg"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenEditDialog(customer);
+                      }}
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </Button>
+                 )}
+              </div>
+            </div>
+          );
+        })}
+
+        {filteredCustomers?.length === 0 && (
+          <div className="col-span-full py-20 text-center opacity-40">
+            <UserCircle2 className="h-16 w-16 mx-auto mb-4" />
+            <p className="text-sm font-bold">Tidak ada pelanggan ditemukan</p>
+          </div>
         )}
       </div>
 
@@ -486,6 +578,19 @@ export default function CustomersPage() {
                         Setiap gangguan yang dicatat teknisi akan tersimpan dalam arsip permanen pelanggan sebagai bahan evaluasi kualitas jaringan.
                        </p>
                     </div>
+
+                    {role === 'admin' && (
+                      <Button 
+                        variant="destructive" 
+                        className="w-full"
+                        onClick={() => {
+                          deleteCustomer(viewingCustomer.id);
+                          setIsPreviewOpen(false);
+                        }}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Hapus Pelanggan
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
@@ -496,77 +601,6 @@ export default function CustomersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <div className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md p-2 rounded-2xl border">
-        <Search className="h-4 w-4 text-slate-400 ml-3" />
-        <Input 
-          placeholder="Cari pelanggan..." 
-          className="border-none shadow-none focus-visible:ring-0" 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-
-      <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900/40">
-        <ScrollArea className="w-full">
-          <Table>
-            <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
-              <TableRow>
-                <TableHead className="py-4 px-6">Identitas</TableHead>
-                <TableHead>Paket</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right px-6">Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCustomers?.map((customer) => (
-                <TableRow key={customer.id}>
-                  <TableCell className="py-3 px-6">
-                    <div className="font-semibold text-slate-900 dark:text-white">{customer.name || "N/A"}</div>
-                    <div className="text-[10px] text-slate-500">{customer.email || "No Email"}</div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary" className="text-[10px]">
-                      {getPackageName(customer.packageId)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={cn(isIsolated(customer) ? "bg-rose-600 animate-pulse" : (customer.status === 'active' ? "bg-emerald-600" : "bg-amber-500"))}>
-                      {isIsolated(customer) ? "ISOLIR" : (customer.status || "N/A")}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right px-6">
-                    <div className="flex justify-end gap-1">
-                      {/* Tombol Catat Gangguan Baru (Admin & Teknisi) */}
-                      {(role === 'admin' || role === 'teknisi') && (
-                        <Button variant="ghost" size="icon" className="text-rose-600 hover:text-rose-700 hover:bg-rose-50" title="Catat Gangguan Baru" onClick={() => handleOpenNoteDialog(customer)}>
-                          <AlertCircle className="h-4 w-4" />
-                        </Button>
-                      )}
-                      
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenPreview(customer)} title="Lihat Detail Lengkap">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-
-                      {(role === 'admin' || role === 'staff' || role === 'teknisi') && (
-                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)} title="Edit Profil / Riwayat Gangguan">
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                      
-                      {role === 'admin' && (
-                        <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => deleteCustomer(customer.id)} title="Hapus Permanen">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
-      </Card>
     </div>
   )
 }
