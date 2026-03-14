@@ -5,12 +5,15 @@ import * as React from "react"
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
 import { collection, query, where } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Users, Package, CreditCard, ShieldAlert } from "lucide-react"
+import { Users, Package, CreditCard, ShieldAlert, Clock, CalendarDays, Server } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { PieChart, Pie, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+import { format } from "date-fns"
+import { id as localeId } from "date-fns/locale"
+import { Separator } from "@/components/ui/separator"
 
 export default function Dashboard() {
   const db = useFirestore();
@@ -21,6 +24,9 @@ export default function Dashboard() {
   const [deviceInfo, setDeviceInfo] = React.useState({ 
     os: "Mendeteksi...", type: "Desktop", connection: "Checking...", memory: "..." 
   });
+  
+  // Real-time clock state
+  const [serverTime, setServerTime] = React.useState<{ time: string; date: string } | null>(null);
 
   const customersQuery = useMemoFirebase(() => {
     if (!user) return null;
@@ -53,6 +59,24 @@ export default function Dashboard() {
       setDeviceInfo(prev => ({ ...prev, connection: conn, memory: mem }));
     };
     detect();
+
+    // Timer for real-time clock
+    const timer = setInterval(() => {
+      const now = new Date();
+      setServerTime({
+        time: format(now, "HH:mm:ss", { locale: localeId }),
+        date: format(now, "EEEE, dd MMMM yyyy", { locale: localeId })
+      });
+    }, 1000);
+    
+    // Set initial value
+    const now = new Date();
+    setServerTime({
+      time: format(now, "HH:mm:ss", { locale: localeId }),
+      date: format(now, "EEEE, dd MMMM yyyy", { locale: localeId })
+    });
+
+    return () => clearInterval(timer);
   }, []);
 
   const stats = React.useMemo(() => {
@@ -133,15 +157,55 @@ export default function Dashboard() {
         </Card>
 
         <Card className="border-none shadow-sm">
-          <CardHeader><CardTitle className="text-lg">Info Sistem</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Server className="h-5 w-5 text-primary" /> Info Sistem
+            </CardTitle>
+          </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-green-50 border border-green-100">
-               <span className="text-xs font-bold text-green-700">CLOUD DATABASE</span>
-               <Badge className="bg-green-600">CONNECTED</Badge>
+            {/* Status Server */}
+            <div className="flex items-center justify-between p-3 rounded-xl bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
+               <span className="text-[10px] font-black text-green-700 dark:text-green-400 uppercase tracking-wider">Status Server</span>
+               <Badge className="bg-green-600 hover:bg-green-600 shadow-sm border-none text-[10px]">CONNECTED</Badge>
             </div>
-            <div className="p-3 border rounded-xl space-y-2">
-              <div className="flex justify-between text-xs text-slate-500"><span>Koneksi:</span> <b className="text-slate-900">{deviceInfo.connection}</b></div>
-              <div className="flex justify-between text-xs text-slate-500"><span>Periode:</span> <b className="text-slate-900">{currentPeriod}</b></div>
+
+            {/* Real-time Clock & Date */}
+            <div className="p-4 rounded-xl bg-slate-900 dark:bg-black text-white space-y-1 shadow-inner">
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Server Real-time</span>
+                <Clock className="h-3 w-3 text-primary animate-pulse" />
+              </div>
+              {serverTime ? (
+                <>
+                  <div className="text-2xl font-black font-mono tracking-tighter tabular-nums text-primary">
+                    {serverTime.time}
+                  </div>
+                  <div className="text-[10px] font-medium text-slate-400">
+                    {serverTime.date}
+                  </div>
+                </>
+              ) : (
+                <div className="h-10 animate-pulse bg-slate-800 rounded mt-2" />
+              )}
+            </div>
+
+            {/* Info Details */}
+            <div className="p-3 border rounded-xl space-y-3 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex justify-between items-center text-[11px]">
+                <span className="text-slate-500 font-medium">Batas Pembayaran:</span>
+                <Badge variant="outline" className="text-rose-600 border-rose-200 bg-rose-50 dark:bg-rose-950/20 dark:border-rose-900/30 font-black h-5">
+                  Tgl 8 / Bln
+                </Badge>
+              </div>
+              <Separator className="opacity-50" />
+              <div className="flex justify-between text-[11px] text-slate-500">
+                <span>Koneksi Perangkat:</span> 
+                <b className="text-slate-900 dark:text-slate-200 uppercase">{deviceInfo.connection}</b>
+              </div>
+              <div className="flex justify-between text-[11px] text-slate-500">
+                <span>Periode Berjalan:</span> 
+                <b className="text-slate-900 dark:text-slate-200 uppercase">{currentPeriod}</b>
+              </div>
             </div>
           </CardContent>
         </Card>
