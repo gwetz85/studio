@@ -36,15 +36,15 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset className="bg-white/40 dark:bg-slate-900/40 backdrop-blur-md">
-            <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white/60 backdrop-blur-xl dark:bg-slate-900/60 sticky top-0 z-10">
-              <SidebarTrigger className="-ml-1" />
+            <header className="flex h-12 md:h-16 shrink-0 items-center gap-2 border-b px-3 md:px-4 bg-white/60 backdrop-blur-xl dark:bg-slate-900/60 sticky top-0 z-10">
+              <SidebarTrigger className="-ml-1 h-8 w-8" />
               <div className="flex-1" />
-              <div className="flex items-center gap-2">
-                <div className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse" title="Online" />
-                <span className="text-xs font-medium text-muted-foreground dark:text-slate-300">Mode Real-time</span>
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <div className="flex h-1.5 w-1.5 md:h-2 md:w-2 rounded-full bg-green-500 animate-pulse" title="Online" />
+                <span className="text-[9px] md:text-xs font-bold text-muted-foreground dark:text-slate-300 uppercase tracking-tighter">Real-time Online</span>
               </div>
             </header>
-            <main className="flex-1 p-6 md:p-8">
+            <main className="flex-1 p-3 md:p-8 overflow-x-hidden">
               {children}
             </main>
           </SidebarInset>
@@ -76,12 +76,13 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         <title>MTNET SYSTEM APLIKASI</title>
       </head>
-      <body className="antialiased transition-colors duration-300 relative min-h-screen">
+      <body className="antialiased transition-colors duration-300 relative min-h-screen text-slate-900 dark:text-slate-100">
         <FirebaseClientProvider>
           <MainLayoutContent>
             {children}

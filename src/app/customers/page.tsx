@@ -206,72 +206,72 @@ export default function CustomersPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-6xl mx-auto space-y-4 md:space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Daftar Pelanggan</h1>
-          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Kelola data pelanggan online real-time.</p>
+          <h1 className="text-xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Daftar Pelanggan</h1>
+          <p className="text-[10px] md:text-base text-slate-500 dark:text-slate-400">Kelola data pelanggan online real-time.</p>
         </div>
         {(role === 'admin' || role === 'staff') && (
-          <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
+          <Button type="button" className="w-full sm:w-auto shadow-sm h-9 text-xs" onClick={handleOpenAddDialog}>
             <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
           </Button>
         )}
       </div>
 
-      <div className="flex items-center gap-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md p-2 rounded-2xl border">
+      <div className="flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md p-1 rounded-xl border">
         <Search className="h-4 w-4 text-slate-400 ml-3" />
         <Input 
           placeholder="Cari pelanggan..." 
-          className="border-none shadow-none focus-visible:ring-0" 
+          className="border-none shadow-none focus-visible:ring-0 text-xs h-8" 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
 
-      {/* Grid View of Icons */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+      {/* Grid View of Icons - Mobile Optimized */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4 md:gap-6">
         {filteredCustomers?.map((customer) => {
           const isUserIsolated = isIsolated(customer);
           return (
-            <div key={customer.id} className="group relative flex flex-col items-center gap-3">
+            <div key={customer.id} className="group relative flex flex-col items-center gap-2">
               <button
                 onClick={() => handleOpenPreview(customer)}
                 className={cn(
-                  "relative h-24 w-24 md:h-28 md:w-28 rounded-3xl flex items-center justify-center transition-all duration-300 shadow-lg group-hover:scale-110",
+                  "relative h-16 w-16 md:h-24 md:w-24 rounded-2xl flex items-center justify-center transition-all duration-300 shadow-md active:scale-95 md:group-hover:scale-110",
                   isUserIsolated 
-                    ? "bg-rose-100 text-rose-600 ring-4 ring-rose-500/20" 
+                    ? "bg-rose-100 text-rose-600 ring-2 ring-rose-500/20" 
                     : (customer.status === 'active' 
-                        ? "bg-primary/10 text-primary ring-4 ring-primary/10" 
-                        : "bg-amber-100 text-amber-600 ring-4 ring-amber-500/20")
+                        ? "bg-primary/10 text-primary ring-2 ring-primary/10" 
+                        : "bg-amber-100 text-amber-600 ring-2 ring-amber-500/20")
                 )}
               >
                 {isUserIsolated ? (
-                  <ShieldAlert className="h-12 w-12 animate-pulse" />
+                  <ShieldAlert className="h-8 w-8 md:h-12 md:w-12 animate-pulse" />
                 ) : (
-                  <UserCircle2 className="h-12 w-12" />
+                  <UserCircle2 className="h-8 w-8 md:h-12 md:w-12" />
                 )}
                 
                 {/* Floating Status Indicator */}
                 <div className={cn(
-                  "absolute -top-1 -right-1 h-6 w-6 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm",
+                  "absolute -top-1 -right-1 h-4 w-4 md:h-6 md:w-6 rounded-full border-2 border-white dark:border-slate-900 flex items-center justify-center shadow-sm",
                   isUserIsolated ? "bg-rose-500" : (customer.status === 'active' ? "bg-emerald-500" : "bg-amber-500")
                 )}>
-                  <div className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+                  <div className="h-1 w-1 md:h-1.5 md:w-1.5 rounded-full bg-white animate-pulse" />
                 </div>
               </button>
               
-              <div className="text-center w-full px-2">
-                <p className="text-xs md:text-sm font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-primary transition-colors">
+              <div className="text-center w-full px-1">
+                <p className="text-[10px] md:text-sm font-bold text-slate-800 dark:text-slate-200 truncate group-hover:text-primary transition-colors">
                   {customer.name || "N/A"}
                 </p>
-                <p className="text-[10px] text-slate-500 font-medium truncate">
+                <p className="text-[8px] md:text-[10px] text-slate-500 font-medium truncate uppercase">
                   {getPackageName(customer.packageId)}
                 </p>
               </div>
 
-              {/* Quick Action Overlay (Hanya Admin & Teknisi) */}
-              <div className="absolute -top-2 -right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {/* Quick Action Overlay (Hanya Admin & Teknisi) - Sembunyikan di mobile agar tidak crowded, akses via Detail */}
+              <div className="hidden md:flex absolute -top-2 -right-2 flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                  {(role === 'admin' || role === 'teknisi') && (
                     <Button 
                       variant="destructive" 
@@ -305,8 +305,8 @@ export default function CustomersPage() {
 
         {filteredCustomers?.length === 0 && (
           <div className="col-span-full py-20 text-center opacity-40">
-            <UserCircle2 className="h-16 w-16 mx-auto mb-4" />
-            <p className="text-sm font-bold">Tidak ada pelanggan ditemukan</p>
+            <UserCircle2 className="h-12 w-12 mx-auto mb-4" />
+            <p className="text-xs font-bold">Tidak ada pelanggan</p>
           </div>
         )}
       </div>
@@ -314,39 +314,39 @@ export default function CustomersPage() {
       {/* Dialog Registrasi/Edit Profil & Notes */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-2xl p-0">
-          <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b">
-            <DialogTitle className="text-xl flex items-center gap-2 dark:text-white">
-              <User className="h-5 w-5 text-primary" />
-              {editingCustomer ? "Edit Profil & Catatan Pelanggan" : "Registrasi Pelanggan Baru"}
+          <DialogHeader className="p-4 md:p-6 bg-slate-50 dark:bg-slate-800 border-b">
+            <DialogTitle className="text-base md:text-xl flex items-center gap-2 dark:text-white">
+              <User className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+              {editingCustomer ? "Edit Profil Pelanggan" : "Registrasi Baru"}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
-            <ScrollArea className="max-h-[70vh]">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-4">
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="name">Nama Lengkap</Label>
-                  <Input id="name" name="name" defaultValue={editingCustomer?.name} required disabled={role === 'teknisi'} />
+            <ScrollArea className="max-h-[60vh] md:max-h-[70vh]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 pb-4">
+                <div className="space-y-1 md:space-y-2 sm:col-span-2">
+                  <Label htmlFor="name" className="text-xs">Nama Lengkap</Label>
+                  <Input id="name" name="name" defaultValue={editingCustomer?.name} required disabled={role === 'teknisi'} className="h-9 text-xs" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Alamat Email</Label>
-                  <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} required disabled={role === 'teknisi'} />
+                <div className="space-y-1 md:space-y-2">
+                  <Label htmlFor="email" className="text-xs">Email</Label>
+                  <Input id="email" name="email" type="email" defaultValue={editingCustomer?.email} required disabled={role === 'teknisi'} className="h-9 text-xs" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Nomor Telepon</Label>
-                  <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} required disabled={role === 'teknisi'} />
+                <div className="space-y-1 md:space-y-2">
+                  <Label htmlFor="phone" className="text-xs">Telepon</Label>
+                  <Input id="phone" name="phone" defaultValue={editingCustomer?.phone} required disabled={role === 'teknisi'} className="h-9 text-xs" />
                 </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="modemSnMac">SN / MAC Modem</Label>
-                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} disabled={role === 'teknisi'} />
+                <div className="space-y-1 md:space-y-2 sm:col-span-2">
+                  <Label htmlFor="modemSnMac" className="text-xs">SN / MAC Modem</Label>
+                  <Input id="modemSnMac" name="modemSnMac" defaultValue={editingCustomer?.modemSnMac} disabled={role === 'teknisi'} className="h-9 text-xs" />
                 </div>
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="address">Alamat Lengkap</Label>
-                  <Input id="address" name="address" defaultValue={editingCustomer?.address} required disabled={role === 'teknisi'} />
+                <div className="space-y-1 md:space-y-2 sm:col-span-2">
+                  <Label htmlFor="address" className="text-xs">Alamat Lengkap</Label>
+                  <Input id="address" name="address" defaultValue={editingCustomer?.address} required disabled={role === 'teknisi'} className="h-9 text-xs" />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="packageId">Pilih Paket</Label>
+                <div className="space-y-1 md:space-y-2">
+                  <Label htmlFor="packageId" className="text-xs">Paket</Label>
                   <Select name="packageId" defaultValue={editingCustomer?.packageId} disabled={role === 'teknisi'}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-xs">
                       <SelectValue placeholder="Pilih paket" />
                     </SelectTrigger>
                     <SelectContent>
@@ -358,10 +358,10 @@ export default function CustomersPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status Layanan</Label>
+                <div className="space-y-1 md:space-y-2">
+                  <Label htmlFor="status" className="text-xs">Status Layanan</Label>
                   <Select name="status" defaultValue={editingCustomer?.status || "active"} disabled={role === 'teknisi'}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-9 text-xs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -372,125 +372,96 @@ export default function CustomersPage() {
                   </Select>
                 </div>
                 
-                {/* Bagian Catatan Gangguan di Menu Edit */}
-                <div className="space-y-2 sm:col-span-2 border-t pt-4 mt-2">
-                  <Label htmlFor="issueNotes" className="flex items-center gap-2">
-                    <Wrench className="h-4 w-4 text-rose-500" />
-                    Arsip Catatan Gangguan (Hanya Admin & Teknisi)
+                <div className="space-y-1 md:space-y-2 sm:col-span-2 border-t pt-4 mt-2">
+                  <Label htmlFor="issueNotes" className="flex items-center gap-2 text-xs">
+                    <Wrench className="h-3 w-3 text-rose-500" />
+                    Catatan Gangguan
                   </Label>
                   <Textarea 
                     id="issueNotes" 
                     name="issueNotes" 
                     defaultValue={editingCustomer?.issueNotes}
-                    placeholder="Riwayat gangguan teknis pelanggan..."
-                    className="min-h-[150px] font-mono text-xs bg-slate-50 dark:bg-slate-900"
+                    placeholder="Riwayat gangguan teknis..."
+                    className="min-h-[100px] font-mono text-[10px] bg-slate-50 dark:bg-slate-900"
                     disabled={role === 'staff'}
                   />
-                  <p className="text-[10px] text-slate-500 italic">
-                    *Catatan disusun secara kronologis untuk memudahkan tracking perbaikan.
-                  </p>
                 </div>
               </div>
             </ScrollArea>
-            <DialogFooter className="pt-4">
-              <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)}>Batal</Button>
-              <Button type="submit">Simpan Perubahan</Button>
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="text-xs h-9">Batal</Button>
+              <Button type="submit" className="text-xs h-9">Simpan</Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog Input Cepat Gangguan Baru */}
-      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
-        <DialogContent className="max-w-md p-0">
-          <DialogHeader className="p-6 bg-rose-50 dark:bg-rose-900/20 border-b">
-            <DialogTitle className="text-xl flex items-center gap-2 text-rose-600">
-              <AlertCircle className="h-5 w-5" />
-              Catat Gangguan Baru: {notingCustomer?.name}
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleQuickSaveNote} className="p-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="newNote">Detail Keluhan / Gangguan Hari Ini</Label>
-              <Textarea 
-                id="newNote" 
-                name="newNote" 
-                placeholder="Contoh: Lampu LOS Merah, kabel putus di tiang nomor 5..."
-                className="min-h-[120px] resize-none"
-                required
-              />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsNoteDialogOpen(false)}>Batal</Button>
-              <Button type="submit" className="bg-rose-600 hover:bg-rose-700">Simpan Catatan</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog Preview Lengkap */}
+      {/* Dialog Preview Lengkap - Mobile Optimized */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl p-0">
-          <DialogHeader className="p-6 bg-primary text-white">
-            <DialogTitle className="text-xl flex items-center justify-between">
+        <DialogContent className="max-w-4xl p-0 h-[90vh] md:h-auto">
+          <DialogHeader className="p-4 bg-primary text-white">
+            <DialogTitle className="text-sm md:text-xl flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Eye className="h-5 w-5" /> Detail Lengkap Pelanggan
+                <Eye className="h-4 w-4" /> Profil Pelanggan
               </div>
-              <Badge variant="outline" className="border-white text-white">
-                Reg: {formatDate(viewingCustomer?.createdAt)}
+              <Badge variant="outline" className="border-white text-white text-[8px] md:text-xs">
+                Sejak: {formatDate(viewingCustomer?.createdAt)}
               </Badge>
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[85vh]">
-            <div className="p-6 md:p-8 space-y-8">
+          <ScrollArea className="h-full">
+            <div className="p-4 md:p-8 space-y-6">
               {viewingCustomer && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="flex flex-col md:grid md:grid-cols-3 gap-6">
                   <div className="md:col-span-2 space-y-6">
-                    <section className="space-y-4">
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <section className="space-y-3">
+                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                         <User className="h-3 w-3" /> Informasi Identitas
                       </h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl">
-                        <div>
-                          <p className="text-[10px] text-slate-500 uppercase font-bold">Nama Lengkap</p>
-                          <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.name || "N/A"}</p>
-                        </div>
-                        <div>
-                          <p className="text-[10px] text-slate-500 uppercase font-bold">Email</p>
-                          <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.email || "No Email"}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4 text-primary" />
+                      <div className="grid grid-cols-1 gap-4 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border">
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-[10px] text-slate-500 uppercase font-bold">Telepon</p>
-                            <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.phone || "N/A"}</p>
+                            <p className="text-[8px] text-slate-500 uppercase font-bold">Nama Lengkap</p>
+                            <p className="text-xs md:text-sm font-semibold text-slate-900 dark:text-white">{viewingCustomer.name || "N/A"}</p>
+                          </div>
+                          <div>
+                            <p className="text-[8px] text-slate-500 uppercase font-bold">Email</p>
+                            <p className="text-xs md:text-sm font-semibold text-slate-900 dark:text-white truncate">{viewingCustomer.email || "-"}</p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Cpu className="h-4 w-4 text-primary" />
-                          <div>
-                            <p className="text-[10px] text-slate-500 uppercase font-bold">SN / MAC Modem</p>
-                            <p className="font-semibold text-slate-900 dark:text-white">{viewingCustomer.modemSnMac || "N/A"}</p>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex items-start gap-2">
+                            <Phone className="h-3 w-3 text-primary mt-0.5" />
+                            <div>
+                              <p className="text-[8px] text-slate-500 uppercase font-bold">Telepon</p>
+                              <p className="text-xs md:text-sm font-semibold text-slate-900 dark:text-white">{viewingCustomer.phone || "N/A"}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <Cpu className="h-3 w-3 text-primary mt-0.5" />
+                            <div>
+                              <p className="text-[8px] text-slate-500 uppercase font-bold">SN / MAC</p>
+                              <p className="text-xs md:text-sm font-semibold text-slate-900 dark:text-white truncate">{viewingCustomer.modemSnMac || "N/A"}</p>
+                            </div>
                           </div>
                         </div>
-                        <div className="sm:col-span-2 flex items-start gap-2 border-t pt-4">
-                          <MapPin className="h-4 w-4 text-rose-500 mt-1" />
+                        <div className="flex items-start gap-2 border-t pt-3">
+                          <MapPin className="h-3 w-3 text-rose-500 mt-1" />
                           <div>
-                            <p className="text-[10px] text-slate-500 uppercase font-bold">Alamat Pemasangan</p>
-                            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{viewingCustomer.address || "N/A"}</p>
+                            <p className="text-[8px] text-slate-500 uppercase font-bold">Alamat Pemasangan</p>
+                            <p className="text-[10px] md:text-xs font-medium text-slate-700 dark:text-slate-300">{viewingCustomer.address || "N/A"}</p>
                           </div>
                         </div>
                       </div>
                     </section>
 
-                    {/* CATATAN GANGGUAN SECTION */}
-                    <section className="space-y-4">
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <Wrench className="h-3 w-3" /> Riwayat Gangguan Teknis (Kronologis)
+                    <section className="space-y-3">
+                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Wrench className="h-3 w-3" /> Riwayat Gangguan
                       </h3>
-                      <div className="p-4 rounded-xl border border-rose-100 bg-rose-50/30 dark:bg-rose-900/10 dark:border-rose-900/30 min-h-[100px]">
+                      <div className="p-4 rounded-xl border border-rose-100 bg-rose-50/30 dark:bg-rose-900/10 dark:border-rose-900/30 min-h-[80px]">
                         {viewingCustomer.issueNotes ? (
-                          <div className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-mono whitespace-pre-wrap divide-y divide-rose-100">
+                          <div className="text-[10px] text-slate-700 dark:text-slate-300 leading-relaxed font-mono whitespace-pre-wrap divide-y divide-rose-100/50">
                             {viewingCustomer.issueNotes.split('---').map((note, idx) => (
                               <div key={idx} className="py-2 first:pt-0 last:pb-0">
                                 {note.trim()}
@@ -498,46 +469,45 @@ export default function CustomersPage() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-xs text-slate-400 italic">Belum ada riwayat catatan gangguan teknis untuk pelanggan ini.</p>
+                          <p className="text-[10px] text-slate-400 italic">Belum ada catatan gangguan.</p>
                         )}
                       </div>
                     </section>
 
-                    <section className="space-y-4">
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                        <CreditCard className="h-3 w-3" /> Rekapan Pembayaran
+                    <section className="space-y-3">
+                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <CreditCard className="h-3 w-3" /> Pembayaran
                       </h3>
-                      <div className="rounded-xl border border-slate-100 overflow-hidden">
+                      <div className="rounded-xl border overflow-hidden">
                         <Table>
                           <TableHeader className="bg-slate-50">
-                            <TableRow>
-                              <TableHead className="text-[10px] uppercase">Periode</TableHead>
-                              <TableHead className="text-[10px] uppercase">Status</TableHead>
-                              <TableHead className="text-[10px] uppercase text-right">Nominal</TableHead>
+                            <TableRow className="h-8">
+                              <TableHead className="text-[8px] uppercase px-3">Periode</TableHead>
+                              <TableHead className="text-[8px] uppercase px-3">Status</TableHead>
+                              <TableHead className="text-[8px] uppercase px-3 text-right">Nominal</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {customerInvoices?.sort((a,b) => b.billingPeriod.localeCompare(a.billingPeriod)).map((inv) => (
-                              <TableRow key={inv.id}>
-                                <TableCell className="text-xs font-medium flex items-center gap-2">
-                                  <Calendar className="h-3 w-3 text-slate-400" />
+                            {customerInvoices?.sort((a,b) => b.billingPeriod.localeCompare(a.billingPeriod)).slice(0, 5).map((inv) => (
+                              <TableRow key={inv.id} className="h-10">
+                                <TableCell className="text-[10px] font-medium px-3">
                                   {inv.billingPeriod}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="px-3">
                                   <Badge variant="outline" className={cn(
-                                    "text-[9px] px-1.5 py-0",
+                                    "text-[7px] px-1 h-4",
                                     inv.status === 'paid' ? "text-emerald-600 border-emerald-200 bg-emerald-50" : "text-amber-600 border-amber-200 bg-amber-50"
                                   )}>
                                     {inv.status.toUpperCase()}
                                   </Badge>
                                 </TableCell>
-                                <TableCell className="text-xs text-right font-mono font-bold text-slate-700">
-                                  Rp {(inv.amount || 0).toLocaleString('id-ID')}
+                                <TableCell className="text-[10px] text-right font-bold px-3">
+                                  Rp{(inv.amount || 0).toLocaleString('id-ID')}
                                 </TableCell>
                               </TableRow>
                             ))}
                             {(!customerInvoices || customerInvoices.length === 0) && (
-                              <TableRow><TableCell colSpan={3} className="text-center text-xs text-slate-400 py-12">Belum ada riwayat tagihan.</TableCell></TableRow>
+                              <TableRow><TableCell colSpan={3} className="text-center text-[10px] text-slate-400 py-8">Belum ada riwayat.</TableCell></TableRow>
                             )}
                           </TableBody>
                         </Table>
@@ -545,60 +515,91 @@ export default function CustomersPage() {
                     </section>
                   </div>
 
-                  <div className="space-y-6">
-                    <Card className="p-6 bg-slate-50 dark:bg-slate-900/50 border-none shadow-none space-y-4">
-                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest">Status Berlangganan</h3>
-                      <div className="space-y-4">
+                  <div className="space-y-4">
+                    <Card className="p-4 bg-slate-50 dark:bg-slate-900/50 border-none space-y-3 shadow-none">
+                      <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status Berlangganan</h3>
+                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-slate-500">Layanan</span>
+                          <span className="text-[10px] text-slate-500">Kondisi</span>
                           <Badge className={cn(
-                            "px-4 py-1",
+                            "px-3 py-0.5 text-[9px]",
                             isIsolated(viewingCustomer) ? "bg-rose-600" : (viewingCustomer.status === 'active' ? "bg-emerald-600" : "bg-amber-500")
                           )}>
                             {isIsolated(viewingCustomer) ? "TERISOLIR" : (viewingCustomer.status?.toUpperCase() || "N/A")}
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-slate-500">Paket Aktif</span>
-                          <span className="text-sm font-bold text-primary">{getPackageName(viewingCustomer.packageId)}</span>
+                          <span className="text-[10px] text-slate-500">Paket</span>
+                          <span className="text-xs font-bold text-primary">{getPackageName(viewingCustomer.packageId)}</span>
                         </div>
                         <Separator />
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-xs text-slate-500">
-                            <Clock className="h-3 w-3" /> Terakhir Update
-                          </div>
-                          <p className="text-xs font-medium">{formatDate(viewingCustomer.updatedAt || viewingCustomer.createdAt)}</p>
+                        <div className="flex justify-between items-center text-[10px]">
+                           <span className="text-slate-500">Update Terakhir</span>
+                           <span className="font-medium">{formatDate(viewingCustomer.updatedAt || viewingCustomer.createdAt)}</span>
                         </div>
                       </div>
                     </Card>
 
-                    <div className="p-4 rounded-xl border border-primary/10 bg-primary/5 space-y-2">
-                       <h4 className="text-[10px] font-black text-primary uppercase">Catatan Sistem</h4>
-                       <p className="text-[10px] text-slate-600 leading-relaxed italic">
-                        Setiap gangguan yang dicatat teknisi akan tersimpan dalam arsip permanen pelanggan sebagai bahan evaluasi kualitas jaringan.
-                       </p>
+                    <div className="flex flex-col gap-2">
+                       {(role === 'admin' || role === 'teknisi') && (
+                         <Button variant="outline" className="w-full text-xs h-9" onClick={() => { setIsPreviewOpen(false); handleOpenNoteDialog(viewingCustomer); }}>
+                           <AlertCircle className="mr-2 h-4 w-4 text-rose-500" /> Catat Gangguan
+                         </Button>
+                       )}
+                       {(role === 'admin' || role === 'staff' || role === 'teknisi') && (
+                         <Button variant="outline" className="w-full text-xs h-9" onClick={() => { setIsPreviewOpen(false); handleOpenEditDialog(viewingCustomer); }}>
+                           <Edit2 className="mr-2 h-4 w-4" /> Edit Profil
+                         </Button>
+                       )}
+                       {role === 'admin' && (
+                        <Button 
+                          variant="destructive" 
+                          className="w-full text-xs h-9"
+                          onClick={() => {
+                            deleteCustomer(viewingCustomer.id);
+                            setIsPreviewOpen(false);
+                          }}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" /> Hapus Pelanggan
+                        </Button>
+                      )}
                     </div>
-
-                    {role === 'admin' && (
-                      <Button 
-                        variant="destructive" 
-                        className="w-full"
-                        onClick={() => {
-                          deleteCustomer(viewingCustomer.id);
-                          setIsPreviewOpen(false);
-                        }}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" /> Hapus Pelanggan
-                      </Button>
-                    )}
                   </div>
                 </div>
               )}
             </div>
           </ScrollArea>
-          <DialogFooter className="p-4 border-t">
-            <Button onClick={() => setIsPreviewOpen(false)} className="w-full sm:w-auto">Tutup Detail</Button>
+          <DialogFooter className="p-3 border-t md:hidden">
+            <Button onClick={() => setIsPreviewOpen(false)} className="w-full text-xs h-9">Tutup</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Input Cepat Gangguan Baru */}
+      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
+        <DialogContent className="max-w-md p-0">
+          <DialogHeader className="p-4 bg-rose-50 dark:bg-rose-900/20 border-b">
+            <DialogTitle className="text-sm flex items-center gap-2 text-rose-600">
+              <AlertCircle className="h-4 w-4" />
+              Catat Gangguan: {notingCustomer?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleQuickSaveNote} className="p-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="newNote" className="text-xs">Detail Keluhan Baru</Label>
+              <Textarea 
+                id="newNote" 
+                name="newNote" 
+                placeholder="Contoh: Lampu LOS Merah..."
+                className="min-h-[100px] text-xs resize-none"
+                required
+              />
+            </div>
+            <DialogFooter className="pt-2">
+              <Button type="button" variant="outline" onClick={() => setIsNoteDialogOpen(false)} className="text-xs h-9">Batal</Button>
+              <Button type="submit" className="bg-rose-600 hover:bg-rose-700 text-xs h-9">Simpan Catatan</Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
