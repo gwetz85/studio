@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "Customer": {
@@ -13,6 +12,7 @@
         "packageId": { "type": "string" },
         "status": { "type": "string", "enum": ["active", "passive", "inactive"] },
         "modemSnMac": { "type": "string" },
+        "issueNotes": { "type": "string", "description": "Catatan gangguan teknis pelanggan" },
         "createdAt": { "type": "number" },
         "deactivationDate": { "type": "number" }
       },
@@ -65,7 +65,7 @@
       "description": "System users registered by admin.",
       "properties": {
         "username": { "type": "string" },
-        "role": { "type": "string", "enum": ["admin", "staff"] },
+        "role": { "type": "string", "enum": ["admin", "staff", "teknisi"] },
         "deviceId": { "type": "string" },
         "createdAt": { "type": "number" }
       },

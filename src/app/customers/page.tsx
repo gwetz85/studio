@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -9,13 +8,14 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Eye, Phone, MapPin, Cpu, Calendar, CreditCard, Clock } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, User, Eye, Phone, MapPin, Cpu, Calendar, CreditCard, Clock, Wrench, AlertCircle } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/use-auth"
 import { format } from "date-fns"
@@ -29,8 +29,10 @@ export default function CustomersPage() {
   const [search, setSearch] = React.useState("");
   const [isDialogOpen, setIsDialogOpen] = React.useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = React.useState(false);
+  const [isNoteDialogOpen, setIsNoteDialogOpen] = React.useState(false);
   const [editingCustomer, setEditingCustomer] = React.useState<any | null>(null);
   const [viewingCustomer, setViewingCustomer] = React.useState<any | null>(null);
+  const [notingCustomer, setNotingCustomer] = React.useState<any | null>(null);
 
   // States for hydration-safe date info
   const [currentPeriod, setCurrentPeriod] = React.useState("");
@@ -89,13 +91,13 @@ export default function CustomersPage() {
   };
 
   const handleOpenAddDialog = () => {
-    if (role !== 'admin') return;
+    if (role !== 'admin' && role !== 'staff') return;
     setEditingCustomer(null);
     setIsDialogOpen(true);
   };
 
   const handleOpenEditDialog = (customer: any) => {
-    if (role !== 'admin') return;
+    if (role !== 'admin' && role !== 'staff') return;
     setEditingCustomer(customer);
     setIsDialogOpen(true);
   };
@@ -105,9 +107,15 @@ export default function CustomersPage() {
     setIsPreviewOpen(true);
   };
 
+  const handleOpenNoteDialog = (customer: any) => {
+    if (role !== 'admin' && role !== 'teknisi') return;
+    setNotingCustomer(customer);
+    setIsNoteDialogOpen(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (role !== 'admin') return;
+    if (role !== 'admin' && role !== 'staff') return;
     const formData = new FormData(e.currentTarget);
     const newStatus = formData.get("status") as string;
     
@@ -137,6 +145,7 @@ export default function CustomersPage() {
       } else {
         await addDoc(collection(db, "customers"), {
           ...data,
+          issueNotes: "",
           createdAt: Date.now()
         });
         toast({ title: "Pelanggan baru terdaftar" });
@@ -145,6 +154,27 @@ export default function CustomersPage() {
       setEditingCustomer(null);
     } catch (error) {
       toast({ variant: "destructive", title: "Gagal menyimpan data" });
+    }
+  };
+
+  const handleSaveNote = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (role !== 'admin' && role !== 'teknisi') return;
+    const formData = new FormData(e.currentTarget);
+    const issueNotes = formData.get("issueNotes") as string;
+
+    try {
+      if (notingCustomer?.id) {
+        await updateDoc(doc(db, "customers", notingCustomer.id), {
+          issueNotes,
+          updatedAt: Date.now()
+        });
+        toast({ title: "Catatan Gangguan Disimpan" });
+        setIsNoteDialogOpen(false);
+        setNotingCustomer(null);
+      }
+    } catch (error) {
+      toast({ variant: "destructive", title: "Gagal menyimpan catatan" });
     }
   };
 
@@ -176,13 +206,14 @@ export default function CustomersPage() {
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Daftar Pelanggan</h1>
           <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Kelola data pelanggan online real-time.</p>
         </div>
-        {role === 'admin' && (
+        {(role === 'admin' || role === 'staff') && (
           <Button type="button" className="w-full sm:w-auto shadow-sm" onClick={handleOpenAddDialog}>
             <Plus className="mr-2 h-4 w-4" /> Tambah Pelanggan
           </Button>
         )}
       </div>
 
+      {/* Dialog Registrasi/Edit */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-xl p-0">
           <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b">
@@ -252,6 +283,36 @@ export default function CustomersPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog Catatan Gangguan */}
+      <Dialog open={isNoteDialogOpen} onOpenChange={setIsNoteDialogOpen}>
+        <DialogContent className="max-w-md p-0">
+          <DialogHeader className="p-6 bg-rose-50 dark:bg-rose-900/20 border-b">
+            <DialogTitle className="text-xl flex items-center gap-2 text-rose-600">
+              <AlertCircle className="h-5 w-5" />
+              Catatan Gangguan: {notingCustomer?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSaveNote} className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="issueNotes">Keterangan Gangguan / Trouble</Label>
+              <Textarea 
+                id="issueNotes" 
+                name="issueNotes" 
+                placeholder="Masukkan detail gangguan yang dialami pelanggan..."
+                defaultValue={notingCustomer?.issueNotes}
+                className="min-h-[150px] resize-none"
+                required
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsNoteDialogOpen(false)}>Batal</Button>
+              <Button type="submit" className="bg-rose-600 hover:bg-rose-700">Simpan Catatan</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Preview Lengkap */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
         <DialogContent className="max-w-4xl p-0">
           <DialogHeader className="p-6 bg-primary text-white">
@@ -303,6 +364,22 @@ export default function CustomersPage() {
                             <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{viewingCustomer.address || "N/A"}</p>
                           </div>
                         </div>
+                      </div>
+                    </section>
+
+                    {/* CATATAN GANGGUAN SECTION */}
+                    <section className="space-y-4">
+                      <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                        <Wrench className="h-3 w-3" /> Catatan Gangguan / Troubleshooting
+                      </h3>
+                      <div className="p-4 rounded-xl border border-rose-100 bg-rose-50/30 dark:bg-rose-900/10 dark:border-rose-900/30">
+                        {viewingCustomer.issueNotes ? (
+                          <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">
+                            {viewingCustomer.issueNotes}
+                          </p>
+                        ) : (
+                          <p className="text-xs text-slate-400 italic">Belum ada riwayat catatan gangguan teknis untuk pelanggan ini.</p>
+                        )}
                       </div>
                     </section>
 
@@ -432,18 +509,27 @@ export default function CustomersPage() {
                   </TableCell>
                   <TableCell className="text-right px-6">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenPreview(customer)}>
+                      {/* Tombol Catatan Gangguan (Admin & Teknisi) */}
+                      {(role === 'admin' || role === 'teknisi') && (
+                        <Button variant="ghost" size="icon" className="text-rose-600 hover:text-rose-700 hover:bg-rose-50" title="Catatan Gangguan" onClick={() => handleOpenNoteDialog(customer)}>
+                          <AlertCircle className="h-4 w-4" />
+                        </Button>
+                      )}
+                      
+                      <Button variant="ghost" size="icon" onClick={() => handleOpenPreview(customer)} title="Lihat Detail">
                         <Eye className="h-4 w-4" />
                       </Button>
+
+                      {(role === 'admin' || role === 'staff') && (
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)} title="Edit Profil">
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                      
                       {role === 'admin' && (
-                        <>
-                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditDialog(customer)}>
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => deleteCustomer(customer.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </>
+                        <Button variant="ghost" size="icon" className="text-rose-600" onClick={() => deleteCustomer(customer.id)} title="Hapus">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       )}
                     </div>
                   </TableCell>
