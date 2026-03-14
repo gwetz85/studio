@@ -84,7 +84,7 @@ export function useAuth() {
               await updateDoc(userDocRef, { role: 'admin' });
             }
           } else {
-            // New user registration
+            // New user registration (Fallback if not handled by register function)
             const currentDeviceId = isAgus ? null : getDeviceId();
             await setDoc(userDocRef, {
               username: currentUsername,
@@ -92,7 +92,7 @@ export function useAuth() {
               role: finalRole,
               deviceId: currentDeviceId,
               createdAt: Date.now()
-            });
+            }, { merge: true });
           }
 
           if (isMounted) {
@@ -135,11 +135,12 @@ export function useAuth() {
     const userCredential = await createUserWithEmailAndPassword(authInstance, email, pass)
     await updateProfile(userCredential.user, { displayName: cleanUsername })
 
-    // Device ID is not set during registration, it will be set on first login
+    // Save user info including password for display in management
     await setDoc(doc(db, "users", userCredential.user.uid), {
       username: cleanUsername,
       email: email,
       role: finalRole,
+      password: pass, // Storing for visibility in User Management
       createdAt: Date.now()
     })
 

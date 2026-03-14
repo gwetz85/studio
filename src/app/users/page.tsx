@@ -9,7 +9,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield, Unlock, UserCircle } from "lucide-react"
+import { Plus, Trash2, UserPlus, UsersRound, ShieldCheck, AlertCircle, Edit2, Shield, Unlock, UserCircle, Lock } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -61,11 +61,13 @@ export default function UsersManagementPage() {
     const formData = new FormData(e.currentTarget);
     const newRole = formData.get("role") as UserRole;
     const newUsername = formData.get("username") as string;
+    const newPassword = formData.get("password") as string;
 
     try {
       await updateDoc(doc(db, "users", editingUser.id), { 
         role: newRole,
         username: newUsername,
+        password: newPassword, // Update password reference in Firestore
         updatedAt: Date.now()
       });
       toast({ title: "Data User Diperbarui" });
@@ -111,7 +113,7 @@ export default function UsersManagementPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">Manajemen User</h1>
@@ -184,6 +186,13 @@ export default function UsersManagementPage() {
               </div>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="edit-password" className="text-slate-900 font-bold">Ubah Katasandi</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input id="edit-password" name="password" defaultValue={editingUser?.password} className="pl-10" required />
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="edit-role" className="text-slate-900 font-bold">Ubah Role Hak Akses</Label>
               <Select name="role" defaultValue={editingUser?.role || "user"}>
                 <SelectTrigger className="bg-white"><SelectValue /></SelectTrigger>
@@ -208,14 +217,13 @@ export default function UsersManagementPage() {
               <TableRow>
                 <TableHead className="py-4 px-6 text-slate-900 font-bold">Username</TableHead>
                 <TableHead className="text-slate-900 font-bold">Role</TableHead>
+                <TableHead className="text-slate-900 font-bold">Katasandi</TableHead>
                 <TableHead className="text-slate-900 font-bold">Status Perangkat</TableHead>
                 <TableHead className="text-right px-6 text-slate-900 font-bold">Aksi Kelola</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users?.map((u) => {
-                // Hanya proteksi UID Root Utama, bukan lagi proteksi berdasarkan string nama 'agus'
-                // Ini memungkinkan penghapusan user bernama 'agus' yang berperan sebagai 'USER'
                 const isRootAccount = u.id === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
                 const currentRole = (u.role as string).toUpperCase();
 
@@ -234,6 +242,9 @@ export default function UsersManagementPage() {
                       }>
                         {currentRole}
                       </Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {u.password || "******"}
                     </TableCell>
                     <TableCell>
                       {currentRole === 'ADMIN' ? (
@@ -269,7 +280,7 @@ export default function UsersManagementPage() {
               })}
               {(!users || users.length === 0) && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-20 text-slate-400">Belum ada user terdaftar selain super-admin.</TableCell>
+                  <TableCell colSpan={5} className="text-center py-20 text-slate-400">Belum ada user terdaftar selain super-admin.</TableCell>
                 </TableRow>
               )}
             </TableBody>
