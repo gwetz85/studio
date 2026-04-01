@@ -57,12 +57,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isUserLoading])
 
-  // Single source of truth for user profile data
+  const fetchingRef = React.useRef(false);
+
+  // Single source of truth for user profile data - Optimized
   useEffect(() => {
     let isMounted = true;
     async function fetchUserProfile() {
-      if (!user) return;
+      if (!user || isDataLoaded || fetchingRef.current) return;
       
+      fetchingRef.current = true;
       const currentUsername = user.displayName || user.email?.split('@')[0] || "User";
       const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
 
@@ -74,30 +77,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (userDoc.exists()) {
           const userData = userDoc.data();
           finalRole = isAgus ? "admin" : (userData.role as UserRole || "user");
-
+          
+          // Simplified: Save device ID on first login without blocking UI
           if (finalRole !== 'admin') {
             const currentDeviceId = getDeviceId();
-            if (userData.deviceId && userData.deviceId !== currentDeviceId) {
-              if (isMounted) {
-                setDeviceError("Akun ini sudah tertaut pada perangkat lain. Silakan hubungi Admin untuk reset akses.");
-                setRole(null);
-                setIsDataLoaded(true);
-              }
-              return;
-            }
             if (!userData.deviceId && currentDeviceId) {
-              await updateDoc(userDocRef, { deviceId: currentDeviceId });
+              updateDoc(userDocRef, { deviceId: currentDeviceId }).catch(() => {});
             }
           }
         } else {
           const currentDeviceId = isAgus ? null : getDeviceId();
-          await setDoc(userDocRef, {
+          setDoc(userDocRef, {
             username: currentUsername,
             email: user.email,
             role: finalRole,
             deviceId: currentDeviceId,
             createdAt: Date.now()
-          }, { merge: true });
+          }, { merge: true }).catch(() => {});
         }
 
         if (isMounted) {
@@ -113,13 +109,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUsername(currentUsername);
           setIsDataLoaded(true);
         }
+      } finally {
+        fetchingRef.current = false;
       }
     }
 
-    if (user && !isUserLoading) {
+    if (user && !isUserLoading && !isDataLoaded) {
       fetchUserProfile();
     }
-  }, [user, isUserLoading, db]);
+  }, [user, isUserLoading, db, isDataLoaded]);
 
   // Route Protection
   useEffect(() => {
