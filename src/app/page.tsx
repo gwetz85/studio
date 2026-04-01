@@ -121,8 +121,6 @@ export default function Dashboard() {
     };
   }, [customers, invoices, packages, currentDay]);
 
-  if (!stats) return <div className="flex h-96 items-center justify-center animate-pulse text-xs">Memuat Data Cloud...</div>;
-
   const chartData = React.useMemo(() => {
     if (!stats) return [];
     return [
@@ -131,6 +129,8 @@ export default function Dashboard() {
       { name: "Non-Aktif", value: stats.inactive, fill: "hsl(var(--destructive))" },
     ];
   }, [stats]);
+
+  if (!stats) return <div className="flex h-96 items-center justify-center animate-pulse text-xs">Memuat Data Cloud...</div>;
 
   return (
     <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700">
