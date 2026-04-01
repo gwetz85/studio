@@ -188,10 +188,14 @@ export default function BillingPage() {
         <div className="flex flex-wrap items-center gap-3">
           <Button 
             variant="outline"
-            onClick={() => window.print()}
+            onClick={() => {
+              setActiveInvoice(filteredInvoices);
+              setIsReceiptOpen(true);
+            }}
             className="h-12 px-6 rounded-2xl border-slate-200 hover:bg-slate-50 font-bold transition-all"
+            disabled={!filteredInvoices || filteredInvoices.length === 0}
           >
-            <Printer className="mr-2 h-5 w-5" /> Cetak Laporan
+            <Printer className="mr-2 h-5 w-5" /> Cetak Semua ({filteredInvoices.length})
           </Button>
           
           {role === 'admin' && (
@@ -329,16 +333,17 @@ export default function BillingPage() {
                          </>
                        )}
                        
-                       {inv.status === 'paid' && (
-                         <Button 
-                            variant="secondary" 
-                            size="sm" 
-                            className="h-9 px-4 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-black transition-all shadow-lg"
-                            onClick={() => openReceipt(inv)}
-                          >
-                            <Printer className="mr-1.5 h-3.5 w-3.5" /> CETAK KWITANSI
-                          </Button>
-                       )}
+                        <Button 
+                           variant="secondary" 
+                           size="sm" 
+                           className={cn(
+                             "h-9 px-4 rounded-xl font-bold text-xs transition-all shadow-lg",
+                             inv.status === 'paid' ? "bg-slate-900 text-white hover:bg-black" : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                           )}
+                           onClick={() => openReceipt(inv)}
+                         >
+                           <Printer className="mr-1.5 h-3.5 w-3.5" /> {inv.status === 'paid' ? 'CETAK KWITANSI' : 'CETAK TAGIHAN'}
+                         </Button>
 
                        {inv.status === 'paid' && role === 'admin' && (
                           <Button 
@@ -374,8 +379,11 @@ export default function BillingPage() {
         isOpen={isReceiptOpen}
         onOpenChange={setIsReceiptOpen}
         invoice={activeInvoice}
-        customer={currentCustomer}
-        packageName={currentPackageName}
+        customer={(id: string) => customers?.find(c => c.id === id)}
+        packageName={(id: string) => {
+          const c = customers?.find(cust => cust.id === id);
+          return packages?.find(p => p.id === c?.packageId)?.name || 'N/A';
+        }}
       />
     </div>
   )
