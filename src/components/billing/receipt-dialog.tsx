@@ -8,6 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { useFirestore, useDoc } from "@/firebase"
+import { doc } from "firebase/firestore"
 import { Printer, CheckCircle2, QrCode, Phone, MapPin, Globe } from "lucide-react"
 import { format } from "date-fns"
 import { id as localeId } from "date-fns/locale"
@@ -27,9 +29,10 @@ interface ReceiptProps {
   invoice: any
   customer: any
   packageName: string
+  company: any
 }
 
-const Receipt = ({ invoice, customer, packageName }: ReceiptProps) => {
+const Receipt = ({ invoice, customer, packageName, company }: ReceiptProps) => {
   const isPaid = invoice?.status === 'paid';
   const docNumber = String(invoice.id || "").substring(0, 8).toUpperCase();
   const currentDate = format(new Date(), "dd MMMM yyyy", { locale: localeId });
@@ -41,12 +44,14 @@ const Receipt = ({ invoice, customer, packageName }: ReceiptProps) => {
       <div className="flex justify-between items-start border-b-4 border-slate-900 pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="h-10 w-10 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-xl">MT</div>
-            <h1 className="text-3xl font-black tracking-tighter text-slate-900">MTNET</h1>
+            <div className="h-10 w-10 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-xl">
+              {(company?.name || "MTNET").charAt(0)}
+            </div>
+            <h1 className="text-3xl font-black tracking-tighter text-slate-900">{company?.name || "MTNET"}</h1>
           </div>
           <div className="text-[11px] font-medium text-slate-500 space-y-0.5">
-            <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> Jl. Raya Lintas Sumatera, Bandar Jaya, Lampung</p>
-            <p className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> 0812-7000-XXXX | <Globe className="h-3 w-3" /> www.mtnet.id</p>
+            <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> {company?.address || "Jl. Raya Lintas Sumatera, Bandar Jaya, Lampung"}</p>
+            <p className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {company?.phone || "0812-7000-XXXX"} | <Globe className="h-3 w-3" /> www.mtnet.id</p>
           </div>
         </div>
         <div className="text-right space-y-1">
@@ -201,6 +206,8 @@ export function ReceiptDialog({
   if (!invoice) return null;
 
   const invoices = Array.isArray(invoice) ? invoice : [invoice];
+  const db = useFirestore();
+  const { data: companyProfile } = useDoc(doc(db, "settings", "company_profile"));
   
   const handlePrint = () => {
     window.print();
@@ -228,6 +235,7 @@ export function ReceiptDialog({
                     invoice={inv}
                     customer={cust}
                     packageName={pkgName}
+                    company={companyProfile}
                   />
                 </div>
               );

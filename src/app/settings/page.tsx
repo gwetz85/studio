@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { useFirestore, useUser } from "@/firebase"
-import { collection, getDocs, doc, setDoc, deleteDoc, addDoc } from "firebase/firestore"
+import { useFirestore, useUser, useDoc } from "@/firebase"
+import { collection, getDocs, doc, setDoc, deleteDoc, addDoc, updateDoc } from "firebase/firestore"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
+import { Input } from "@/components/ui/input"
 import { 
   Download, 
   Upload, 
@@ -21,7 +22,9 @@ import {
   LogOut,
   Palette,
   Check,
-  Loader2
+  Loader2,
+  Building2,
+  Save
 } from "lucide-react"
 import {
   AlertDialog,
@@ -55,6 +58,21 @@ export default function SettingsPage() {
   const [activeSidebarColor, setActiveSidebarColor] = React.useState("blue");
   const [isProcessing, setIsProcessing] = React.useState(false);
 
+  // Company Profile State
+  const { data: profile } = useDoc(doc(firestore, "settings", "company_profile"));
+  const [companyName, setCompanyName] = React.useState("");
+  const [companyAddress, setCompanyAddress] = React.useState("");
+  const [companyPhone, setCompanyPhone] = React.useState("");
+  const [isSavingProfile, setIsSavingProfile] = React.useState(false);
+
+  React.useEffect(() => {
+    if (profile) {
+      setCompanyName(profile.name || "");
+      setCompanyAddress(profile.address || "");
+      setCompanyPhone(profile.phone || "");
+    }
+  }, [profile]);
+
   React.useEffect(() => {
     const theme = localStorage.getItem("theme");
     const color = localStorage.getItem("sidebar_color") || "blue";
@@ -69,6 +87,25 @@ export default function SettingsPage() {
     }
     document.documentElement.setAttribute("data-sidebar-color", color);
   }, []);
+
+  const handleSaveProfile = async () => {
+    if (role !== 'admin') return;
+    setIsSavingProfile(true);
+    try {
+      await setDoc(doc(firestore, "settings", "company_profile"), {
+        name: companyName,
+        address: companyAddress,
+        phone: companyPhone,
+        updatedAt: Date.now(),
+        updatedBy: user?.uid
+      }, { merge: true });
+      toast({ title: "Profil Perusahaan Diperbarui", description: "Detail akan tercetak otomatis di kwitansi." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Gagal menyimpan profil" });
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
 
   const toggleTheme = (checked: boolean) => {
     setIsDarkMode(checked);
@@ -262,6 +299,62 @@ export default function SettingsPage() {
                 ))}
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-none shadow-sm dark:bg-slate-900/50">
+          <CardHeader>
+            <div className="flex items-center gap-2 text-primary">
+              <Building2 className="h-5 w-5" />
+              <CardTitle>Profil Perusahaan (Kwitansi)</CardTitle>
+            </div>
+            <CardDescription>Detail ini akan muncul pada Kop Kwitansi dan Tagihan Pelanggan.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="companyName">Nama Perusahaan</Label>
+                <Input 
+                  id="companyName" 
+                  placeholder="Contoh: PT MTNET SOLUSI" 
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  disabled={role !== 'admin' || isSavingProfile}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="companyPhone">Nomor Telepon / WhatsApp</Label>
+                <Input 
+                  id="companyPhone" 
+                  placeholder="0812-xxxx-xxxx" 
+                  value={companyPhone}
+                  onChange={(e) => setCompanyPhone(e.target.value)}
+                  disabled={role !== 'admin' || isSavingProfile}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="companyAddress">Alamat Perusahaan</Label>
+              <Input 
+                id="companyAddress" 
+                placeholder="Jl. Raya Nomor 123..." 
+                value={companyAddress}
+                onChange={(e) => setCompanyAddress(e.target.value)}
+                disabled={role !== 'admin' || isSavingProfile}
+              />
+            </div>
+            {role === 'admin' && (
+              <div className="flex justify-end pt-2">
+                <Button 
+                  onClick={handleSaveProfile} 
+                  disabled={isSavingProfile}
+                  className="bg-primary hover:bg-primary/90 font-bold"
+                >
+                  {isSavingProfile ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  Simpan Profil Perusahaan
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
 
