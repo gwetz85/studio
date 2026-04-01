@@ -51,7 +51,6 @@ export default function BillingPage() {
     return query(
       collection(db, "invoices"), 
       orderBy("billingPeriod", "desc"),
-      orderBy("createdAt", "desc"),
       limit(limitCount)
     );
   }, [db, user, limitCount]);
