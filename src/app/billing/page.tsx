@@ -167,7 +167,7 @@ export default function BillingPage() {
   const handleWhatsAppReminder = (invoice: any) => {
     const customer = customers?.find(c => c.id === invoice.customerId);
     if (!customer) return;
-    const message = `Halo ${customer.name}, tagihan internet Rp ${invoice.amount.toLocaleString('id-ID')} periode ${invoice.billingPeriod} belum lunas. Mohon segera dibayar. Terima kasih.`;
+    const message = `Halo ${customer.name}, tagihan internet Rp ${(invoice.amount || 0).toLocaleString('id-ID')} periode ${invoice.billingPeriod} belum lunas. Mohon segera dibayar. Terima kasih.`;
     window.open(`https://wa.me/${formatWhatsAppNumber(customer.phone)}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -276,7 +276,7 @@ export default function BillingPage() {
                       </div>
                       <div className="space-y-0.5">
                         <p className="font-bold text-slate-800 text-sm leading-tight">{getCustomerName(inv.customerId)}</p>
-                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter italic leading-none">Sub ID: {inv.customerId.substring(0,6)}</p>
+                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter italic leading-none">Sub ID: {inv.customerId?.substring(0,6) || "N/A"}</p>
                       </div>
                     </div>
                   </TableCell>
@@ -284,7 +284,7 @@ export default function BillingPage() {
                     {inv.billingPeriod}
                   </TableCell>
                   <TableCell className="text-center font-black text-slate-900">
-                    Rp {inv.amount.toLocaleString('id-ID')}
+                    Rp {(inv.amount || 0).toLocaleString('id-ID')}
                   </TableCell>
                   <TableCell className="text-center">
                     <Badge className={cn(
@@ -360,6 +360,7 @@ export default function BillingPage() {
         </ScrollArea>
       </Card>
 
+/*
       <ReceiptDialog 
         isOpen={isReceiptOpen}
         onOpenChange={setIsReceiptOpen}
@@ -367,6 +368,7 @@ export default function BillingPage() {
         customer={currentCustomer}
         packageName={currentPackageName}
       />
+*/
     </div>
   )
 }

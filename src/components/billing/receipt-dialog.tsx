@@ -43,9 +43,9 @@ export function ReceiptDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="bg-white p-8 md:p-12 space-y-8 print:p-0 print:m-0" id="receipt-content">
+        <div className="bg-white p-8 md:p-12 space-y-8 print:p-0 print:m-0 print:block" id="receipt-content">
           {/* Receipt Header */}
-          <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6">
+          <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 print:border-slate-900">
             <div>
               <h1 className="text-3xl font-black tracking-tighter text-slate-900">MTNET</h1>
               <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">System Aplikasi Online</p>
@@ -81,15 +81,15 @@ export function ReceiptDialog({
           </div>
 
           {/* Item Table */}
-          <div className="border-t-2 border-slate-100 pt-6">
+          <div className="border-t-2 border-slate-100 pt-6 print:border-slate-100">
             <table className="w-full">
               <thead>
-                <tr className="text-[10px] font-black uppercase text-slate-400 tracking-widest border-b border-slate-100">
+                <tr className="text-[10px] font-black uppercase text-slate-400 tracking-widest border-b border-slate-100 print:border-slate-100">
                   <th className="text-left py-3">Deskripsi Layanan</th>
                   <th className="text-right py-3">Jumlah</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 print:divide-slate-100">
                 <tr>
                   <td className="py-4">
                     <p className="text-sm font-bold text-slate-900">Paket Internet {packageName}</p>
@@ -101,12 +101,12 @@ export function ReceiptDialog({
                 </tr>
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-slate-900">
+                <tr className="border-t-2 border-slate-900 print:border-slate-900">
                   <td className="py-4">
                     <p className="text-sm font-black uppercase text-slate-900">Total Pembayaran</p>
                   </td>
                   <td className="py-4 text-right">
-                    <p className="text-xl font-black text-primary">Rp {(invoice.amount || 0).toLocaleString('id-ID')}</p>
+                    <p className="text-xl font-black text-primary print:text-primary">Rp {(invoice.amount || 0).toLocaleString('id-ID')}</p>
                   </td>
                 </tr>
               </tfoot>
@@ -115,13 +115,13 @@ export function ReceiptDialog({
 
           {/* Status Badge (Watermark style) */}
           <div className="flex justify-center pt-4">
-            <div className="border-4 border-emerald-500/30 rounded-full px-8 py-2 rotate-[-5deg]">
+            <div className="border-4 border-emerald-500/30 rounded-full px-8 py-2 rotate-[-5deg] print:border-emerald-500/30">
               <p className="text-2xl font-black text-emerald-500 uppercase tracking-[0.2em] opacity-40">LUNAS</p>
             </div>
           </div>
 
           {/* Footer Note */}
-          <div className="pt-8 text-center border-t border-slate-100">
+          <div className="pt-8 text-center border-t border-slate-100 print:border-slate-100">
             <p className="text-[10px] text-slate-400 italic">
               Terima kasih telah menggunakan layanan MTNET. Simpan kwitansi ini sebagai bukti pembayaran yang sah.
             </p>
@@ -136,31 +136,6 @@ export function ReceiptDialog({
             Tutup
           </Button>
         </div>
-
-        <style jsx global>{`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            #receipt-content, #receipt-content * {
-              visibility: visible;
-            }
-            #receipt-content {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-              padding: 0 !important;
-              margin: 0 !important;
-              box-shadow: none !important;
-              border: none !important;
-            }
-            @page {
-              size: auto;
-              margin: 1cm;
-            }
-          }
-        `}</style>
       </DialogContent>
     </Dialog>
   )
