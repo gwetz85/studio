@@ -59,7 +59,8 @@ export default function SettingsPage() {
   const [isProcessing, setIsProcessing] = React.useState(false);
 
   // Company Profile State
-  const { data: profile } = useDoc(doc(firestore, "settings", "company_profile"));
+  const profileRef = React.useMemo(() => doc(firestore, "settings", "company_profile"), [firestore]);
+  const { data: profile } = useDoc(profileRef);
   const [companyName, setCompanyName] = React.useState("");
   const [companyAddress, setCompanyAddress] = React.useState("");
   const [companyPhone, setCompanyPhone] = React.useState("");
