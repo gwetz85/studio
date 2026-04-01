@@ -65,13 +65,16 @@ export default function SettingsPage() {
   const [companyPhone, setCompanyPhone] = React.useState("");
   const [isSavingProfile, setIsSavingProfile] = React.useState(false);
 
+  const [isDataLoaded, setIsDataLoaded] = React.useState(false);
+
   React.useEffect(() => {
-    if (profile) {
+    if (profile && !isDataLoaded) {
       setCompanyName(profile.name || "");
       setCompanyAddress(profile.address || "");
       setCompanyPhone(profile.phone || "");
+      setIsDataLoaded(true);
     }
-  }, [profile]);
+  }, [profile, isDataLoaded]);
 
   React.useEffect(() => {
     const theme = localStorage.getItem("theme");
