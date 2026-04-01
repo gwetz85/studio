@@ -276,7 +276,7 @@ export default function BillingPage() {
                       </div>
                       <div className="space-y-0.5">
                         <p className="font-bold text-slate-800 text-sm leading-tight">{getCustomerName(inv.customerId)}</p>
-                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter italic leading-none">Sub ID: {inv.customerId?.substring(0,6) || "N/A"}</p>
+                        <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tighter italic leading-none">Sub ID: {String(inv.customerId || "").substring(0,6) || "N/A"}</p>
                       </div>
                     </div>
                   </TableCell>
@@ -360,7 +360,6 @@ export default function BillingPage() {
         </ScrollArea>
       </Card>
 
-/*
       <ReceiptDialog 
         isOpen={isReceiptOpen}
         onOpenChange={setIsReceiptOpen}
@@ -368,7 +367,6 @@ export default function BillingPage() {
         customer={currentCustomer}
         packageName={currentPackageName}
       />
-*/
     </div>
   )
 }

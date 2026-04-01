@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Printer, Download, CheckCircle2 } from "lucide-react"
 import { format } from "date-fns"
-import { id } from "date-fns/locale"
+import { id as localeId } from "date-fns/locale"
 
 interface ReceiptDialogProps {
   isOpen: boolean
@@ -52,7 +52,7 @@ export function ReceiptDialog({
             </div>
             <div className="text-right">
               <h2 className="text-xl font-bold uppercase text-slate-900">Kwitansi</h2>
-              <p className="text-sm font-mono text-slate-500">#{invoice.id?.substring(0, 8).toUpperCase()}</p>
+              <p className="text-sm font-mono text-slate-500">#{String(invoice.id || "").substring(0, 8).toUpperCase()}</p>
             </div>
           </div>
 
@@ -70,7 +70,7 @@ export function ReceiptDialog({
               <div>
                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Tanggal Bayar:</p>
                 <p className="text-sm font-bold text-slate-900">
-                  {invoice.paymentDate ? format(new Date(invoice.paymentDate), "dd MMMM yyyy", { locale: id }) : "-"}
+                  {invoice.paymentDate ? format(new Date(invoice.paymentDate), "dd MMMM yyyy", { locale: localeId }) : "-"}
                 </p>
               </div>
               <div>
