@@ -38,7 +38,7 @@ const Receipt = ({ invoice, customer, packageName, company }: ReceiptProps) => {
   const currentDate = format(new Date(), "dd MMMM yyyy", { locale: localeId });
   
   return (
-    <div className="bg-white p-6 print:p-6 print:m-0 print:h-[148.5mm] print:flex print:flex-col print:justify-between text-slate-800 border-b border-dashed border-slate-200 last:border-b-0 print:border-slate-300 overflow-visible">
+    <div className="bg-white px-16 py-6 print:px-16 print:py-6 print:m-0 print:h-[148.5mm] print:flex print:flex-col print:justify-between text-slate-800 border-b border-dashed border-slate-200 last:border-b-0 print:border-slate-300 overflow-visible">
       <div className="space-y-4">
         {/* Header - Modern & Clean */}
         <div className="flex justify-between items-start">
