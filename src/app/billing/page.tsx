@@ -185,20 +185,30 @@ export default function BillingPage() {
           <p className="text-slate-500 font-medium ml-1">Manajemen tagihan layanan internet pelanggan aktif.</p>
         </div>
         
-        {role === 'admin' && (
+        <div className="flex flex-wrap items-center gap-3">
           <Button 
-            onClick={handleGenerateMonthlyBills} 
-            disabled={isGenerating}
-            className="h-12 px-6 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all font-bold"
+            variant="outline"
+            onClick={() => window.print()}
+            className="h-12 px-6 rounded-2xl border-slate-200 hover:bg-slate-50 font-bold transition-all"
           >
-            {isGenerating ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-5 w-5" />
-            )}
-            Terbitkan Tagihan Bulanan (Massal)
+            <Printer className="mr-2 h-5 w-5" /> Cetak Laporan
           </Button>
-        )}
+          
+          {role === 'admin' && (
+            <Button 
+              onClick={handleGenerateMonthlyBills} 
+              disabled={isGenerating}
+              className="h-12 px-6 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all font-bold"
+            >
+              {isGenerating ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <RefreshCw className="mr-2 h-5 w-5" />
+              )}
+              Terbitkan Tagihan Bulanan (Massal)
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Stats & Filter Bar */}
@@ -326,7 +336,7 @@ export default function BillingPage() {
                             className="h-9 px-4 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-black transition-all shadow-lg"
                             onClick={() => openReceipt(inv)}
                           >
-                            <Printer className="mr-1.5 h-3.5 w-3.5" /> KWITANSI
+                            <Printer className="mr-1.5 h-3.5 w-3.5" /> CETAK KWITANSI
                           </Button>
                        )}
 
