@@ -25,6 +25,23 @@ export function terbilang(n: number): string {
 }
 
 /**
+ * Safely convert various date types (Timestamp, Number, Date) to a Date object
+ */
+export function safeDate(date: any): Date {
+  if (!date) return new Date();
+  
+  // Handle Firestore Timestamp
+  if (typeof date === 'object' && date.seconds !== undefined) {
+    return new Date(date.seconds * 1000);
+  }
+  
+  // Handle other types (Number, ISO string, or Date object)
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return new Date();
+  return d;
+}
+
+/**
  * Format number to Indonesian Rupiah currency string
  */
 export function formatRupiah(amount: number): string {
@@ -38,13 +55,18 @@ export function formatRupiah(amount: number): string {
 /**
  * Format period string like "2024-03" to "Maret 2024"
  */
-export function formatBillingPeriod(period: string): string {
-  if (!period || !period.includes("-")) return period;
-  const [year, month] = period.split("-");
+export function formatBillingPeriod(period: any): string {
+  if (!period || typeof period !== 'string' || !period.includes("-")) return period || "-";
+  const parts = period.split("-");
+  if (parts.length < 2) return period;
+  
+  const [year, month] = parts;
   const months = [
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
   ];
   const monthIdx = parseInt(month) - 1;
+  if (isNaN(monthIdx) || !months[monthIdx]) return period;
+  
   return `${months[monthIdx]} ${year}`;
 }

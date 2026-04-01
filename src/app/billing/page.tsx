@@ -69,12 +69,27 @@ export default function BillingPage() {
   }, [db, user]);
   const { data: packages } = useCollection(packagesQuery);
 
-  // Efficient Customer Lookup Map
-  const customerMap = React.useMemo(() => {
-    const map = new Map();
-    customers?.forEach(c => map.set(c.id, c));
-    return map;
-  }, [customers]);
+    // Efficient Customer Lookup Map
+    const customerMap = React.useMemo(() => {
+      const map = new Map();
+      if (customers && Array.isArray(customers)) {
+        customers.forEach(c => {
+          if (c && c.id) map.set(c.id, c);
+        });
+      }
+      return map;
+    }, [customers]);
+  
+    const stats = React.useMemo(() => {
+      if (!invoices || !Array.isArray(invoices)) return { total: 0, pending: 0, paid: 0, overdue: 0 };
+      
+      return {
+        total: invoices.length,
+        pending: invoices.filter(i => i?.status === 'pending').length,
+        paid: invoices.filter(i => i?.status === 'paid').length,
+        overdue: invoices.filter(i => i?.status === 'overdue').length,
+      };
+    }, [invoices]);
 
   const filteredInvoices = React.useMemo(() => {
     if (!invoices) return [];
@@ -237,10 +252,10 @@ export default function BillingPage() {
       {/* Stats & Filter Bar */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Tagihan", value: invoices?.length || 0, color: "bg-slate-100 text-slate-600", border: "border-slate-200" },
-          { label: "Menunggu", value: invoices?.filter(i => i.status === 'pending').length || 0, color: "bg-amber-100 text-amber-600", border: "border-amber-200" },
-          { label: "Lunas", value: invoices?.filter(i => i.status === 'paid').length || 0, color: "bg-emerald-100 text-emerald-600", border: "border-emerald-200" },
-          { label: "Terlambat", value: invoices?.filter(i => i.status === 'overdue').length || 0, color: "bg-rose-100 text-rose-600", border: "border-rose-200" },
+          { label: "Total Tagihan", value: stats.total, color: "bg-slate-100 text-slate-600", border: "border-slate-200" },
+          { label: "Menunggu", value: stats.pending, color: "bg-amber-100 text-amber-600", border: "border-amber-200" },
+          { label: "Lunas", value: stats.paid, color: "bg-emerald-100 text-emerald-600", border: "border-emerald-200" },
+          { label: "Terlambat", value: stats.overdue, color: "bg-rose-100 text-rose-600", border: "border-rose-200" },
         ].map((stat, i) => (
           <Card key={i} className={cn("border shadow-sm rounded-2xl", stat.border)}>
             <CardContent className="p-4 flex items-center justify-between">

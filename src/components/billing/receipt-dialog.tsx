@@ -15,7 +15,7 @@ import { format } from "date-fns"
 import { id as localeId } from "date-fns/locale"
 import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { terbilang, formatRupiah, formatBillingPeriod } from "@/lib/format"
+import { terbilang, formatRupiah, formatBillingPeriod, safeDate } from "@/lib/format"
 
 interface ReceiptDialogProps {
   isOpen: boolean
@@ -36,7 +36,7 @@ const Receipt = ({ invoice, customer, packageName, company }: ReceiptProps) => {
   const isPaid = invoice?.status === 'paid';
   const docNumber = String(invoice.id || "").substring(0, 8).toUpperCase();
   const currentDate = format(new Date(), "dd MMMM yyyy", { locale: localeId });
-  const paymentDate = invoice.paymentDate ? format(new Date(invoice.paymentDate), "dd MMMM yyyy", { locale: localeId }) : "-";
+  const paymentDateString = invoice?.paymentDate ? format(safeDate(invoice.paymentDate), "dd MMMM yyyy", { locale: localeId }) : "-";
   
   return (
     <div className="bg-white p-8 md:p-10 space-y-6 print:p-0 print:m-0 print:block print:break-after-page text-slate-800">
@@ -82,7 +82,7 @@ const Receipt = ({ invoice, customer, packageName, company }: ReceiptProps) => {
         <div className="space-y-3">
           <div className="grid grid-cols-3 gap-2">
             <p className="text-[10px] font-black uppercase text-slate-400">Tanggal</p>
-            <p className="text-sm font-bold col-span-2 text-slate-900 text-right">{isPaid ? paymentDate : currentDate}</p>
+            <p className="text-sm font-bold col-span-2 text-slate-900 text-right">{isPaid ? paymentDateString : currentDate}</p>
             
             <p className="text-[10px] font-black uppercase text-slate-400">Periode</p>
             <p className="text-sm font-bold col-span-2 text-slate-900 text-right">{formatBillingPeriod(invoice.billingPeriod)}</p>
