@@ -67,9 +67,9 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
                 </Button>
               </div>
             </header>
-            <main className="flex-1 p-3 md:p-8 overflow-x-hidden">
+            <section className="flex-1 p-3 md:p-8 overflow-x-hidden">
               {children}
-            </main>
+            </section>
           </SidebarInset>
         </SidebarProvider>
       )}
