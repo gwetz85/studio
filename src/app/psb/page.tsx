@@ -126,18 +126,12 @@ export default function PSBPage() {
   const getPackageName = (id: string) => packages?.find(p => p.id === id)?.name || "N/A";
 
   const handlePrintContract = () => {
-    const printContent = document.getElementById('contract-print-area');
-    if (!printContent) return;
-    const originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContent.innerHTML;
     window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload(); 
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500 print:m-0 print:p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Pasang Sambungan Baru (PSB)</h1>
           <p className="text-slate-500 dark:text-slate-400">Kelola permintaan pemasangan internet baru.</p>
@@ -148,7 +142,7 @@ export default function PSBPage() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-xl p-0">
+        <DialogContent className="max-w-xl p-0 print:hidden">
           <DialogHeader className="p-6 bg-slate-50 dark:bg-slate-800 border-b">
             <DialogTitle>{editingPSB ? "Edit & Aktivasi PSB" : "Input Permintaan PSB"}</DialogTitle>
           </DialogHeader>
@@ -178,7 +172,7 @@ export default function PSBPage() {
         </DialogContent>
       </Dialog>
 
-      <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900">
+      <Card className="border-none shadow-sm overflow-hidden dark:bg-slate-900 print:hidden">
         <ScrollArea className="w-full">
           <Table>
             <TableHeader className="bg-slate-50/50 dark:bg-slate-800/50">
@@ -220,7 +214,7 @@ export default function PSBPage() {
       </Card>
 
       <Dialog open={showContract} onOpenChange={setShowContract}>
-        <DialogContent className="max-w-4xl p-0">
+        <DialogContent className="max-w-4xl p-0 border-none shadow-none bg-transparent">
           <DialogHeader className="p-4 bg-slate-100 flex flex-row justify-between no-print">
             <DialogTitle>Kontrak Berlangganan</DialogTitle>
             <div className="flex gap-2">
@@ -228,8 +222,8 @@ export default function PSBPage() {
               <Button size="sm" variant="ghost" onClick={() => setShowContract(false)}><X className="h-4 w-4" /></Button>
             </div>
           </DialogHeader>
-          <ScrollArea className="h-[70vh]">
-            <div id="contract-print-area" className="p-12 text-sm leading-relaxed">
+          <ScrollArea className="h-[70vh] print:h-auto">
+            <div id="contract-print-area" className="p-12 text-sm leading-relaxed bg-white print:p-0">
                {activeContractData && (
                  <div className="space-y-6">
                     <h1 className="text-center text-xl font-bold uppercase underline">Surat Perjanjian Berlangganan</h1>

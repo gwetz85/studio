@@ -63,20 +63,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     async function fetchUserProfile() {
-      if (!user || isDataLoaded || fetchingRef.current) return;
+      if (!user || fetchingRef.current) return;
       
       fetchingRef.current = true;
       const currentUsername = user.displayName || user.email?.split('@')[0] || "User";
-      const isAgus = user.email === 'agus@mtnet.com' || user.uid === 'EdUhRV3odgO5TTzVMPSBAsMFaNP2';
 
       try {
         const userDocRef = doc(db, "users", user.uid);
         const userDoc = await getDoc(userDocRef);
-        let finalRole: UserRole = isAgus ? "admin" : "user";
+        
+        let finalRole: UserRole = "user";
+        let finalUsername = currentUsername;
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          finalRole = isAgus ? "admin" : (userData.role as UserRole || "user");
+          finalRole = userData.role as UserRole || "user";
+          finalUsername = userData.username || currentUsername;
           
           // Simplified: Save device ID on first login without blocking UI
           if (finalRole !== 'admin') {
@@ -86,26 +88,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
         } else {
-          const currentDeviceId = isAgus ? null : getDeviceId();
-          setDoc(userDocRef, {
+          // New user setup
+          const currentDeviceId = getDeviceId();
+          await setDoc(userDocRef, {
             username: currentUsername,
             email: user.email,
             role: finalRole,
-            deviceId: currentDeviceId,
+            deviceId: (finalRole as string) === 'admin' ? null : currentDeviceId,
             createdAt: Date.now()
-          }, { merge: true }).catch(() => {});
+          }, { merge: true });
         }
 
         if (isMounted) {
           setRole(finalRole);
-          setUsername(currentUsername);
+          setUsername(finalUsername);
           setDeviceError(null);
           setIsDataLoaded(true);
         }
       } catch (e) {
         console.error("Profile fetch error:", e);
-        if (isMounted && isAgus) {
-          setRole('admin');
+        if (isMounted) {
+          // Fallback settings if fetch fails
+          setRole("user"); 
           setUsername(currentUsername);
           setIsDataLoaded(true);
         }
@@ -163,7 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login");
   }
 
-  const value = {
+  const value = React.useMemo(() => ({
     isLoggedIn: !!user,
     role,
     username,
@@ -172,7 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     logout
-  }
+  }), [user, role, username, isUserLoading, isDataLoaded, deviceError, login, register, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

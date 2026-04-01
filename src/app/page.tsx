@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
-import { collection, query, where } from "firebase/firestore"
+import { collection, query, where, limit } from "firebase/firestore"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Users, Package, CreditCard, ShieldAlert, Clock, CalendarDays, Server } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +14,42 @@ import { format } from "date-fns"
 import { id as localeId } from "date-fns/locale"
 import { Separator } from "@/components/ui/separator"
 
+function DigitalClock() {
+  const [time, setTime] = React.useState<{ time: string; date: string } | null>(null);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setTime({
+        time: format(now, "HH:mm:ss", { locale: localeId }),
+        date: format(now, "EEEE, dd MMMM yyyy", { locale: localeId })
+      });
+    }, 1000);
+    
+    // Set initial value
+    const now = new Date();
+    setTime({
+      time: format(now, "HH:mm:ss", { locale: localeId }),
+      date: format(now, "EEEE, dd MMMM yyyy", { locale: localeId })
+    });
+
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!time) return <div className="h-8 animate-pulse bg-slate-800 rounded mt-2" />;
+
+  return (
+    <>
+      <div className="text-lg md:text-2xl font-black font-mono tracking-tighter tabular-nums text-primary">
+        {time.time}
+      </div>
+      <div className="text-[8px] md:text-[10px] font-medium text-slate-400">
+        {time.date}
+      </div>
+    </>
+  );
+}
+
 export default function Dashboard() {
   const db = useFirestore();
   const { user } = useUser();
@@ -23,13 +59,10 @@ export default function Dashboard() {
   const [deviceInfo, setDeviceInfo] = React.useState({ 
     os: "Mendeteksi...", type: "Desktop", connection: "Checking...", memory: "..." 
   });
-  
-  // Real-time clock state
-  const [serverTime, setServerTime] = React.useState<{ time: string; date: string } | null>(null);
 
   const customersQuery = useMemoFirebase(() => {
     if (!user) return null;
-    return collection(db, "customers");
+    return query(collection(db, "customers"), limit(1000));
   }, [db, user]);
   const { data: customers } = useCollection(customersQuery);
 
@@ -41,7 +74,11 @@ export default function Dashboard() {
 
   const invoicesQuery = useMemoFirebase(() => {
     if (!user) return null;
-    return query(collection(db, "invoices"), where("billingPeriod", "==", currentPeriod));
+    return query(
+      collection(db, "invoices"), 
+      where("billingPeriod", "==", currentPeriod),
+      limit(1000)
+    );
   }, [db, currentPeriod, user]);
   const { data: invoices } = useCollection(invoicesQuery);
 
@@ -58,24 +95,6 @@ export default function Dashboard() {
       setDeviceInfo(prev => ({ ...prev, connection: conn, memory: mem }));
     };
     detect();
-
-    // Timer for real-time clock
-    const timer = setInterval(() => {
-      const now = new Date();
-      setServerTime({
-        time: format(now, "HH:mm:ss", { locale: localeId }),
-        date: format(now, "EEEE, dd MMMM yyyy", { locale: localeId })
-      });
-    }, 1000);
-    
-    // Set initial value
-    const now = new Date();
-    setServerTime({
-      time: format(now, "HH:mm:ss", { locale: localeId }),
-      date: format(now, "EEEE, dd MMMM yyyy", { locale: localeId })
-    });
-
-    return () => clearInterval(timer);
   }, []);
 
   const stats = React.useMemo(() => {
@@ -104,11 +123,14 @@ export default function Dashboard() {
 
   if (!stats) return <div className="flex h-96 items-center justify-center animate-pulse text-xs">Memuat Data Cloud...</div>;
 
-  const chartData = [
-    { name: "Aktif", value: stats.active, fill: "hsl(var(--primary))" },
-    { name: "Pasif", value: stats.passive, fill: "hsl(var(--accent))" },
-    { name: "Non-Aktif", value: stats.inactive, fill: "hsl(var(--destructive))" },
-  ];
+  const chartData = React.useMemo(() => {
+    if (!stats) return [];
+    return [
+      { name: "Aktif", value: stats.active, fill: "hsl(var(--primary))" },
+      { name: "Pasif", value: stats.passive, fill: "hsl(var(--accent))" },
+      { name: "Non-Aktif", value: stats.inactive, fill: "hsl(var(--destructive))" },
+    ];
+  }, [stats]);
 
   return (
     <div className="space-y-4 md:space-y-8 animate-in fade-in duration-700">
@@ -181,18 +203,7 @@ export default function Dashboard() {
                 <span className="text-[8px] font-bold text-slate-500 uppercase tracking-widest">Server Time</span>
                 <Clock className="h-3 w-3 text-primary animate-pulse" />
               </div>
-              {serverTime ? (
-                <>
-                  <div className="text-lg md:text-2xl font-black font-mono tracking-tighter tabular-nums text-primary">
-                    {serverTime.time}
-                  </div>
-                  <div className="text-[8px] md:text-[10px] font-medium text-slate-400">
-                    {serverTime.date}
-                  </div>
-                </>
-              ) : (
-                <div className="h-8 animate-pulse bg-slate-800 rounded mt-2" />
-              )}
+              <DigitalClock />
             </div>
 
             {/* Info Details */}
