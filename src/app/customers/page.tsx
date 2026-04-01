@@ -351,16 +351,17 @@ export default function CustomersPage() {
 
       {/* Dialog Registrasi/Edit Profil & Notes */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl p-0">
-          <DialogHeader className="p-4 md:p-6 bg-slate-50 dark:bg-slate-800 border-b">
+        <DialogContent className="max-w-2xl p-0 flex flex-col max-h-[95vh]">
+          <DialogHeader className="p-4 md:p-6 bg-slate-50 dark:bg-slate-800 border-b shrink-0">
             <DialogTitle className="text-base md:text-xl flex items-center gap-2 dark:text-white">
               <User className="h-4 w-4 md:h-5 md:w-5 text-primary" />
               {editingCustomer ? "Edit Profil Pelanggan" : "Registrasi Baru"}
             </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4">
-            <ScrollArea className="max-h-[60vh] md:max-h-[70vh]">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 pb-4">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col overflow-hidden">
+            <ScrollArea className="flex-1">
+              <div className="p-4 md:p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                 <div className="space-y-1 md:space-y-2 sm:col-span-2">
                   <Label htmlFor="name" className="text-xs">Nama Lengkap</Label>
                   <Input id="name" name="name" defaultValue={editingCustomer?.name} required className="h-9 text-xs" />
@@ -423,9 +424,10 @@ export default function CustomersPage() {
                     className="min-h-[100px] font-mono text-[10px] bg-slate-50 dark:bg-slate-900"
                   />
                 </div>
+                </div>
               </div>
             </ScrollArea>
-            <DialogFooter className="pt-2">
+            <DialogFooter className="p-4 md:p-6 pt-2 shrink-0 border-t">
               <Button type="button" variant="ghost" onClick={() => setIsDialogOpen(false)} className="text-xs h-9">Batal</Button>
               <Button type="submit" className="text-xs h-9">Simpan</Button>
             </DialogFooter>
@@ -435,8 +437,8 @@ export default function CustomersPage() {
 
       {/* Dialog Preview Lengkap - Mobile Optimized */}
       <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl p-0 h-[90vh] md:h-auto">
-          <DialogHeader className="p-4 bg-primary text-white">
+        <DialogContent className="max-w-4xl p-0 flex flex-col max-h-[95vh]">
+          <DialogHeader className="p-4 bg-primary text-white shrink-0">
             <DialogTitle className="text-sm md:text-xl flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4" /> Profil Pelanggan
@@ -446,7 +448,7 @@ export default function CustomersPage() {
               </Badge>
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="h-full">
+          <ScrollArea className="flex-1">
             <div className="p-4 md:p-8 space-y-6">
               {viewingCustomer && (
                 <div className="flex flex-col md:grid md:grid-cols-3 gap-6">
