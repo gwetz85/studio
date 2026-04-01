@@ -80,9 +80,14 @@ export default function Dashboard() {
 
   const stats = React.useMemo(() => {
     if (!customers || !invoices) return null;
+    
+    // Create an invoice map by customerId for O(1) lookup
+    const invoiceMap = new Map();
+    invoices.forEach(inv => invoiceMap.set(inv.customerId, inv));
+
     const active = customers.filter(c => c.status === 'active');
     const isolated = currentDay > 8 ? active.filter(c => {
-      const inv = invoices.find(i => i.customerId === c.id);
+      const inv = invoiceMap.get(c.id);
       return !inv || inv.status !== 'paid';
     }).length : 0;
 

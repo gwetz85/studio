@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
-import { collection, doc, updateDoc, addDoc, query, orderBy, getDocs, where } from "firebase/firestore"
+import { collection, doc, updateDoc, addDoc, query, orderBy, getDocs, where, limit } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,7 +18,8 @@ import {
   Undo2, 
   MessageCircle, 
   ChevronRight,
-  Filter
+  Filter,
+  Layers
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Badge } from "@/components/ui/badge"
@@ -41,12 +42,20 @@ export default function BillingPage() {
   const [isReceiptOpen, setIsReceiptOpen] = React.useState(false);
   const [activeInvoice, setActiveInvoice] = React.useState<any | null>(null);
 
+  const [limitCount, setLimitCount] = React.useState(50);
+  const [isSearchingLocally, setIsSearchingLocally] = React.useState(false);
+
   // Queries
   const invoicesQuery = useMemoFirebase(() => {
     if (!user) return null;
-    return query(collection(db, "invoices"), orderBy("billingPeriod", "desc"));
-  }, [db, user]);
-  const { data: invoices } = useCollection(invoicesQuery);
+    return query(
+      collection(db, "invoices"), 
+      orderBy("billingPeriod", "desc"),
+      orderBy("createdAt", "desc"),
+      limit(limitCount)
+    );
+  }, [db, user, limitCount]);
+  const { data: invoices, isLoading: invoicesLoading } = useCollection(invoicesQuery);
 
   const customersQuery = useMemoFirebase(() => {
     if (!user) return null;
@@ -60,8 +69,15 @@ export default function BillingPage() {
   }, [db, user]);
   const { data: packages } = useCollection(packagesQuery);
 
+  // Efficient Customer Lookup Map
+  const customerMap = React.useMemo(() => {
+    const map = new Map();
+    customers?.forEach(c => map.set(c.id, c));
+    return map;
+  }, [customers]);
+
   const filteredInvoices = React.useMemo(() => {
-    if (!invoices || !customers) return [];
+    if (!invoices) return [];
     let filtered = invoices;
 
     if (statusFilter !== "all") {
@@ -71,13 +87,15 @@ export default function BillingPage() {
     if (search) {
       const s = search.toLowerCase();
       filtered = filtered.filter(inv => {
-        const customer = customers.find(c => c.id === inv.customerId);
-        return customer?.name?.toLowerCase().includes(s) || inv.billingPeriod?.includes(s);
+        const customer = customerMap.get(inv.customerId);
+        return customer?.name?.toLowerCase().includes(s) || 
+               inv.billingPeriod?.includes(s) ||
+               customer?.cid?.toLowerCase().includes(s);
       });
     }
 
     return filtered;
-  }, [invoices, customers, search, statusFilter]);
+  }, [invoices, customerMap, search, statusFilter]);
 
   const handleGenerateMonthlyBills = async () => {
     if (role !== 'admin') return;
@@ -155,7 +173,8 @@ export default function BillingPage() {
     return packages.find(p => p.id === currentCustomer.packageId)?.name || "N/A";
   }, [currentCustomer, packages]);
 
-  const getCustomerName = (id: string) => customers?.find(c => c.id === id)?.name || "N/A";
+  const getCustomerName = (id: string) => customerMap.get(id)?.name || "N/A";
+  const getCustomer = (id: string) => customerMap.get(id);
 
   const formatWhatsAppNumber = (phone: string) => {
     if (!phone) return "";
@@ -165,7 +184,7 @@ export default function BillingPage() {
   };
 
   const handleWhatsAppReminder = (invoice: any) => {
-    const customer = customers?.find(c => c.id === invoice.customerId);
+    const customer = getCustomer(invoice.customerId);
     if (!customer) return;
     const message = `Halo ${customer.name}, tagihan internet Rp ${(invoice.amount || 0).toLocaleString('id-ID')} periode ${invoice.billingPeriod} belum lunas. Mohon segera dibayar. Terima kasih.`;
     window.open(`https://wa.me/${formatWhatsAppNumber(customer.phone)}?text=${encodeURIComponent(message)}`, '_blank');
@@ -360,7 +379,7 @@ export default function BillingPage() {
                 </TableRow>
               ))}
               
-              {filteredInvoices?.length === 0 && (
+              {filteredInvoices?.length === 0 && !invoicesLoading && (
                 <TableRow>
                   <TableCell colSpan={5} className="h-64 text-center">
                     <div className="flex flex-col items-center justify-center opacity-30 grayscale scale-90">
@@ -370,18 +389,51 @@ export default function BillingPage() {
                   </TableCell>
                 </TableRow>
               )}
+
+              {invoicesLoading && (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i} className="animate-pulse">
+                    <TableCell className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-slate-100" />
+                        <div className="space-y-2">
+                          <div className="h-4 w-32 bg-slate-100 rounded" />
+                          <div className="h-3 w-20 bg-slate-50 rounded" />
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell><div className="h-4 w-16 bg-slate-100 rounded mx-auto" /></TableCell>
+                    <TableCell><div className="h-4 w-24 bg-slate-100 rounded mx-auto" /></TableCell>
+                    <TableCell><div className="h-6 w-20 bg-slate-100 rounded mx-auto" /></TableCell>
+                    <TableCell><div className="h-9 w-24 bg-slate-100 rounded ml-auto" /></TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </ScrollArea>
+        
+        {!search && (invoices?.length || 0) >= limitCount && (
+          <div className="p-4 bg-slate-50/50 border-t flex justify-center">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setLimitCount(prev => prev + 50)}
+              className="text-primary font-bold hover:bg-primary/5"
+            >
+              <RefreshCw className="mr-2 h-4 w-4" /> Muat Lebih Banyak (Menampilkan {invoices?.length})
+            </Button>
+          </div>
+        )}
       </Card>
 
       <ReceiptDialog 
         isOpen={isReceiptOpen}
         onOpenChange={setIsReceiptOpen}
         invoice={activeInvoice}
-        customer={(id: string) => customers?.find(c => c.id === id)}
+        customer={(id: string) => getCustomer(id)}
         packageName={(id: string) => {
-          const c = customers?.find(cust => cust.id === id);
+          const c = getCustomer(id);
           return packages?.find(p => p.id === c?.packageId)?.name || 'N/A';
         }}
       />

@@ -3,13 +3,13 @@
 
 import * as React from "react"
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase"
-import { collection, doc, deleteDoc, updateDoc, addDoc, query, where } from "firebase/firestore"
+import { collection, doc, deleteDoc, updateDoc, addDoc, query, where, limit } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Trash2, Edit2, Search, User, Eye, Phone, MapPin, Cpu, Calendar, CreditCard, Clock, Wrench, AlertCircle, UserCircle2, ShieldAlert } from "lucide-react"
+import { Plus, Trash2, Edit2, Search, User, Eye, Phone, MapPin, Cpu, Calendar, CreditCard, Clock, Wrench, AlertCircle, UserCircle2, ShieldAlert, RefreshCw } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/hooks/use-toast"
@@ -38,6 +38,9 @@ export default function CustomersPage() {
   const [currentPeriod, setCurrentPeriod] = React.useState("");
   const [isAfterCutoff, setIsAfterCutoff] = React.useState(false);
 
+  // Pagination State
+  const [limitCount, setLimitCount] = React.useState(50);
+
   React.useEffect(() => {
     const now = new Date();
     setCurrentPeriod(now.toISOString().slice(0, 7));
@@ -46,9 +49,13 @@ export default function CustomersPage() {
 
   const customersQuery = useMemoFirebase(() => {
     if (!user) return null;
-    return query(collection(db, "customers"), where("status", "in", ["active", "passive"]));
-  }, [db, user]);
-  const { data: customersRaw } = useCollection(customersQuery);
+    return query(
+      collection(db, "customers"), 
+      where("status", "in", ["active", "passive"]),
+      limit(limitCount)
+    );
+  }, [db, user, limitCount]);
+  const { data: customersRaw, isLoading: customersLoading } = useCollection(customersQuery);
 
   const packagesQuery = useMemoFirebase(() => {
     if (!user) return null;
@@ -61,6 +68,13 @@ export default function CustomersPage() {
     return query(collection(db, "invoices"), where("billingPeriod", "==", currentPeriod));
   }, [db, currentPeriod, user]);
   const { data: currentPeriodInvoices } = useCollection(invoicesQuery);
+
+  // Efficient invoice lookup for isolation check
+  const currentInvoiceMap = React.useMemo(() => {
+    const map = new Map();
+    currentPeriodInvoices?.forEach(inv => map.set(inv.customerId, inv));
+    return map;
+  }, [currentPeriodInvoices]);
 
   const viewInvoicesQuery = useMemoFirebase(() => {
     if (!viewingCustomer?.id || !user) return null;
@@ -83,12 +97,12 @@ export default function CustomersPage() {
     );
   }, [customersRaw, search]);
 
-  const isIsolated = (customer: any) => {
+  const isIsolated = React.useCallback((customer: any) => {
     if (!customer || customer.status !== 'active') return false;
     if (!isAfterCutoff) return false;
-    const invoice = currentPeriodInvoices?.find(i => i.customerId === customer.id);
+    const invoice = currentInvoiceMap.get(customer.id);
     return !invoice || invoice.status !== 'paid';
-  };
+  }, [currentInvoiceMap, isAfterCutoff]);
 
   const handleOpenAddDialog = () => {
     if (role !== 'admin' && role !== 'staff') return;
@@ -304,13 +318,36 @@ export default function CustomersPage() {
           );
         })}
 
-        {filteredCustomers?.length === 0 && (
+        {filteredCustomers?.length === 0 && !customersLoading && (
           <div className="col-span-full py-20 text-center opacity-40">
             <UserCircle2 className="h-12 w-12 mx-auto mb-4" />
             <p className="text-xs font-bold">Tidak ada pelanggan</p>
           </div>
         )}
+
+        {customersLoading && (
+           Array.from({ length: 8 }).map((_, i) => (
+             <div key={i} className="flex flex-col items-center gap-2 animate-pulse">
+                <div className="h-16 w-16 md:h-24 md:w-24 rounded-2xl bg-slate-100" />
+                <div className="h-3 w-16 bg-slate-100 rounded" />
+                <div className="h-2 w-12 bg-slate-50 rounded" />
+             </div>
+           ))
+        )}
       </div>
+
+      {!search && (customersRaw?.length || 0) >= limitCount && (
+        <div className="flex justify-center pt-4">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-primary font-bold"
+            onClick={() => setLimitCount(prev => prev + 50)}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" /> Muat Lebih Banyak (Menampilkan {customersRaw?.length})
+          </Button>
+        </div>
+      )}
 
       {/* Dialog Registrasi/Edit Profil & Notes */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
