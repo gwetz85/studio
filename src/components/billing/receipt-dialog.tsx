@@ -38,8 +38,8 @@ const Receipt = ({ invoice, customer, packageName, company }: ReceiptProps) => {
   const currentDate = format(new Date(), "dd MMMM yyyy", { locale: localeId });
   
   return (
-    <div className="bg-white p-8 md:p-10 print:p-6 print:m-0 print:h-[148.5mm] print:flex print:flex-col print:justify-between text-slate-800 border-b border-dashed border-slate-200 last:border-b-0 print:border-slate-300">
-      <div className="space-y-6">
+    <div className="bg-white p-6 print:p-6 print:m-0 print:h-[148.5mm] print:flex print:flex-col print:justify-between text-slate-800 border-b border-dashed border-slate-200 last:border-b-0 print:border-slate-300 overflow-visible">
+      <div className="space-y-4">
         {/* Header - Modern & Clean */}
         <div className="flex justify-between items-start">
           <div className="flex items-center gap-3">
@@ -117,19 +117,19 @@ const Receipt = ({ invoice, customer, packageName, company }: ReceiptProps) => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               <tr className="text-slate-700">
-                <td className="py-8 px-3 text-center align-top font-bold">1</td>
-                <td className="py-8 px-4 align-top">
-                  <p className="font-black text-slate-900 text-sm mb-1">Paket Internet {packageName}</p>
+                <td className="py-4 px-3 text-center align-top font-bold text-xs">1</td>
+                <td className="py-4 px-4 align-top">
+                  <p className="font-black text-slate-900 text-sm mb-0.5 leading-tight">Paket Internet {packageName}</p>
                   <p className="text-[10px] text-slate-400 italic">Layanan Broadband High Speed Internet</p>
                 </td>
-                <td className="py-8 px-3 text-center align-top whitespace-nowrap">{formatBillingPeriod(invoice.billingPeriod)}</td>
-                <td className="py-8 px-3 text-center align-top">1</td>
-                <td className="py-8 px-4 text-right align-top font-medium">{formatRupiah(Number(invoice.amount || 0))}</td>
-                <td className="py-8 px-4 text-right align-top font-black text-slate-900">{formatRupiah(Number(invoice.amount || 0))}</td>
+                <td className="py-4 px-3 text-center align-top whitespace-nowrap text-xs">{formatBillingPeriod(invoice.billingPeriod)}</td>
+                <td className="py-4 px-3 text-center align-top text-xs">1</td>
+                <td className="py-4 px-4 text-right align-top font-medium text-xs">{formatRupiah(Number(invoice.amount || 0))}</td>
+                <td className="py-4 px-4 text-right align-top font-black text-slate-900 text-xs">{formatRupiah(Number(invoice.amount || 0))}</td>
               </tr>
             </tbody>
           </table>
-          <div className="bg-slate-50/50 p-6 flex flex-col items-end space-y-2 border-t border-slate-100">
+          <div className="bg-slate-50/50 p-4 flex flex-col items-end space-y-1.5 border-t border-slate-100">
             <div className="flex justify-between w-full max-w-[240px] text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <span>SUBTOTAL</span>
               <span className="text-slate-900 font-black">{formatRupiah(Number(invoice.amount || 0))}</span>
