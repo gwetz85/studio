@@ -12,7 +12,8 @@ import {
   UserPlus, 
   UserX, 
   Wrench,
-  UsersRound
+  UsersRound,
+  FileText
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -88,6 +89,11 @@ const navItems = [
     title: "Menu Teknisi",
     url: "/technician",
     icon: Wrench,
+  },
+  {
+    title: "Tagihan",
+    url: "/billing",
+    icon: FileText,
   },
 ]
 
