@@ -15,6 +15,13 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 import { 
@@ -28,7 +35,8 @@ import {
   Phone, 
   Cpu, 
   Package, 
-  User 
+  User,
+  Edit2
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -46,6 +54,11 @@ export default function LaporanGangguanPage() {
   const [selectedCustomerId, setSelectedCustomerId] = React.useState<string | null>(null);
   const [reportText, setReportText] = React.useState("");
   const [fixTexts, setFixTexts] = React.useState<Record<string, string>>({});
+  
+  // Edit State
+  const [editingIssueId, setEditingIssueId] = React.useState<string | null>(null);
+  const [editingReportText, setEditingReportText] = React.useState("");
+  const [isEditDialogOpen, setIsEditDialogOpen] = React.useState(false);
 
   // 1. Fetch Customers for Dropbox
   const customersQuery = useMemoFirebase(() => {
@@ -125,6 +138,27 @@ export default function LaporanGangguanPage() {
       toast({ title: "Gangguan Selesai", description: "Laporan telah disimpan sebagai riwayat utuh." });
     } catch (e) {
       toast({ variant: "destructive", title: "Gagal menyimpan eksekusi" });
+    }
+  };
+
+  const handleOpenEdit = (issue: any) => {
+    setEditingIssueId(issue.id);
+    setEditingReportText(issue.reportDescription);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateReportDescription = async () => {
+    if (!editingIssueId || !editingReportText) return;
+
+    try {
+      await updateDoc(doc(db, "issues", editingIssueId), {
+        reportDescription: editingReportText
+      });
+      
+      toast({ title: "Laporan Diperbarui", description: "Catatan gangguan telah berhasil diubah." });
+      setIsEditDialogOpen(false);
+    } catch (e) {
+      toast({ variant: "destructive", title: "Gagal memperbarui laporan" });
     }
   };
 
@@ -259,10 +293,20 @@ export default function LaporanGangguanPage() {
                         </div>
                       </div>
 
-                      <div className="p-3 rounded-lg bg-rose-50/50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30">
+                      <div className="group relative p-3 rounded-lg bg-rose-50/50 dark:bg-rose-900/10 border border-rose-100 dark:border-rose-900/30">
                         <p className="text-xs font-medium text-rose-700 dark:text-rose-400">
                           <span className="font-bold">Laporan:</span> {issue.reportDescription}
                         </p>
+                        {(role === 'admin' || issue.reporter === username) && (
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleOpenEdit(issue)}
+                          >
+                            <Edit2 className="h-3 w-3 text-slate-400" />
+                          </Button>
+                        )}
                       </div>
 
                       {role === 'admin' ? (
@@ -302,6 +346,28 @@ export default function LaporanGangguanPage() {
           </Card>
         </div>
       </div>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden rounded-2xl">
+          <DialogHeader className="bg-slate-50 dark:bg-slate-800 p-6 border-b text-center">
+            <DialogTitle className="text-sm font-bold uppercase tracking-tight">Edit Laporan Gangguan</DialogTitle>
+            <DialogDescription className="text-[10px]">Ubah detail catatan keluhan pelanggan.</DialogDescription>
+          </DialogHeader>
+          <div className="p-6 space-y-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold text-slate-500 uppercase">Catatan Laporan</Label>
+              <Textarea 
+                value={editingReportText}
+                onChange={(e) => setEditingReportText(e.target.value)}
+                className="min-h-[120px] text-xs resize-none"
+              />
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} className="flex-1 h-10 text-xs">BATAL</Button>
+              <Button onClick={handleUpdateReportDescription} className="flex-1 h-10 text-xs shadow-lg">SIMPAN PERUBAHAN</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
