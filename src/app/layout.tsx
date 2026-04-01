@@ -152,6 +152,8 @@ function MainLayoutContent({ children }: { children: React.ReactNode }) {
   );
 }
 
+import { AuthProvider } from "@/providers/auth-provider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -181,9 +183,11 @@ export default function RootLayout({
       </head>
       <body className="antialiased transition-colors duration-300 relative min-h-screen text-slate-900 dark:text-slate-100">
         <FirebaseClientProvider>
-          <MainLayoutContent>
-            {children}
-          </MainLayoutContent>
+          <AuthProvider>
+            <MainLayoutContent>
+              {children}
+            </MainLayoutContent>
+          </AuthProvider>
         </FirebaseClientProvider>
       </body>
     </html>
