@@ -36,161 +36,122 @@ const Receipt = ({ invoice, customer, packageName, company }: ReceiptProps) => {
   const isPaid = invoice?.status === 'paid';
   const docNumber = String(invoice.id || "").substring(0, 8).toUpperCase();
   const currentDate = format(new Date(), "dd MMMM yyyy", { locale: localeId });
-  const paymentDateString = invoice?.paymentDate ? format(safeDate(invoice.paymentDate), "dd MMMM yyyy", { locale: localeId }) : "-";
   
   return (
-    <div className="bg-white p-8 md:p-10 space-y-6 print:p-0 print:m-0 print:block print:break-after-page text-slate-800">
-      {/* Header Perusahaan */}
-      <div className="flex justify-between items-start border-b-4 border-slate-900 pb-4">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <div className="h-10 w-10 bg-slate-900 rounded-lg flex items-center justify-center text-white font-black text-xl">
-              {(company?.name || "MTNET").charAt(0)}
+    <div className="bg-white p-8 md:p-10 print:p-6 print:m-0 print:h-[148.5mm] print:flex print:flex-col print:justify-between text-slate-800 border-b border-dashed border-slate-200 last:border-b-0 print:border-slate-300">
+      <div className="space-y-6">
+        {/* Header - Modern & Clean */}
+        <div className="flex justify-between items-start">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 bg-slate-100 rounded-xl flex items-center justify-center text-slate-900 font-black text-2xl border-2 border-slate-900">
+              M
             </div>
-            <h1 className="text-3xl font-black tracking-tighter text-slate-900">{company?.name || "MTNET"}</h1>
+            <div className="space-y-0.5">
+              <h1 className="text-2xl font-black tracking-tight text-slate-900 leading-none">MT NETWORK</h1>
+              <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1 mt-1">
+                <MapPin className="h-3 w-3" /> JALAN GUDANG MINYAK , TANJUNGPINANG
+              </p>
+              <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1">
+                <Phone className="h-3 w-3" /> 0817319885 | <Globe className="h-3 w-3" /> www.mtnet.id
+              </p>
+            </div>
           </div>
-          <div className="text-[11px] font-medium text-slate-500 space-y-0.5">
-            <p className="flex items-center gap-1.5"><MapPin className="h-3 w-3" /> {company?.address || "Jl. Raya Lintas Sumatera, Bandar Jaya, Lampung"}</p>
-            <p className="flex items-center gap-1.5"><Phone className="h-3 w-3" /> {company?.phone || "0812-7000-XXXX"} | <Globe className="h-3 w-3" /> www.mtnet.id</p>
-          </div>
-        </div>
-        <div className="text-right space-y-1">
-          <h2 className="text-2xl font-black uppercase text-slate-900 tracking-tight">
-            {isPaid ? 'Kwitansi Pembayaran' : 'Tagihan Layanan'}
-          </h2>
-          <div className="bg-slate-100 px-3 py-1.5 rounded-md inline-block">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-1">Nomor Dokumen</p>
-            <p className="text-sm font-mono font-bold text-slate-800">#{docNumber}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Info Pelanggan & Dokumen */}
-      <div className="grid grid-cols-2 gap-8 py-2">
-        <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            <p className="text-[10px] font-black uppercase text-slate-400">ID Pelanggan</p>
-            <p className="text-sm font-bold col-span-2 text-slate-900">: {String(customer?.id || "").substring(0, 10).toUpperCase()}</p>
-            
-            <p className="text-[10px] font-black uppercase text-slate-400">Nama Pelanggan</p>
-            <p className="text-sm font-bold col-span-2 text-slate-900">: {customer?.name || "N/A"}</p>
-            
-            <p className="text-[10px] font-black uppercase text-slate-400">Alamat</p>
-            <p className="text-[11px] font-medium col-span-2 leading-relaxed text-slate-600">: {customer?.address || "-"}</p>
+          <div className="text-right">
+            <h2 className="text-2xl font-black uppercase text-slate-900 tracking-tight leading-none mb-1">TAGIHAN LAYANAN</h2>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">NOMOR DOKUMEN</p>
+            <p className="text-sm font-black text-blue-600">#{docNumber}</p>
           </div>
         </div>
-        <div className="space-y-3">
-          <div className="grid grid-cols-3 gap-2">
-            <p className="text-[10px] font-black uppercase text-slate-400">Tanggal</p>
-            <p className="text-sm font-bold col-span-2 text-slate-900 text-right">{isPaid ? paymentDateString : currentDate}</p>
-            
-            <p className="text-[10px] font-black uppercase text-slate-400">Periode</p>
-            <p className="text-sm font-bold col-span-2 text-slate-900 text-right">{formatBillingPeriod(invoice.billingPeriod)}</p>
-            
-            <p className="text-[10px] font-black uppercase text-slate-400">Status</p>
-            <p className={cn(
-              "text-xs font-black col-span-2 text-right uppercase tracking-widest",
-              isPaid ? "text-emerald-600" : "text-amber-600"
-            )}>
-              {isPaid ? 'LUNAS' : 'MENUNGGU PEMBAYARAN'}
-            </p>
-          </div>
-        </div>
-      </div>
 
-      {/* Tabel Item Layanan */}
-      <div className="border border-slate-200 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-slate-900 text-white text-[10px] font-black uppercase tracking-widest">
-              <th className="py-3 px-4 text-left w-12">No</th>
-              <th className="py-3 px-4 text-left">Deskripsi Layanan</th>
-              <th className="py-3 px-4 text-center">Periode</th>
-              <th className="py-3 px-4 text-center w-20">Qty</th>
-              <th className="py-3 px-4 text-right">Harga Satuan</th>
-              <th className="py-3 px-4 text-right">Jumlah</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-            <tr>
-              <td className="py-4 px-4 text-center">1</td>
-              <td className="py-4 px-4">
-                <p className="font-bold text-slate-900">Paket Internet {packageName}</p>
-                <p className="text-[10px] text-slate-400 italic font-medium">Layanan Broadband High Speed Internet</p>
-              </td>
-              <td className="py-4 px-4 text-center text-xs">{formatBillingPeriod(invoice.billingPeriod)}</td>
-              <td className="py-4 px-4 text-center">1</td>
-              <td className="py-4 px-4 text-right">{formatRupiah(Number(invoice.amount || 0))}</td>
-              <td className="py-4 px-4 text-right font-bold text-slate-900">{formatRupiah(Number(invoice.amount || 0))}</td>
-            </tr>
-          </tbody>
-          <tfoot className="bg-slate-50/80 border-t-2 border-slate-200">
-            <tr>
-              <td colSpan={5} className="py-3 px-4 text-right text-[10px] font-black uppercase text-slate-400 tracking-widest">Subtotal</td>
-              <td className="py-3 px-4 text-right font-bold">{formatRupiah(Number(invoice.amount || 0))}</td>
-            </tr>
-            <tr>
-              <td colSpan={5} className="py-1 px-4 text-right text-[10px] font-black uppercase text-slate-400 tracking-widest">PPN (0%)</td>
-              <td className="py-1 px-4 text-right font-bold text-xs">{formatRupiah(0)}</td>
-            </tr>
-            <tr className="bg-slate-900 text-white">
-              <td colSpan={5} className="py-3 px-4 text-right text-xs font-black uppercase tracking-widest">Total Bayar</td>
-              <td className="py-3 px-4 text-right text-lg font-black">{formatRupiah(Number(invoice.amount || 0))}</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
+        <div className="h-1 bg-slate-900 w-full mb-6"></div>
 
-      {/* Terbilang */}
-      <div className="bg-slate-50 border-l-4 border-slate-900 p-4 rounded-r-lg italic">
-        <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Terbilang:</p>
-        <p className="text-sm font-bold text-slate-800 capitalize"># {terbilang(Number(invoice.amount || 0))} #</p>
-      </div>
-
-      {/* Footer & Tanda Tangan */}
-      <div className="grid grid-cols-3 gap-8 pt-4">
-        <div className="col-span-2 space-y-4">
+        {/* Info Pelanggan & Dokumen */}
+        <div className="grid grid-cols-2 gap-12 text-[11px]">
           <div className="space-y-2">
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Catatan & Cara Pembayaran:</p>
-            <ul className="text-[10px] text-slate-500 space-y-1 font-medium leading-relaxed">
-              <li>1. Pembayaran dapat melalui transfer Bank BCA: 123456789 A/N MTNET.</li>
-              <li>2. Harap simpan kwitansi ini sebagai bukti pembayaran yang sah.</li>
-              <li>3. Layanan akan otomatis aktif/diperpanjang setelah pembayaran dikonfirmasi.</li>
-              <li>4. Pertanyaan lebih lanjut hubungi Support MTNET di 0812-7000-XXXX.</li>
-            </ul>
+            <div className="flex">
+              <span className="w-28 font-bold text-slate-500 uppercase">ID PELANGGAN</span>
+              <span className="font-black text-slate-900">: {String(customer?.id || "").substring(0, 10).toUpperCase()}</span>
+            </div>
+            <div className="flex">
+              <span className="w-28 font-bold text-slate-500 uppercase">NAMA PELANGGAN</span>
+              <span className="font-black text-slate-900">: {customer?.name || "N/A"}</span>
+            </div>
+            <div className="flex">
+              <span className="w-28 font-bold text-slate-500 uppercase">ALAMAT</span>
+              <span className="font-medium text-slate-600 flex-1">: {customer?.address || "-"}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-lg border border-dashed border-slate-200 inline-flex">
-            <QrCode className="h-12 w-12 text-slate-400" />
-            <div>
-              <p className="text-[8px] font-black uppercase text-slate-500">Scan Verifikasi</p>
-              <p className="text-[10px] font-bold text-slate-400">Verifikasi dokumen online melalui aplikasi MTNET</p>
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="font-bold text-slate-500 uppercase">TANGGAL</span>
+              <span className="font-black text-slate-900 uppercase">{currentDate}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-bold text-slate-500 uppercase">PERIODE</span>
+              <span className="font-black text-slate-900 uppercase">{formatBillingPeriod(invoice.billingPeriod)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="font-bold text-slate-500 uppercase">STATUS</span>
+              <span className={cn(
+                "font-black uppercase tracking-wider text-xs",
+                isPaid ? "text-emerald-600" : "text-amber-600"
+              )}>
+                {isPaid ? 'LUNAS' : 'MENUNGGU PEMBAYARAN'}
+              </span>
             </div>
           </div>
         </div>
-        
-        <div className="text-center space-y-12">
-          <div className="relative">
-            <p className="text-sm font-bold text-slate-800 mb-1">Lampung, {currentDate}</p>
-            <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Petugas Kasir,</p>
-            
-            {isPaid && (
-              <div className="absolute top-6 left-1/2 -translate-x-1/2 -rotate-12 opacity-50 pointer-events-none">
-                 <div className="border-4 border-emerald-500 rounded-full px-6 py-2 flex flex-col items-center justify-center">
-                    <p className="text-emerald-500 font-black text-xl leading-none">LUNAS</p>
-                    <p className="text-emerald-500 font-bold text-[8px] tracking-[0.3em] mt-1 uppercase">{docNumber}</p>
-                 </div>
-              </div>
-            )}
-          </div>
-          <div>
-            <p className="text-sm font-black text-slate-900 border-b border-slate-900 inline-block px-4">MTNET BILLING SYSTEM</p>
-            <p className="text-[10px] font-medium text-slate-400 mt-1">E-Signature Authorized</p>
+
+        {/* Tabel Layanan - Styled as Card */}
+        <div className="border border-slate-200 rounded-xl overflow-hidden mt-4 bg-white">
+          <table className="w-full text-[11px] border-collapse">
+            <thead>
+              <tr className="bg-white border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">
+                <th className="py-4 px-3 w-10">NO</th>
+                <th className="py-4 px-4 text-left">DESKRIPSI LAYANAN</th>
+                <th className="py-4 px-3">PERIODE</th>
+                <th className="py-4 px-3 w-12">QTY</th>
+                <th className="py-4 px-4 text-right">HARGA SATUAN</th>
+                <th className="py-4 px-4 text-right">JUMLAH</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              <tr className="text-slate-700">
+                <td className="py-8 px-3 text-center align-top font-bold">1</td>
+                <td className="py-8 px-4 align-top">
+                  <p className="font-black text-slate-900 text-sm mb-1">Paket Internet {packageName}</p>
+                  <p className="text-[10px] text-slate-400 italic">Layanan Broadband High Speed Internet</p>
+                </td>
+                <td className="py-8 px-3 text-center align-top whitespace-nowrap">{formatBillingPeriod(invoice.billingPeriod)}</td>
+                <td className="py-8 px-3 text-center align-top">1</td>
+                <td className="py-8 px-4 text-right align-top font-medium">{formatRupiah(Number(invoice.amount || 0))}</td>
+                <td className="py-8 px-4 text-right align-top font-black text-slate-900">{formatRupiah(Number(invoice.amount || 0))}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div className="bg-slate-50/50 p-6 flex flex-col items-end space-y-2 border-t border-slate-100">
+            <div className="flex justify-between w-full max-w-[240px] text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <span>SUBTOTAL</span>
+              <span className="text-slate-900 font-black">{formatRupiah(Number(invoice.amount || 0))}</span>
+            </div>
+            <div className="flex justify-between w-full max-w-[240px] text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+              <span>PPN (0%)</span>
+              <span className="text-slate-900 font-black">Rp 0</span>
+            </div>
+            <div className="flex justify-between w-full max-w-[240px] items-center pt-2 mt-2 border-t border-slate-200">
+              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">TOTAL BAYAR</span>
+              <span className="text-xl font-black text-[#8b8b8b]">{formatRupiah(Number(invoice.amount || 0))}</span>
+            </div>
           </div>
         </div>
       </div>
-      
-      <div className="text-[9px] text-center text-slate-400 pt-6 border-t border-slate-100">
-        Dokumen ini diterbitkan secara elektronik oleh Sistem Billing MTNET dan tidak memerlukan tanda tangan basah.
+
+      {/* Terbilang & Footer Section */}
+      <div className="mt-auto pt-6">
+        <div className="border-l-[3px] border-slate-900 pl-4 py-1 italic mb-2">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">TERBILANG:</p>
+          <p className="text-sm font-black text-slate-800"># {terbilang(Number(invoice.amount || 0))} #</p>
+        </div>
       </div>
     </div>
   );
@@ -224,13 +185,13 @@ export function ReceiptDialog({
         </DialogHeader>
 
         <ScrollArea className="flex-1 bg-slate-100 p-4 md:p-8 print:p-0">
-          <div className="max-w-2xl mx-auto space-y-8">
+          <div className="max-w-[210mm] mx-auto print:max-w-none print:w-[210mm] print:min-h-[297mm] print:bg-white flex flex-col bg-slate-100">
             {invoices.map((inv, idx) => {
               const cust = typeof customer === 'function' ? customer(inv.customerId) : customer;
               const pkgName = typeof packageName === 'function' ? packageName(inv.customerId) : packageName;
               
               return (
-                <div key={inv.id || idx} className="bg-white shadow-xl rounded-sm overflow-hidden print:shadow-none print:rounded-none">
+                <div key={inv.id || idx} className="bg-white shadow-xl rounded-sm overflow-hidden print:shadow-none print:rounded-none mb-8 print:mb-0 print:h-[148.5mm]">
                   <Receipt 
                     invoice={inv}
                     customer={cust}
